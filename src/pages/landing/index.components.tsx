@@ -16,7 +16,7 @@ import { subscribeToNewsletter } from '@/features/newsletter-signup'
 import { container, TOKENS } from '@/shared/lib/di'
 import type { IAnalyticsService } from '@/shared/services/analytics'
 
-export function LandingPage() {
+export default function LandingPage() {
   const handleGetStarted = () => {
     // Track analytics event
     const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
