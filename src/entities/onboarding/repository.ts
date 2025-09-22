@@ -11,7 +11,10 @@ export interface IOnboardingRepository {
 export class OnboardingRepository implements IOnboardingRepository {
   async create(data: CreateOnboardingData): Promise<OnboardingData> {
     const result = await prisma.onboardingData.create({
-      data,
+      data: {
+        ...data,
+        responses: data.responses as any,
+      },
     })
     return {
       ...result,
@@ -33,7 +36,10 @@ export class OnboardingRepository implements IOnboardingRepository {
   async update(userId: string, data: UpdateOnboardingData): Promise<OnboardingData> {
     const result = await prisma.onboardingData.update({
       where: { userId },
-      data,
+      data: {
+        ...data,
+        responses: data.responses as any,
+      },
     })
     return {
       ...result,
