@@ -1,0 +1,1 @@
+export { NeuroplasticitySection } from './index.components'

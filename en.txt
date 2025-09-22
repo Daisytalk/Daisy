@@ -1,0 +1,426 @@
+{
+  "hero-video": {
+    "titleLine1": "Daisy – your personal",
+    "titleLine2": "AI psychologist 24/7",
+    "description": "Get support anytime and personalized recommendations for mental health. Always at hand to help you overcome life's challenges.",
+    "ctaButton": "Get Help",
+    "feature247": "24/7 Available",
+    "featureInstantAccess": "Instant Access"
+  },
+  "hero": {
+    "title": "Daisy - Your 24/7 <br />Mental Health Companion",
+    "description": "A smart, personalized tool to support your mental well-being anytime and anywhere",
+    "ctaButton": "Am I A Candidate?",
+    "feature1": "Personalized AI Companion",
+    "feature2": "Strong Scientific Background"
+  },
+  "footer": {
+    "about_us": {
+      "title": "About Us",
+      "career": "Career",
+      "our_team": "Our Team",
+      "standards": "Standarts"
+    },
+    "connect": {
+      "title": "Connect",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn"
+    },
+    "customer_care": {
+      "title": "Customer Care",
+      "email_placeholder": "Email us",
+      "address": "Astana Hub, Kazakhstan",
+      "phone": "+7 777 777 77 77"
+    },
+    "legal": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms & Conditions"
+    },
+    "copyright": "© All rights reserved. 2025"
+  },
+  "use-cases": {
+    "title": "How can Daisy help?",
+    "cases": {
+      "stress": {
+        "title": "Stress and Anxiety",
+        "description": "Handle daily tension and worry."
+      },
+      "burnout": {
+        "title": "Burnout",
+        "description": "Find balance between work and personal life."
+      },
+      "relationships": {
+        "title": "Relationship Problems",
+        "description": "Get support and understand your feelings."
+      },
+      "selfEsteem": {
+        "title": "Low Self-Esteem",
+        "description": "Build confidence with personalized recommendations."
+      },
+      "emotionalOverload": {
+        "title": "Emotional Overload",
+        "description": "Learn to recognize and manage your emotions."
+      },
+      "breakup": {
+        "title": "Breakup Recovery",
+        "description": "Deal with separation and find inner harmony."
+      },
+      "loneliness": {
+        "title": "Feeling of Loneliness",
+        "description": "Daisy is always there to support you in difficult moments."
+      },
+      "motivation": {
+        "title": "Finding Motivation",
+        "description": "Get inspiration and new ways to achieve goals."
+      },
+      "moodAnalysis": {
+        "title": "Mood Analysis",
+        "description": "Understand your emotions and track progress."
+      }
+    }
+  },
+  "testimonials": {
+    "tag": "Reviews",
+    "title": "Hear From Our Satisfied Customers",
+    "subtitle": "Our users share how short interaction brought long-lasting therapy",
+    "stats_number": "10k+",
+    "stats_text": "people are receiving therapy",
+    "testimonial_list": [
+      {
+        "quote": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.",
+        "author": "Guy Hawkins",
+        "date": "1/28/17"
+      },
+      {
+        "quote": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+        "author": "Jane Doe",
+        "date": "2/15/18"
+      },
+      {
+        "quote": "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.",
+        "author": "John Smith",
+        "date": "3/22/19"
+      }
+    ]
+  },
+  "zigzag": {
+    "conversation": {
+      "user1": "Hi! Lately I've been feeling down. I can't focus on work and constantly feel anxious...",
+      "bot1": "Hello! I understand how difficult it can be to deal with anxiety. Let's figure this out together. How long have you noticed these symptoms? Have you tried any relaxation techniques before?",
+      "user2": "It started about a month ago. I tried breathing exercises, but I'm not sure if I'm doing them correctly. Can you suggest something simple to start with?",
+      "bot2": "Of course! Let's start with a simple meditation. I suggest trying the '5-5-5' technique: inhale for 5 seconds, hold for 5 seconds, exhale for 5 seconds. Practice this exercise for 5 minutes. Would you like to try it now?",
+      "user3": "Yes, let's try! Honestly, I already feel better just being able to discuss this with someone.",
+      "bot3": "That's wonderful! Remember that you're not alone on this journey. Let's start the meditation, and afterward, I'll teach you some more useful techniques that will help you deal with stress in everyday life."
+    }
+  },
+  "pricing": {
+    "title": "Choose your plan",
+    "subtitle": "Sign in to your account to subscribe",
+    "recommended": "Recommended",
+    "plans": {
+      "3months": {
+        "title": "3 months",
+        "description": "Perfect for getting started with the service"
+      },
+      "6months": {
+        "title": "6 months",
+        "description": "Optimal option for regular use"
+      },
+      "1year": {
+        "title": "1 year",
+        "description": "Maximum value and full set of features"
+      }
+    },
+    "features": {
+      "unlimited": "Unlimited bot communication",
+      "personalization": "Personalization"
+    }
+  },
+  "header": {
+    "how_it_works": "How It Works",
+    "why_daisy": "Why Daisy",
+    "reviews": "Reviews",
+    "pricing": "Pricing",
+    "login": "Login",
+    "talk_to_daisy": "Talk To Daisy",
+    "open_menu": "Open main menu",
+    "close_menu": "Close menu"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "howItWorks": {
+      "question": "How does Daisy work?",
+      "answer": "Daisy is an innovative chatbot designed to provide psychological support. It uses advanced artificial intelligence technology to conduct therapeutic conversations, helping users cope with stress, anxiety, and other emotional issues."
+    },
+    "replaceTherapist": {
+      "question": "Can the bot replace a real therapist?",
+      "answer": "No, our bot does not replace a professional therapist. It is created as a supplementary support tool and can help when you need someone to talk to or get basic recommendations. For serious psychological issues, we always recommend consulting a qualified specialist."
+    },
+    "diagnosis": {
+      "question": "Can Daisy diagnose mental disorders?",
+      "answer": "No, Daisy cannot diagnose mental disorders. She provides recommendations, support, and general advice based on your responses, but does not replace professional medical or psychological help. For diagnosis and treatment, we recommend consulting a qualified psychologist or psychiatrist."
+    },
+    "personalization": {
+      "question": "How does Daisy personalize recommendations?",
+      "answer": "Daisy uses artificial intelligence to analyze your responses and track emotional patterns. She remembers key details, takes into account your goals and experience, offering personalized advice and support. The more you interact with Daisy, the more accurate and helpful her recommendations become, adapted to your individual needs."
+    },
+    "crisis": {
+      "question": "What should I do if I'm experiencing a crisis?",
+      "answer": "If you are in danger or experiencing an acute crisis, please seek help from a specialist or call emergency services. Daisy can provide emotional support but is not designed to handle crisis situations."
+    },
+    "confidentiality": {
+      "question": "How confidential are my conversations with the bot?",
+      "answer": "We ensure complete confidentiality of all conversations. All data is encrypted, and personal information is not shared with third parties. You can be confident that your conversations with the bot will remain private."
+    },
+    "availability": {
+      "question": "When is the bot available?",
+      "answer": "The bot is available 24/7, allowing you to get support at any time of day or night. This is especially important when traditional psychological help is unavailable, such as late at night or on weekends."
+    },
+    "languages": {
+      "question": "What languages does the bot support?",
+      "answer": "Currently, the bot supports Russian, Kazakh, and English languages. This allows you to have conversations in the language you're most comfortable with. We are constantly working on adding support for new languages."
+    },
+    "gettingStarted": {
+      "question": "How do I start using the bot?",
+      "answer": "Starting to use the bot is very simple: Purchase a subscription, follow the link to Daisy's Telegram chat, and start a dialogue right away."
+    }
+  },
+  "billing": {
+    "current_plan": "Current Plan",
+    "recommended": "Recommended",
+    "upgrade": "Upgrade",
+    "page_title": "Billing & Subscription",
+    "need_help": "Need Help?",
+    "support_title": "Billing Support",
+    "support_message": "If you have any question about your billing, please contact us at contact@example.com",
+    "close": "Close",
+    "payment_success": "Thank you {name} for your payment!",
+    "payment_declined": "Sorry {name}, your payment was declined.",
+    "choose_plan": "Choose Your Plan",
+    "monthly": {
+      "title": "Monthly",
+      "price": "5,000₸ / month",
+      "description": "Perfect for short-term therapy needs."
+    },
+    "yearly": {
+      "title": "Yearly",
+      "price": "3,500₸ / month",
+      "description": "Complete mental wellbeing solution."
+    },
+    "lifetime": {
+      "title": "Lifetime",
+      "price": "129",
+      "description": "One-time payment for lifetime access to all features",
+      "features": "Unlimited input/output tokens"
+    },
+    "three_months": {
+      "title": "3 Months",
+      "price": "4,500₸ / month",
+      "description": "Ideal for consistent therapy progress."
+    },
+    "six_months": {
+      "title": "6 Months",
+      "price": "4,000₸ / month",
+      "description": "Comprehensive therapy journey."
+    },
+    "features": {
+      "unlimited_sessions": "Unlimited therapy sessions",
+      "training_materials": "All training materials",
+      "support_247": "24/7 therapist support",
+      "mobile_access": "Mobile app access",
+      "everything_monthly": "Everything in Monthly",
+      "discount_10": "10% discount",
+      "priority_scheduling": "Priority scheduling",
+      "personalized_plan": "Personalized therapy plan",
+      "everything_three_months": "Everything in 3 Months",
+      "discount_20": "20% discount",
+      "progress_tracking": "Progress tracking tools",
+      "quarterly_assessment": "Quarterly assessment reviews",
+      "everything_six_months": "Everything in 6 Months",
+      "discount_30": "30% discount",
+      "yearly_assessment": "Yearly wellbeing assessment",
+      "exclusive_workshops": "Exclusive workshops access"
+    },
+    "page": {
+      "title": "Simple pricing for everyone",
+      "subtitle": "Choose the plan that works best for you and start your mental wellness journey today.",
+      "processing": "Processing...",
+      "current_plan": "Current Plan",
+      "subscribe_bereke": "Pay with Bereke Bank",
+      "footer1": "All plans include access to our platform, personalized therapy sessions, and support materials. Payment is processed securely through Bereke Bank.",
+      "footer2": "By subscribing, you agree to our Terms of Service and Privacy Policy. You can cancel your subscription at any time."
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {name}",
+    "anonymous_user": "Anonymous User",
+    "no_active_plan": "No Active Plan",
+    "use_this_code_to_access": "Use this code to access your subscription in Telegram",
+    "status": {
+      "active": "Active",
+      "not_subscribed": "Not Subscribed",
+      "expired": "Expired"
+    },
+    "subscription": {
+      "status_label": "Subscription Status",
+      "plan_label": "Subscription plan",
+      "start_date": "Subscription Start Date:",
+      "manage": "Manage subscription",
+      "valid_until": "Valid until:",
+      "access_code": "Your Access Code:",
+      "expiring_soon": "Expiring Soon",
+      "renew": "Renew",
+      "no_subscription": "You don't have an active subscription. Subscribe to access all features.",
+      "copy_code": "Copy code",
+      "telegram_access": "Use this code to access your subscription in Telegram",
+      "order_id": "Order ID:"
+    },
+    "getting_started": {
+      "title": "Getting Started",
+      "description": "Ready to explore Daisy? Click the extension icon in your browser toolbar to begin exploring AI actions."
+    },
+    "telegram": {
+      "activation_title": "Activate Your Telegram Bot",
+      "description": "Follow these simple steps to activate your Daisy AI Therapist in Telegram",
+      "user_question": "How do I activate my Daisy AI subscription in Telegram?",
+      "bot_explanation": "It's easy! First, find me on Telegram by searching for @DaisyAITherapistBot. Then tap Start to begin a conversation.",
+      "user_confirmation": "I've found the bot and started a conversation. What's next?",
+      "bot_activation": "Now type /activate followed by your Order ID to activate your subscription. Your Order ID can be found on your dashboard.",
+      "bot_confirmation": "✅ Subscription activated successfully! Your subscription is valid until:",
+      "bot_ready": "I'm now ready to help you. How are you feeling today?",
+      "copy_command": "Copy Activation Command",
+      "open_telegram": "Open Telegram",
+      "subscribe_first": "Subscribe to Get Started"
+    },
+    "plans": {
+      "monthly": "Monthly",
+      "three_months": "3 Months",
+      "six_months": "6 Months",
+      "yearly": "Yearly"
+    },
+    "dont_have_active_subscription": "You don't have an active subscription. Subscribe to access all features."
+  },
+  "chat": {
+    "title": "Chat",
+    "inputPlaceholder": "Type your message...",
+    "sendButton": "Send"
+  },
+  "go_to_dashboard": "Go to Dashboard",
+  "access_code_saved": "Your access code has been saved to your account. You can view it anytime on your dashboard.",
+  "subscription_activated": "Your subscription has been activated",
+  "access_information": "Your Access Information",
+  "benefits": {
+    "title_p1": "Can’t wait weeks for therapy? You still deserve relief. Daisy listens without judgment and offers gentle, psychology-informed steps you can take today.",
+    "title_p2": "A new standard for everyday mental support: quick, private, always-on.",
+    "how_daisy_works": "How Daisy Works",
+    "privacy_ethics": "Privacy & ethics",
+    "benefit1_title": "Any minute, anywhere",
+    "benefit1_desc": "Tap to talk-at home, on the way, or between meetings.",
+    "benefit2_title": "Designed with psychologists",
+    "benefit2_desc": "And grounded in modern methods (CBT, DBT, gentle activation).",
+    "benefit3_title": "Daisy keeps context over time",
+    "benefit3_desc": "so you never start from scratch."
+  },
+  "help_topics": {
+    "how_it_works": "How It Works",
+    "title": "What Can Daisy Help You With?",
+    "get_support": "Get Support",
+    "topics": [
+      {
+        "number": "01",
+        "title": "Stress & Anxiety",
+        "description": "Find Calm In The Middle Of Chaos. Daisy Helps You Manage Overwhelming Thoughts, Reduce Tension, And Build Daily Habits That Bring Clarity And Balance."
+      },
+      {
+        "number": "02",
+        "title": "Burnout",
+        "description": "When Exhaustion Takes Over, Recovery Feels Impossible. Daisy Guides You Through Small Steps To Restore Your Energy, Rebuild Focus, And Protect Your Well-Being."
+      },
+      {
+        "number": "03",
+        "title": "Relationship Problems",
+        "description": "Communication Struggles And Conflicts Can Feel Isolating. Daisy Supports You In Understanding Emotions, Improving Connection, And Finding Healthier Ways To Relate."
+      },
+      {
+        "number": "04",
+        "title": "Relational Trauma",
+        "description": "Communication struggles and conflicts can feel isolating. Daisy supports you in understanding emotions, improving connection, and finding healthier ways to relate."
+      }
+    ]
+  },
+  "neuroplasticity": {
+    "subtitle": "TRAIN YOUR BRAIN FOR A CALMER, HAPPIER LIFE",
+    "title": "Neuroplasticity means your brain <i>can</i> change.",
+    "description": "Practice changes pathways. Short, daily chats with Daisy rehearse calm, clear responses - until they become your default.",
+    "button": "Get Help"
+  },
+  "science": {
+    "title": "Explore The Science Behind Daisy",
+    "description": "Read the latest scientific publications on the role of artificial intelligence and digital solutions in supporting mental health",
+    "button": "Get Support",
+    "references_title": "References",
+    "articles": [
+      {
+        "title": "Can AI Replace Psychotherapists? Exploring The Future Of Mental Health Care",
+        "date": "October, 2024 - 10 min read"
+      },
+      {
+        "title": "Conversational Artificial Intelligence In Psychotherapy: A New Therapeutic Tool Or Agent?",
+        "date": "May, 2023 - 10 min read"
+      },
+      {
+        "title": "Artificial Intelligence (AI) In Psychotherapy: A Challenging Frontier",
+        "date": "August, 2025 - 10 min read"
+      }
+    ],
+    "references_list": [
+      "1. Jesudason, D., Bacchi, S., & Bastiampillai, T. (2025). Artificial intelligence (AI) in psychotherapy: A challenging frontier. Australasian psychiatry : bulletin of Royal Australian and New Zealand College of Psychiatrists, 33(4), 629-632. https://doi.org/10.1177/10398562251346075",
+      "2. Jesudason, D., Bacchi, S., & Bastiampillai, T. (2025). Artificial intelligence (AI) in psychotherapy: A challenging frontier. Australasian psychiatry : bulletin of Royal Australian and New Zealand College of Psychiatrists, 33(4), 629-632. https://doi.org/10.1177/10398562251346075",
+      "3. Jesudason, D., Bacchi, S., & Bastiampillai, T. (2025). Artificial intelligence (AI) in psychotherapy: A challenging frontier. Australasian psychiatry : bulletin of Royal Australian and New Zealand College of Psychiatrists, 33(4), 629-632. https://doi.org/10.1177/10398562251346075"
+    ]
+  },
+  "mission": {
+    "title": "Our mission is personal.",
+    "button": "Our story",
+    "how_it_started": "HOW IT STARTED",
+    "story": "Mental health is the #1 public health crisis, affecting millions of American families, including our Founder's. Dylan Beynon's mother and sister struggled with severe mental illness, addiction, and homelessness. He lost both to overdoses. Growing up with a violent and abusive parent, Dylan suffered from PTSD, holding him back from helping himself and others."
+  },
+  "cta": {
+    "title": "Receive The Help From Your Own AI Companion",
+    "button": "Am I A Candidate?"
+  },
+  "onboarding": {
+    "title": "Get Yourself Personalized AI Therapist With TalkToDaisy.",
+    "subtitle": "We Will Have An Onboarding Before Moving Forward",
+    "question_progress": "Question {current} of {total}",
+    "progress_percentage": "{percentage}%",
+    "next": "Next",
+    "back": "Back",
+    "complete": "Complete",
+    "submitting": "Submitting...",
+    "terms_text": "By entering your information and continuing you agree to our",
+    "terms_link": "Terms of Service",
+    "privacy_link": "Privacy Policy",
+    "terms_review": "Please review before continuing",
+    "gender_question": "Choose your gender/sex",
+    "gender_options": {
+      "male": "Male",
+      "female": "Female",
+      "prefer_not_to_say": "Prefer not to say",
+      "other": "Other"
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "login_button": "Sign In",
+    "register_button": "Sign Up",
+    "forgot_password": "Forgot Password?",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?"
+  }
+}

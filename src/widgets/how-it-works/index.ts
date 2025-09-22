@@ -1,0 +1,1 @@
+export { HowItWorksSection } from './index.components'
