@@ -1,1 +1,1 @@
-export { LandingPage } from './index.components'
+export { default as LandingPage } from './index.components'

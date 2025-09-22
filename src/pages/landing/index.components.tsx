@@ -59,7 +59,7 @@ export default function LandingPage() {
   const handleNewsletterSubmit = async (email: string) => {
     try {
       await subscribeToNewsletter(email)
-      
+
       // Track analytics event
       const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
       analytics.track({
@@ -75,7 +75,7 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen">
-      <HeroSection 
+      <HeroSection
         onGetStarted={handleGetStarted}
         onLearnMore={handleLearnMore}
       />
