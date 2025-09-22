@@ -1,7 +1,7 @@
 export interface OnboardingData {
   id: string
   userId: string
-  responses: Record<string, any>
+  responses: Record<string, any> | null
   completed: boolean
   createdAt: Date
   updatedAt: Date
@@ -9,12 +9,12 @@ export interface OnboardingData {
 
 export interface CreateOnboardingData {
   userId: string
-  responses: Record<string, any>
+  responses: Record<string, any> | null
   completed?: boolean
 }
 
 export interface UpdateOnboardingData {
-  responses?: Record<string, any>
+  responses?: Record<string, any> | null
   completed?: boolean
 }
 
