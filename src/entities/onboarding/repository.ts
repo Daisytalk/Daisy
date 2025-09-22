@@ -10,22 +10,35 @@ export interface IOnboardingRepository {
 
 export class OnboardingRepository implements IOnboardingRepository {
   async create(data: CreateOnboardingData): Promise<OnboardingData> {
-    return await prisma.onboardingData.create({
+    const result = await prisma.onboardingData.create({
       data,
     })
+    return {
+      ...result,
+      responses: result.responses as Record<string, any> | null,
+    }
   }
 
   async findByUserId(userId: string): Promise<OnboardingData | null> {
-    return await prisma.onboardingData.findUnique({
+    const result = await prisma.onboardingData.findUnique({
       where: { userId },
     })
+    if (!result) return null
+    return {
+      ...result,
+      responses: result.responses as Record<string, any> | null,
+    }
   }
 
   async update(userId: string, data: UpdateOnboardingData): Promise<OnboardingData> {
-    return await prisma.onboardingData.update({
+    const result = await prisma.onboardingData.update({
       where: { userId },
       data,
     })
+    return {
+      ...result,
+      responses: result.responses as Record<string, any> | null,
+    }
   }
 
   async delete(userId: string): Promise<void> {
