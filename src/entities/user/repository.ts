@@ -11,28 +11,46 @@ export interface IUserRepository {
 
 export class UserRepository implements IUserRepository {
   async create(data: CreateUserData): Promise<User> {
-    return await prisma.user.create({
+    const result = await prisma.user.create({
       data,
     })
+    return {
+      ...result,
+      name: result.name ?? undefined,
+    }
   }
 
   async findById(id: string): Promise<User | null> {
-    return await prisma.user.findUnique({
+    const result = await prisma.user.findUnique({
       where: { id },
     })
+    if (!result) return null
+    return {
+      ...result,
+      name: result.name ?? undefined,
+    }
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return await prisma.user.findUnique({
+    const result = await prisma.user.findUnique({
       where: { email },
     })
+    if (!result) return null
+    return {
+      ...result,
+      name: result.name ?? undefined,
+    }
   }
 
   async update(id: string, data: UpdateUserData): Promise<User> {
-    return await prisma.user.update({
+    const result = await prisma.user.update({
       where: { id },
       data,
     })
+    return {
+      ...result,
+      name: result.name ?? undefined,
+    }
   }
 
   async delete(id: string): Promise<void> {
