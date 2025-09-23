@@ -23,6 +23,12 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -30,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} antialiased`}>
         <Providers>
           {children}
         </Providers>

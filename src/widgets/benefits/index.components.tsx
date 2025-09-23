@@ -23,9 +23,9 @@ const benefits = [
 
 export function BenefitsSection() {
   return (
-    <div className="bg-white py-24 sm:py-32">
-      <div className="mx-auto max-w-8xl px-6 lg:px-8">
-        <div className="mx-auto grid max-w-2xl grid-cols-1 items-start gap-x-8 gap-y-16 sm:gap-y-24 lg:mx-0 lg:max-w-none lg:grid-cols-2">
+    <div className="bg-white py-16 sm:py-24 lg:py-32">
+      <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-2xl grid-cols-1 items-start gap-x-8 gap-y-12 sm:gap-y-16 lg:gap-y-24 lg:mx-0 lg:max-w-none lg:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -33,17 +33,17 @@ export function BenefitsSection() {
             viewport={{ once: true }}
             className="lg:pr-4"
           >
-            <div className="text-4xl tracking-tight text-gray-900 sm:text-4xl space-y-6">
-              <p className="leading-snug font-semibold">Can't wait weeks for therapy?</p>
-              <p className="leading-snug font-base"> You still deserve relief. Daisy listens without judgment and offers gentle, psychology-informed steps you can take today.</p>
-              <p className="leading-snug font-semibold">A new standard for everyday mental support: <span className="font-normal">quick, private, always-on.</span></p>
+            <div className="text-2xl sm:text-3xl lg:text-4xl tracking-tight text-gray-900 space-y-4 sm:space-y-6">
+              <p className="leading-tight font-semibold">Can't wait weeks for therapy?</p>
+              <p className="leading-tight font-base text-xl sm:text-2xl lg:text-3xl"> You still deserve relief. Daisy listens without judgment and offers gentle, psychology-informed steps you can take today.</p>
+              <p className="leading-tight font-semibold">A new standard for everyday mental support: <span className="font-normal">quick, private, always-on.</span></p>
             </div>
-            <div className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-4">
-              <a href="#how-it-works" className="rounded-full px-6 py-3 text-lg font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-900 hover:bg-gray-50 transition-colors">
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
+              <a href="#how-it-works" className="rounded-full px-6 py-3 text-base sm:text-lg font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-900 hover:bg-gray-50 transition-colors text-center">
                 How Daisy Works
               </a>
-              <a href="#about" className="flex items-center gap-x-2 text-lg font-medium text-gray-900 hover:text-gray-600 transition-colors">
-                <CirclePlus className="h-6 w-6" />
+              <a href="#about" className="flex items-center gap-x-2 text-base sm:text-lg font-medium text-gray-900 hover:text-gray-600 transition-colors">
+                <CirclePlus className="h-5 w-5 sm:h-6 sm:w-6" />
                 Privacy & Ethics
               </a>
             </div>
@@ -63,17 +63,17 @@ export function BenefitsSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className={`relative p-8 ${index < benefits.length - 1 ? 'border-b border-gray-300' : ''}`}
+                  className={`relative p-4 sm:p-6 lg:p-8 ${index < benefits.length - 1 ? 'border-b border-gray-300' : ''}`}
                 >
-                  <div className="flex items-center gap-x-8">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 lg:gap-8">
                     <img
-                      className="h-24 w-40 flex-shrink-0 rounded-lg object-cover"
+                      className="h-20 w-32 sm:h-24 sm:w-40 flex-shrink-0 rounded-lg object-cover"
                       src={benefit.imageUrl}
                       alt={benefit.name}
                     />
                     <div className="flex-1">
-                      <dt className="text-2xl font-semibold leading-7 text-gray-900">{benefit.name}</dt>
-                      <dd className="mt-1 text-xl leading-7 text-gray-700">{benefit.description}</dd>
+                      <dt className="text-lg sm:text-xl lg:text-2xl font-semibold leading-6 sm:leading-7 text-gray-900">{benefit.name}</dt>
+                      <dd className="mt-1 text-base sm:text-lg lg:text-xl leading-6 sm:leading-7 text-gray-700">{benefit.description}</dd>
                     </div>
                   </div>
                 </motion.div>

@@ -45,7 +45,7 @@ export function ChatDemoSection() {
                   D
                 </div>
               )}
-              <div className={`max-w-xl rounded-2xl p-4 text-left text-base ${
+              <div className={`max-w-md rounded-2xl p-4 text-left text-base ${
                 msg.from === 'user' 
                   ? 'bg-gray-100 text-gray-800' 
                   : 'bg-[#7E9EC4]/10 text-gray-900 border border-[#7E9EC4]/20'

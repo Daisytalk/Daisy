@@ -24,8 +24,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       .bindSingleton(TOKENS.EMAIL_SERVICE, EmailService)
       .bindSingleton(TOKENS.AI_SERVICE, GeminiAIService)
       .bindSingleton(TOKENS.VERTEX_AI_SERVICE, VertexAIService)
-      .bindSingleton(TOKENS.USER_REPOSITORY, UserRepository)
-      .bindSingleton(TOKENS.ONBOARDING_REPOSITORY, OnboardingRepository)
   }, [])
 
   return (
