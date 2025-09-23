@@ -1,4 +1,4 @@
-import { prisma } from '@/shared/lib/database'
+import prisma from '@/shared/lib/database'
 import type { User, CreateUserData, UpdateUserData } from './model'
 
 export interface IUserRepository {
