@@ -8,7 +8,7 @@ export async function subscribeToNewsletter(email: string) {
   }
 
   try {
-    await prisma.newsletterSubscription.create({
+    await prisma.newsletter.create({
       data: {
         email,
       },

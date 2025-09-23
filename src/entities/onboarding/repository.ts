@@ -1,4 +1,4 @@
-import { prisma } from '@/shared/lib/database'
+import prisma from '@/shared/lib/database'
 import type { OnboardingData, CreateOnboardingData, UpdateOnboardingData } from './model'
 
 export interface IOnboardingRepository {
