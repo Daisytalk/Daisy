@@ -10,19 +10,35 @@ export interface User {
   updatedAt: Date
 }
 
+export type OnboardingQuestionType =
+  | 'date'
+  | 'single-choice'
+  | 'scale-with-comment'
+  | 'text';
+
 export interface OnboardingQuestion {
-  id: string
-  type: 'single-choice' | 'multiple-choice' | 'text' | 'scale' | 'boolean'
-  question: string
-  options?: string[]
-  required: boolean
-  order: number
+  id: string;
+  order: number;
+  type: OnboardingQuestionType;
+  question: string;
+  required: boolean;
+  options?: string[]; // For single-choice
+  commentLabel?: string; // For scale-with-comment
 }
+
+export interface OnboardingSection {
+  id: string;
+  title: string;
+  questions: OnboardingQuestion[];
+}
+
+export type OnboardingAnswerValue = string | number | boolean | string[] | { rating: number; comment: string } | null;
 
 export interface OnboardingAnswer {
   questionId: string
-  answer: string | string[] | number | boolean
+  answer: OnboardingAnswerValue;
 }
+
 
 export interface OnboardingData {
   userId: string

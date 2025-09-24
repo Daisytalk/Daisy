@@ -5,21 +5,32 @@ import type { User } from '@/shared/types/auth'
 const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key-change-in-production'
 const JWT_EXPIRES_IN = '7d'
 
+type TokenPayload = {
+  userId: string;
+  email: string;
+  name?: string;
+  isOnboarded: boolean;
+  subscriptionStatus: 'trial' | 'active' | 'cancelled' | 'expired';
+  trialEndsAt: Date | null;
+}
+
 export class AuthService {
   static generateToken(user: User): string {
-    return jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email 
-      },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    )
+    const payload: TokenPayload = {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      isOnboarded: user.isOnboarded,
+      subscriptionStatus: user.subscriptionStatus,
+      trialEndsAt: user.trialEndsAt || null
+    };
+
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
   }
 
-  static verifyToken(token: string): { userId: string; email: string } | null {
+  static verifyToken(token: string): TokenPayload | null {
     try {
-      return jwt.verify(token, JWT_SECRET) as { userId: string; email: string }
+      return jwt.verify(token, JWT_SECRET) as TokenPayload
     } catch {
       return null
     }

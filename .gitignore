@@ -36,10 +36,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+.kiro/
 # prisma
 /prisma/migrations
 
 BuildError.txt
+
 Doc.txt
+
 en.txt
+
 Design.txt

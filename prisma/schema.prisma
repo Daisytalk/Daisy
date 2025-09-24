@@ -11,11 +11,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  name               String?
+  password           String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  isOnboarded        Boolean  @default(false)
+  subscriptionStatus String   @default("trial")
 
   // Relations
   onboarding OnboardingData?
@@ -23,7 +26,6 @@ model User {
 
   @@map("users")
 }
-
 model OnboardingData {
   id     String @id @default(cuid())
   userId String @unique
@@ -31,7 +33,7 @@ model OnboardingData {
 
   // Onboarding responses (JSON for flexibility)
   responses Json
-  completed Boolean @default(false)
+  completed Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

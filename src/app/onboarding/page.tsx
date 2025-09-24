@@ -1,335 +1,170 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, User, MapPin, MoreHorizontal, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
-import type { OnboardingQuestion, OnboardingAnswer } from '@/shared/types/auth'
+import type { OnboardingSection, OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
+import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
 
-// Default questions that match your image
-const defaultQuestions: OnboardingQuestion[] = [
-  {
-    id: '1',
-    type: 'single-choice',
-    question: 'Choose your gender/sex',
-    options: ['Male', 'Female', 'Prefer not to say', 'Other'],
-    required: true,
-    order: 1
-  }
-]
-
-export default function OnboardingPage() {
-  const [questions, setQuestions] = useState<OnboardingQuestion[]>(defaultQuestions)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, OnboardingAnswer>>({})
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { user } = useAuth()
-  const router = useRouter()
-  const onboardingService = new OnboardingApiService()
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/login')
-      return
-    }
-
-    if (user.isOnboarded) {
-      router.push('/dashboard')
-      return
-    }
-
-    loadQuestions()
-  }, [user, router])
-
-  const loadQuestions = async () => {
-    try {
-      const fetchedQuestions = await onboardingService.getQuestions()
-      if (fetchedQuestions.length > 0) {
-        setQuestions(fetchedQuestions.sort((a, b) => a.order - b.order))
-      }
-    } catch (error) {
-      console.error('Failed to load questions:', error)
-      // Use default questions if API fails
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const currentQuestion = questions[currentQuestionIndex]
-  const isLastQuestion = currentQuestionIndex === questions.length - 1
-  const canProceed = !currentQuestion?.required || answers[currentQuestion.id]
-
-  const handleAnswer = (questionId: string, answer: string | string[] | number | boolean) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: { questionId, answer }
-    }))
-  }
-
-  const handleNext = () => {
-    if (isLastQuestion) {
-      handleSubmit()
-    } else {
-      setCurrentQuestionIndex(prev => prev + 1)
-    }
-  }
-
-  const handleBack = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1)
-    }
-  }
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true)
-    try {
-      await onboardingService.submitAnswers(Object.values(answers))
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Failed to submit onboarding:', error)
-      alert('Failed to submit onboarding. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const renderQuestionInput = (question: OnboardingQuestion) => {
-    const currentAnswer = answers[question.id]?.answer
-
-    switch (question.type) {
-      case 'single-choice':
-        return (
-          <div className="space-y-3">
-            {question.options?.map((option, index) => {
-              const icons = [User, MapPin, X, MoreHorizontal]
-              const Icon = icons[index] || User
-              const isSelected = currentAnswer === option
-
-              return (
-                <button
-                  key={option}
-                  onClick={() => handleAnswer(question.id, option)}
-                  className={`w-full p-4 rounded-lg border-2 text-left transition-all ${isSelected
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                >
-                  <div className="flex items-center">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 ${isSelected ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
-                      }`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className="font-medium text-gray-900">{option}</span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )
-
-      case 'multiple-choice':
-        return (
-          <div className="space-y-3">
-            {question.options?.map((option) => {
-              const selectedOptions = (currentAnswer as string[]) || []
-              const isSelected = selectedOptions.includes(option)
-
-              return (
-                <button
-                  key={option}
-                  onClick={() => {
-                    const newSelection = isSelected
-                      ? selectedOptions.filter(item => item !== option)
-                      : [...selectedOptions, option]
-                    handleAnswer(question.id, newSelection)
-                  }}
-                  className={`w-full p-4 rounded-lg border-2 text-left transition-all ${isSelected
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                >
-                  <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded border-2 mr-4 flex items-center justify-center ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-                      }`}>
-                      {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
-                    </div>
-                    <span className="font-medium text-gray-900">{option}</span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )
-
-      case 'text':
-        return (
-          <textarea
-            value={(currentAnswer as string) || ''}
-            onChange={(e) => handleAnswer(question.id, e.target.value)}
-            className="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
-            rows={4}
-            placeholder="Type your answer here..."
-          />
-        )
-
-      case 'scale':
-        return (
-          <div className="space-y-4">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Not at all</span>
-              <span>Extremely</span>
-            </div>
-            <div className="flex justify-between">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                <button
-                  key={value}
-                  onClick={() => handleAnswer(question.id, value)}
-                  className={`w-10 h-10 rounded-full border-2 font-semibold transition-all ${currentAnswer === value
-                    ? 'border-blue-500 bg-blue-500 text-white'
-                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
-                    }`}
-                >
-                  {value}
-                </button>
-              ))}
-            </div>
-          </div>
-        )
-
-      case 'boolean':
-        return (
-          <div className="flex space-x-4">
-            {['Yes', 'No'].map((option) => (
-              <button
-                key={option}
-                onClick={() => handleAnswer(question.id, option === 'Yes')}
-                className={`flex-1 p-4 rounded-lg border-2 font-semibold transition-all ${currentAnswer === (option === 'Yes')
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-              >
-                {option}
+// A generic component to render different question types
+const QuestionComponent = ({ question, answer, onChange }: { question: OnboardingQuestion, answer: OnboardingAnswerValue, onChange: (value: OnboardingAnswerValue) => void }) => {
+  switch (question.type) {
+    case 'date':
+      return <input type="date" value={answer as string || ''} onChange={e => onChange(e.target.value)} className="w-full p-2 border rounded" required={question.required} />;
+    case 'single-choice':
+      return (
+        <div className="flex flex-col space-y-2">
+          {question.options?.map(option => (
+            <label key={option} className="flex items-center space-x-2">
+              <input type="radio" name={question.id} value={option} checked={answer === option} onChange={e => onChange(e.target.value)} required={question.required} />
+              <span>{option}</span>
+            </label>
+          ))}
+        </div>
+      );
+    case 'text':
+      return <textarea value={answer as string || ''} onChange={e => onChange(e.target.value)} className="w-full p-2 border rounded" rows={3} placeholder={question.question} required={question.required} />;
+    case 'scale-with-comment':
+      const rating = (answer as { rating: number; comment: string })?.rating || 0;
+      const comment = (answer as { rating: number; comment: string })?.comment || '';
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between">
+            {[1, 2, 3, 4, 5].map(val => (
+              <button key={val} type="button" onClick={() => onChange({ rating: val, comment })} className={`w-10 h-10 rounded-full border ${rating === val ? 'bg-blue-500 text-white' : 'bg-gray-100'}`}>
+                {val}
               </button>
             ))}
           </div>
-        )
+          <textarea value={comment} onChange={e => onChange({ rating, comment: e.target.value })} className="w-full p-2 border rounded" placeholder={question.commentLabel} />
+        </div>
+      );
+    default:
+      return null;
+  }
+};
 
-      default:
-        return null
+export default function OnboardingPage() {
+  const { user, isLoading: isAuthLoading } = useAuth()
+  const router = useRouter()
+  const [sections, setSections] = useState<OnboardingSection[]>([])
+  const [answers, setAnswers] = useState<Record<string, OnboardingAnswerValue>>({})
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const onboardingService = new OnboardingApiService()
+
+  useEffect(() => {
+    if (!isAuthLoading && !user) {
+      router.push('/login')
+      return
+    }
+    if (!isAuthLoading && user?.isOnboarded) {
+      router.push('/dashboard')
+      return
+    }
+  }, [user, isAuthLoading, router])
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const data = await onboardingService.getQuestions()
+        setSections(data)
+      } catch (error) {
+        console.error('Failed to load onboarding questions', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchQuestions()
+  }, [])
+
+  const handleAnswerChange = (questionId: string, value: OnboardingAnswerValue) => {
+    setAnswers(prev => ({ ...prev, [questionId]: value }))
+  }
+
+  const nextSection = () => {
+    if (currentSectionIndex < sections.length - 1) {
+      setCurrentSectionIndex(currentSectionIndex + 1)
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    )
+  const prevSection = () => {
+    if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(currentSectionIndex - 1)
+    }
   }
 
-  if (!currentQuestion) {
-    return (
-      <div className="min-h-screen bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
-        <div className="text-white text-xl">No questions available</div>
-      </div>
-    )
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const finalAnswers: OnboardingAnswer[] = Object.entries(answers).map(([questionId, answer]) => ({
+      questionId,
+      answer
+    }));
+
+    try {
+      await onboardingService.submitAnswers(finalAnswers);
+      // It's good practice to update the local user state or re-fetch it.
+      // For now, we'll rely on the next page to have the updated user state from `useAuth`.
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Failed to submit onboarding answers', error);
+      // TODO: show error to user
+    } finally {
+      setIsSubmitting(false);
+    }
   }
+  
+  if (isLoading || isAuthLoading || sections.length === 0) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-12 h-12 animate-spin" /></div>
+  }
+
+  const currentSection = sections[currentSectionIndex];
+  const progress = ((currentSectionIndex + 1) / sections.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-600 to-blue-800 flex">
-      {/* Left Panel */}
-      <div className="w-1/3 p-12 flex flex-col justify-center text-white">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-4xl font-bold mb-6">
-            Get Yourself Personalized AI Therapist With TalkToDaisy.
-          </h1>
-          <p className="text-xl text-blue-100">
-            We Will Have An Onboarding Before Moving Forward
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Right Panel */}
-      <div className="flex-1 bg-gray-50 p-12 flex flex-col justify-center">
-        <div className="max-w-2xl mx-auto w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentQuestionIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                  {currentQuestion.question}
-                </h2>
-                {renderQuestionInput(currentQuestion)}
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Navigation */}
-          <div className="flex justify-between items-center mt-12">
-            <button
-              onClick={handleBack}
-              disabled={currentQuestionIndex === 0}
-              className="flex items-center px-6 py-3 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5 mr-2" />
-              Back
-            </button>
-
-            <button
-              onClick={handleNext}
-              disabled={!canProceed || isSubmitting}
-              className="flex items-center px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSubmitting ? (
-                'Submitting...'
-              ) : isLastQuestion ? (
-                'Complete'
-              ) : (
-                <>
-                  Next
-                  <ChevronRight className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Progress */}
-          <div className="mt-8">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-              <span>{Math.round(((currentQuestionIndex + 1) / questions.length) * 100)}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Terms */}
-          <p className="text-sm text-gray-500 text-center mt-8">
-            By entering your information and continuing you agree to our{' '}
-            <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a>
-            {' | '}
-            <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
-            <br />
-            Please review before continuing
-          </p>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8 space-y-6"
+      >
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <motion.div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }} />
         </div>
-      </div>
+
+        <h1 className="text-2xl font-bold text-gray-800">{currentSection.title}</h1>
+
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-8">
+            {currentSection.questions.map(q => (
+              <div key={q.id}>
+                <label className="block text-md font-medium text-gray-700 mb-2">{q.question}{q.required && <span className="text-red-500">*</span>}</label>
+                <QuestionComponent question={q} answer={answers[q.id]} onChange={value => handleAnswerChange(q.id, value)} />
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 flex justify-between">
+            <button type="button" onClick={prevSection} disabled={currentSectionIndex === 0} className="px-6 py-2 border rounded-md disabled:opacity-50 flex items-center">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Previous
+            </button>
+            
+            {currentSectionIndex < sections.length - 1 ? (
+              <button type="button" onClick={nextSection} className="px-6 py-2 bg-blue-600 text-white rounded-md flex items-center">
+                Next <ArrowRight className="w-4 h-4 ml-2" />
+              </button>
+            ) : (
+              <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-green-600 text-white rounded-md disabled:opacity-50">
+                {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...</> : 'Complete Onboarding'}
+              </button>
+            )}
+          </div>
+        </form>
+      </motion.div>
     </div>
   )
 }

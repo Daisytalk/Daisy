@@ -1,7 +1,7 @@
-import type { OnboardingQuestion, OnboardingAnswer, OnboardingData } from '@/shared/types/auth'
+import type { OnboardingSection, OnboardingQuestion, OnboardingAnswer, OnboardingData } from '@/shared/types/auth'
 
 export interface IOnboardingService {
-  getQuestions(): Promise<OnboardingQuestion[]>
+  getQuestions(): Promise<OnboardingSection[]>
   submitAnswers(answers: OnboardingAnswer[]): Promise<void>
   getOnboardingData(userId: string): Promise<OnboardingData | null>
   addQuestion(question: Omit<OnboardingQuestion, 'id'>): Promise<OnboardingQuestion>
@@ -12,7 +12,7 @@ export interface IOnboardingService {
 export class OnboardingApiService implements IOnboardingService {
   private baseUrl = '/api/onboarding'
 
-  async getQuestions(): Promise<OnboardingQuestion[]> {
+  async getQuestions(): Promise<OnboardingSection[]> {
     const response = await fetch(`${this.baseUrl}/questions`)
     
     if (!response.ok) {

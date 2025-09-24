@@ -5,12 +5,13 @@ export const env = {
     MAILGUN_API_KEY: process.env.MAILGUN_API_KEY || '',
     MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN || '',
     GOOGLE_ANALYTICS_ID: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || '',
-    
+
     // Gemini AI / Vertex AI
+    API_KEY: process.env.API_KEY || 'AIzaSyCcunTMocw428FGyFezo_bBZMq1zWjNE1U',
     GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID || '',
     GOOGLE_CLOUD_LOCATION: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
     VERTEX_AI_ENDPOINT: process.env.VERTEX_AI_ENDPOINT || '',
-    
+
     NODE_ENV: process.env.NODE_ENV || 'development',
 } as const
