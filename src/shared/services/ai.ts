@@ -7,7 +7,7 @@ import type { User } from '@/shared/types/auth'
 export class AIService {
   private readonly genAI: GoogleGenAI
   private readonly ragService: RAGService
-  private readonly model = 'gemini-2.5-pro'
+  private readonly model = 'gemini-2.5-flash'
 
   constructor() {
     if (!env.API_KEY) {

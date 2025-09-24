@@ -38,17 +38,17 @@ export interface ButtonProps
   asChild?: boolean
 }
 
-// FIX: Destructuring props inside the component body to avoid potential type inference issues
-// with props destructuring in function arguments. Changed the rest parameter name from `props` to `rest` for clarity.
+// FIX: Refactored the Button component to use argument destructuring for props.
+// This can help TypeScript correctly infer the types of `variant` and `size`
+// from the `VariantProps` utility when they are destructured.
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (props, ref) => {
-    const { className, variant, size, asChild = false, ...rest } = props
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        {...rest}
+        {...props}
       />
     )
   }
