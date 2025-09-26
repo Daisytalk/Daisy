@@ -15,7 +15,7 @@ import { env } from '@/shared/config/env'
 // preventing re-initialization on every render.
 if (typeof window !== 'undefined' && !container.has(TOKENS.AI_SERVICE)) {
   const aiService = new AIService()
-  const EmailService = env.NODE_ENV === 'production' && !env.MAILGUN_API_KEY
+  const EmailService = env.NODE_ENV === 'development' && !env.MAILGUN_API_KEY
     ? MockEmailService
     : MailgunEmailService
 

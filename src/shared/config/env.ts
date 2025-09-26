@@ -13,5 +13,5 @@ export const env = {
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
     VERTEX_AI_ENDPOINT: process.env.VERTEX_AI_ENDPOINT || '',
 
-    NODE_ENV: process.env.NODE_ENV || 'production',
+    NODE_ENV: process.env.NODE_ENV || 'development',
 } as const
