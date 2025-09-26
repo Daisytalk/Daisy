@@ -1,9 +1,8 @@
-"use client"
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Providers } from './providers'
+import { ProvidersWrapper } from './providers-wrapper'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -31,17 +30,11 @@ export const viewport = {
   maximumScale: 1,
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: ReactNode
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        <Providers>
-          {children}
-        </Providers>
+        <ProvidersWrapper>{children}</ProvidersWrapper>
       </body>
     </html>
   )
