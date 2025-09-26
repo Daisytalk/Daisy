@@ -15,7 +15,8 @@ export function ProtectedRoute({ children, requireOnboarding = false }: Protecte
     const router = useRouter()
 
     useEffect(() => {
-        if (!isLoading) {
+        // Only run on client side
+        if (typeof window !== 'undefined' && !isLoading) {
             if (!user) {
                 router.push('/login')
                 return
@@ -28,7 +29,8 @@ export function ProtectedRoute({ children, requireOnboarding = false }: Protecte
         }
     }, [user, isLoading, router, requireOnboarding])
 
-    if (isLoading) {
+    // Always show loading during SSR or while loading
+    if (typeof window === 'undefined' || isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
@@ -37,11 +39,19 @@ export function ProtectedRoute({ children, requireOnboarding = false }: Protecte
     }
 
     if (!user) {
-        return null // Will redirect to login
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+            </div>
+        )
     }
 
     if (requireOnboarding && !user.isOnboarded) {
-        return null // Will redirect to onboarding
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+            </div>
+        )
     }
 
     return <>{children}</>

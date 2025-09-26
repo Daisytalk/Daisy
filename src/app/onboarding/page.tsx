@@ -10,6 +10,7 @@ import type { OnboardingSection, OnboardingAnswer, OnboardingAnswerValue, Onboar
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 
+// Prevent static generation completely
 export const dynamic = 'force-dynamic'
 
 // A generic component to render different question types

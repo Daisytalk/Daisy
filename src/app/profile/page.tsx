@@ -10,6 +10,7 @@ import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
+// Prevent static generation completely
 export const dynamic = 'force-dynamic'
 
 function ProfilePageContent() {

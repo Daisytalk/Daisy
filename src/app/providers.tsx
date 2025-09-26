@@ -34,15 +34,18 @@ export function Providers({ children }: { children: ReactNode }) {
     setIsClient(true)
   }, [])
 
-  if (!isClient) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-xl text-gray-600">Loading...</div>
-    </div>
-  }
-
+  // Always render children but wrap AuthProvider conditionally
   return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
+    <>
+      {isClient ? (
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      ) : (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-xl text-gray-600">Loading...</div>
+        </div>
+      )}
+    </>
   )
 }
