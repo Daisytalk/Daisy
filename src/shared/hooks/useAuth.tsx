@@ -114,17 +114,20 @@ export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
 
   if (context === null) {
-    // This condition is met on the server (for SSR/prerendering) or on the client
-    // if the component is not wrapped in AuthProvider.
-
     if (typeof window !== 'undefined') {
-      // On the client, this is a developer error.
-      throw new Error('useAuth must be used within an AuthProvider')
+      // Client but outside provider → return safe defaults instead of throwing
+      return {
+        user: null,
+        isLoading: false,
+        error: 'AuthProvider is missing',
+        login: async () => {},
+        register: async () => {},
+        logout: async () => {},
+        clearError: () => {},
+      }
     }
 
-    // On the server, we return a mock state to prevent errors during build.
-    // Components using this hook should be wrapped in <ClientOnly> to avoid
-    // rendering anything that depends on the auth state on the server.
+    // On the server → safe defaults for prerendering
     return {
       user: null,
       isLoading: true,
