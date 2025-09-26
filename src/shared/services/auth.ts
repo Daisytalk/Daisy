@@ -1,4 +1,5 @@
 import type { User, LoginCredentials, RegisterCredentials } from '@/shared/types/auth'
+import { getAuthToken } from '@/shared/lib/auth'
 
 export interface IAuthService {
   login(credentials: LoginCredentials): Promise<{ user: User; token: string }>
@@ -52,14 +53,26 @@ export class AuthApiService implements IAuthService {
   }
 
   async getCurrentUser(): Promise<User | null> {
-    const token = localStorage.getItem('auth_token')
+    const token = getAuthToken()
     if (!token) return null
 
     try {
-      // For now, return null since we removed the /me endpoint
-      // In a real app, you'd decode the JWT token or use a different approach
-      return null
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        // Token is invalid or expired, clear it
+        localStorage.removeItem('auth_token');
+        return null;
+      }
+      
+      const user: User = await response.json();
+      return user;
     } catch (error) {
+      console.error("Failed to fetch current user:", error);
       return null
     }
   }

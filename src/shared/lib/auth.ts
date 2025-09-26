@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import type { User } from '@/shared/types/auth'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key-change-in-production'
+const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES_IN = '7d'
 
 type TokenPayload = {
@@ -16,6 +16,9 @@ type TokenPayload = {
 
 export class AuthService {
   static generateToken(user: User): string {
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is not set.')
+    }
     const payload: TokenPayload = {
       userId: user.id,
       email: user.email,
@@ -29,6 +32,9 @@ export class AuthService {
   }
 
   static verifyToken(token: string): TokenPayload | null {
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is not set.')
+    }
     try {
       return jwt.verify(token, JWT_SECRET) as TokenPayload
     } catch {

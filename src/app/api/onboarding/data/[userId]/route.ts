@@ -1,23 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
-import type { OnboardingData } from '@/shared/types/auth'
+import prisma from '@/shared/lib/database'
+import type { OnboardingData, OnboardingAnswer } from '@/shared/types/auth'
 
-// Mock database for onboarding data (should be shared)
-const onboardingData: OnboardingData[] = [
-  // Pre-populated data for test user
-  {
-    userId: '1',
-    answers: [
-      { questionId: '1', answer: 'Male' },
-      { questionId: '2', answer: '26-35' },
-      { questionId: '3', answer: ['Anxiety and Stress', 'Work-Life Balance', 'Self-Esteem'] },
-      { questionId: '4', answer: 6 },
-      { questionId: '5', answer: true },
-      { questionId: '6', answer: 'I want to work on managing stress from work and improving my confidence in social situations.' }
-    ],
-    completedAt: new Date('2024-01-10T10:30:00Z'),
-  }
-]
 
 export async function GET(
   request: NextRequest,
@@ -52,17 +37,28 @@ export async function GET(
       )
     }
 
-    // Find onboarding data for user
-    const userData = onboardingData.find(data => data.userId === userId)
+    // Find onboarding data for user from the database
+    const dbData = await prisma.onboardingData.findUnique({
+      where: { userId },
+    })
     
-    if (!userData) {
+    if (!dbData) {
       return NextResponse.json(
         { message: 'Onboarding data not found' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json(userData)
+    // Format the response to match the OnboardingData type expected by the frontend
+    const responseData: OnboardingData = {
+      userId: dbData.userId,
+      // FIX: Cast to 'unknown' first to resolve the type error.
+      // Prisma's JSON type is generic, but we know the structure from the submit endpoint.
+      answers: dbData.responses as unknown as OnboardingAnswer[],
+      completedAt: dbData.updatedAt, // Use updatedAt as a substitute for completedAt
+    };
+
+    return NextResponse.json(responseData)
   } catch (error) {
     console.error('Get onboarding data error:', error)
     return NextResponse.json(
