@@ -1,12 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+// FIX: Import FormEvent to correctly type the form submission event.
+import { useEffect, useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingSection, OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
+
+export const dynamic = 'force-dynamic'
 
 // A generic component to render different question types
 const QuestionComponent = ({ question, answer, onChange }: { question: OnboardingQuestion, answer: OnboardingAnswerValue, onChange: (value: OnboardingAnswerValue) => void }) => {
@@ -97,7 +100,7 @@ export default function OnboardingPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     const finalAnswers: OnboardingAnswer[] = Object.entries(answers).map(([questionId, answer]) => ({

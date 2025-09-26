@@ -1,11 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+// FIX: Import FormEvent to correctly type the form submission event.
+import { useState, FormEvent } from 'react'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
+
+export const dynamic = 'force-dynamic'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -15,7 +18,7 @@ export default function LoginPage() {
   const { login, error, clearError } = useAuth()
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     clearError()

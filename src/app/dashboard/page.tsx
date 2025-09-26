@@ -8,6 +8,8 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData } from '@/shared/types/auth'
 
+export const dynamic = 'force-dynamic'
+
 export default function DashboardPage() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
   const [isLoading, setIsLoading] = useState(true)

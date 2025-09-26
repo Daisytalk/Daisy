@@ -8,6 +8,8 @@ import { useAuth } from "@/shared/hooks/useAuth"
 import { useRouter } from "next/navigation"
 import { DefaultChatTransport } from "ai"
 
+export const dynamic = 'force-dynamic'
+
 export default function ChatPage() {
   const { user, isLoading: isAuthLoading } = useAuth()
   const router = useRouter()

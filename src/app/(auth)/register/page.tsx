@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
 
+export const dynamic = 'force-dynamic'
+
 export default function RegisterPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')

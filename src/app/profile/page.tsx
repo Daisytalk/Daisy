@@ -8,6 +8,8 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
 
+export const dynamic = 'force-dynamic'
+
 export default function ProfilePage() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([])
