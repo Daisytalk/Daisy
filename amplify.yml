@@ -7,7 +7,7 @@ applications:
             - npm install -g pnpm
             - rm -rf node_modules .next
             - pnpm install --frozen-lockfile
-            - pnpm prisma generate 
+            - npx prisma generate 
         build:
           commands:
             - echo "NODE_ENV=$NODE_ENV"

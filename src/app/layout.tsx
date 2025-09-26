@@ -1,5 +1,5 @@
+"use client"
 import type { Metadata } from 'next'
-// FIX: Import ReactNode to correctly type children props.
 import type { ReactNode } from 'react'
 import { Inter } from 'next/font/google'
 import './globals.css'
