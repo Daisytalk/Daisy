@@ -7,10 +7,11 @@ import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
+import { ClientOnly } from '@/shared/components/ClientOnly'
 
 export const dynamic = 'force-dynamic'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -142,5 +143,13 @@ export default function LoginPage() {
         </p>
       </motion.div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <ClientOnly>
+      <LoginPageContent />
+    </ClientOnly>
   )
 }

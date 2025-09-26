@@ -7,10 +7,12 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
+import { ClientOnly } from '@/shared/components/ClientOnly'
+import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
 export const dynamic = 'force-dynamic'
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -20,18 +22,10 @@ export default function ProfilePage() {
   const onboardingService = new OnboardingApiService()
 
   useEffect(() => {
-    if (!user) {
-      router.push('/login')
-      return
+    if (user) {
+      loadData()
     }
-
-    if (!user.isOnboarded) {
-      router.push('/onboarding')
-      return
-    }
-
-    loadData()
-  }, [user, router])
+  }, [user])
 
   const loadData = async () => {
     if (!user) return
@@ -228,5 +222,15 @@ export default function ProfilePage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <ClientOnly>
+      <ProtectedRoute requireOnboarding>
+        <ProfilePageContent />
+      </ProtectedRoute>
+    </ClientOnly>
   )
 }

@@ -1,22 +1,20 @@
 "use client"
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Send, User, Bot, Loader2, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/shared/hooks/useAuth"
 import { useRouter } from "next/navigation"
 import { DefaultChatTransport } from "ai"
+import { ClientOnly } from "@/shared/components/ClientOnly"
+import { ProtectedRoute } from "@/shared/components/ProtectedRoute"
 
 export const dynamic = 'force-dynamic'
 
-export default function ChatPage() {
-  const { user, isLoading: isAuthLoading } = useAuth()
+function ChatPageContent() {
+  const { user } = useAuth()
   const router = useRouter()
-  const [isClient, setIsClient] = useState(false)
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   /* ========== AI SDK v5 API ========== */
   const { messages, sendMessage, status, error } = useChat({
@@ -29,18 +27,6 @@ export default function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
-
-  useEffect(() => {
-    if (!isAuthLoading && !user) router.push("/login")
-  }, [user, isAuthLoading, router])
-
-  if (isAuthLoading || !isClient) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-      </div>
-    )
-  }
 
   const textFrom = (m: UIMessage) => m.parts.map((p) => (p.type === "text" ? p.text : "")).join("")
 
@@ -144,5 +130,15 @@ export default function ChatPage() {
         </form>
       </footer>
     </div>
+  )
+}
+
+export default function ChatPage() {
+  return (
+    <ClientOnly>
+      <ProtectedRoute requireOnboarding>
+        <ChatPageContent />
+      </ProtectedRoute>
+    </ClientOnly>
   )
 }

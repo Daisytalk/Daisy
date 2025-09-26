@@ -15,10 +15,11 @@ import { FooterSection } from '@/widgets/footer'
 import { subscribeToNewsletter } from '@/features/newsletter-signup'
 import { container, TOKENS } from '@/shared/lib/di'
 import type { IAnalyticsService } from '@/shared/services/analytics'
+import { ClientOnly } from '@/shared/components/ClientOnly'
 
 export const dynamic = 'force-dynamic'
 
-export default function Home() {
+function HomeContent() {
   const handleGetStarted = () => {
     // Track analytics event
     const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
@@ -93,5 +94,13 @@ export default function Home() {
       <CTASection onGetStarted={handleGetStarted} />
       <FooterSection onNewsletterSubmit={handleNewsletterSubmit} />
     </main>
+  )
+}
+
+export default function Home() {
+  return (
+    <ClientOnly>
+      <HomeContent />
+    </ClientOnly>
   )
 }

@@ -6,10 +6,11 @@ import { Eye, EyeOff, Mail, Lock, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
+import { ClientOnly } from '@/shared/components/ClientOnly'
 
 export const dynamic = 'force-dynamic'
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -156,5 +157,13 @@ export default function RegisterPage() {
         </p>
       </motion.div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <ClientOnly>
+      <RegisterPageContent />
+    </ClientOnly>
   )
 }

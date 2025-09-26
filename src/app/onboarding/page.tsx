@@ -8,6 +8,7 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingSection, OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
+import { ClientOnly } from '@/shared/components/ClientOnly'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,7 +50,7 @@ const QuestionComponent = ({ question, answer, onChange }: { question: Onboardin
   }
 };
 
-export default function OnboardingPage() {
+function OnboardingPageContent() {
   const { user, isLoading: isAuthLoading } = useAuth()
   const router = useRouter()
   const [sections, setSections] = useState<OnboardingSection[]>([])
@@ -169,5 +170,13 @@ export default function OnboardingPage() {
         </form>
       </motion.div>
     </div>
+  )
+}
+
+export default function OnboardingPage() {
+  return (
+    <ClientOnly>
+      <OnboardingPageContent />
+    </ClientOnly>
   )
 }
