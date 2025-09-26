@@ -16,6 +16,8 @@ import { subscribeToNewsletter } from '@/features/newsletter-signup'
 import { container, TOKENS } from '@/shared/lib/di'
 import type { IAnalyticsService } from '@/shared/services/analytics'
 
+export const dynamic = 'force-dynamic'
+
 export default function Home() {
   const handleGetStarted = () => {
     // Track analytics event

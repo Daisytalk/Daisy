@@ -10,11 +10,11 @@ import { AIService } from '@/shared/services/ai'
 import { AuthProvider } from '@/shared/hooks/useAuth'
 import { env } from '@/shared/config/env'
 
-const aiService = new AIService()
-
-export function Providers({ children }: { children: ReactNode }) {
-  // Initialize DI container with services
-  // This is safe in a client component and runs before children render.
+// Initialize DI container with services.
+// This runs once when the module is imported on the client,
+// preventing re-initialization on every render.
+if (!container.has(TOKENS.AI_SERVICE)) {
+  const aiService = new AIService()
   const EmailService = env.NODE_ENV === 'development' && !env.MAILGUN_API_KEY
     ? MockEmailService
     : MailgunEmailService
@@ -24,7 +24,10 @@ export function Providers({ children }: { children: ReactNode }) {
     .bindSingleton(TOKENS.PAYMENT_SERVICE, StripePaymentService)
     .bindSingleton(TOKENS.EMAIL_SERVICE, EmailService)
     .bindSingleton(TOKENS.AI_SERVICE, aiService)
+}
 
+
+export function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       {children}
