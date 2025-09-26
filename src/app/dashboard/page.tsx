@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -7,8 +8,6 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData } from '@/shared/types/auth'
-import { ClientOnly } from '@/shared/components/ClientOnly'
-import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
 function DashboardPageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
@@ -229,11 +228,5 @@ function DashboardPageContent() {
 }
 
 export default function DashboardPage() {
-  return (
-    <ClientOnly>
-      <ProtectedRoute requireOnboarding>
-        <DashboardPageContent />
-      </ProtectedRoute>
-    </ClientOnly>
-  )
+  return <DashboardPageContent />
 }

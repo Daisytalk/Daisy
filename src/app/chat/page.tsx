@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
@@ -7,8 +8,6 @@ import { Send, User, Bot, Loader2, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/shared/hooks/useAuth"
 import { useRouter } from "next/navigation"
 import { DefaultChatTransport } from "ai"
-import { ClientOnly } from "@/shared/components/ClientOnly"
-import { ProtectedRoute } from "@/shared/components/ProtectedRoute"
 
 function ChatPageContent() {
   const { user } = useAuth()
@@ -132,11 +131,5 @@ function ChatPageContent() {
 }
 
 export default function ChatPage() {
-  return (
-    <ClientOnly>
-      <ProtectedRoute requireOnboarding>
-        <ChatPageContent />
-      </ProtectedRoute>
-    </ClientOnly>
-  )
+  return <ChatPageContent />
 }

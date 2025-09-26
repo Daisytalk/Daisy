@@ -1,12 +1,13 @@
+
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { AuthService } from '@/shared/lib/auth'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const token = request.cookies.get('auth_token')?.value
 
-  const response = NextResponse.next()
-
-  // Public routes that don't require authentication
+  // Define public routes that don't require authentication
   const publicRoutes = [
     '/',
     '/login',
@@ -17,46 +18,58 @@ export function middleware(request: NextRequest) {
     '/api/newsletter',
     '/api/onboarding/questions',
     '/terms',
-    '/privacy'
+    '/privacy',
   ]
 
-  // Admin routes that require special permissions
-  const adminRoutes = ['/admin']
-
-  // Protected routes that require authentication
-  const protectedRoutes = [
-    '/dashboard',
-    '/profile',
-    '/chat',
-    '/onboarding'
-  ]
-
-  // Check if the route is public
+  // Allow public routes to be accessed
   if (publicRoutes.some(route => pathname.startsWith(route))) {
-    return response
+    return NextResponse.next()
   }
 
-  // Get the token from cookies or headers
-  const token = request.cookies.get('auth_token')?.value || 
-                request.headers.get('authorization')?.replace('Bearer ', '')
-
-  // If no token and trying to access protected route, redirect to login
-  if (!token && protectedRoutes.some(route => pathname.startsWith(route))) {
+  // If there's no token, redirect to login for any protected route
+  if (!token) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // For admin routes, you might want to add additional checks here
-  if (adminRoutes.some(route => pathname.startsWith(route))) {
-    // Add admin permission check here if needed
-    // For now, just allow if authenticated
-    if (!token) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-  }
+  // If there is a token, verify it
+  try {
+    const decoded = AuthService.verifyToken(token)
 
-  return response
+    // If token is invalid or expired
+    if (!decoded) {
+      // Clear cookie and redirect
+      const response = NextResponse.redirect(new URL('/login', request.url))
+      response.cookies.delete('auth_token')
+      return response
+    }
+
+    const { isOnboarded } = decoded
+    
+    // User is authenticated, but hasn't completed onboarding
+    if (!isOnboarded) {
+      // If they are not on the onboarding page, redirect them there.
+      if (pathname !== '/onboarding') {
+        return NextResponse.redirect(new URL('/onboarding', request.url))
+      }
+    } else {
+      // If user is onboarded, they shouldn't access the onboarding page again
+      if (pathname === '/onboarding') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+    }
+    
+    // Allow access to the requested page if all checks pass
+    return NextResponse.next()
+    
+  } catch (error) {
+    console.error('Middleware error:', error)
+    // In case of error during token verification, redirect to login
+    const response = NextResponse.redirect(new URL('/login', request.url))
+    response.cookies.delete('auth_token')
+    return response
+  }
 }
 
 export const config = {

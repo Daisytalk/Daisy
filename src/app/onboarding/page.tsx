@@ -1,3 +1,4 @@
+
 'use client'
 
 // FIX: Import FormEvent to correctly type the form submission event.
@@ -8,7 +9,6 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingSection, OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
-import { ClientOnly } from '@/shared/components/ClientOnly'
 
 // A generic component to render different question types
 const QuestionComponent = ({ question, answer, onChange }: { question: OnboardingQuestion, answer: OnboardingAnswerValue, onChange: (value: OnboardingAnswerValue) => void }) => {
@@ -59,13 +59,9 @@ function OnboardingPageContent() {
   const onboardingService = new OnboardingApiService()
 
   useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push('/login')
-      return
-    }
+    // Middleware now handles redirects, but we can still show a loading state.
     if (!isAuthLoading && user?.isOnboarded) {
       router.push('/dashboard')
-      return
     }
   }, [user, isAuthLoading, router])
 
@@ -172,9 +168,5 @@ function OnboardingPageContent() {
 }
 
 export default function OnboardingPage() {
-  return (
-    <ClientOnly>
-      <OnboardingPageContent />
-    </ClientOnly>
-  )
+  return <OnboardingPageContent />
 }

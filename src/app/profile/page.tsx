@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -7,8 +8,6 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
-import { ClientOnly } from '@/shared/components/ClientOnly'
-import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
 function ProfilePageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
@@ -224,11 +223,5 @@ function ProfilePageContent() {
 }
 
 export default function ProfilePage() {
-  return (
-    <ClientOnly>
-      <ProtectedRoute requireOnboarding>
-        <ProfilePageContent />
-      </ProtectedRoute>
-    </ClientOnly>
-  )
+  return <ProfilePageContent />
 }
