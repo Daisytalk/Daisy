@@ -6,13 +6,11 @@ applications:
           commands:
             - npm install -g pnpm
             - rm -rf node_modules .next
-            - pnpm install --frozen-lockfile
-            - npx prisma generate 
+            - pnpm install
+            - pnpm db:generate
         build:
           commands:
-            - echo "NODE_ENV=$NODE_ENV"
-            - echo "DATABASE_URL=${DATABASE_URL:0:20}***"
-            - pnpm run build
+            - pnpm run build   # only build, do NOT run next export
       artifacts:
         baseDirectory: .next
         files:
@@ -20,4 +18,4 @@ applications:
       cache:
         paths:
           - node_modules/**/*
-
+          - .next/cache/**/*
