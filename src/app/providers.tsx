@@ -2,7 +2,6 @@
 
 // FIX: Import ReactNode to correctly type children props.
 import type { ReactNode } from 'react'
-import { useState, useEffect } from 'react'
 import { container, TOKENS } from '@/shared/lib/di'
 import { GoogleAnalyticsService } from '@/shared/services/analytics'
 import { StripePaymentService } from '@/shared/services/payment'
@@ -28,24 +27,9 @@ if (typeof window !== 'undefined' && !container.has(TOKENS.AI_SERVICE)) {
 }
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  // Always render children but wrap AuthProvider conditionally
   return (
-    <>
-      {isClient ? (
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      ) : (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-xl text-gray-600">Loading...</div>
-        </div>
-      )}
-    </>
+    <AuthProvider>
+      {children}
+    </AuthProvider>
   )
 }

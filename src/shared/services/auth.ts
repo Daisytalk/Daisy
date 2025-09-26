@@ -58,6 +58,7 @@ export class AuthApiService implements IAuthService {
 
     try {
       const response = await fetch('/api/auth/me', {
+        cache: 'no-store',
         headers: {
           Authorization: `Bearer ${token}`,
         },
