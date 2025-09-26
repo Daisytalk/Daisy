@@ -1,5 +1,4 @@
-'use client'
-
+"use client"
 import { useEffect, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'

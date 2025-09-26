@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useChat, type UIMessage } from "@ai-sdk/react"

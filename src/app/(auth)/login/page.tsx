@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 // FIX: Import FormEvent to correctly type the form submission event.
 import { useState, FormEvent } from 'react'

@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState, useEffect, useContext, createContext, ReactNode } from 'react'
 import type { User, AuthState, LoginCredentials, RegisterCredentials } from '@/shared/types/auth'
