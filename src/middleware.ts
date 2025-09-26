@@ -4,6 +4,12 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Force all responses to be dynamic
+  const response = NextResponse.next()
+  response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+
   // Public routes that don't require authentication
   const publicRoutes = [
     '/',
@@ -31,7 +37,7 @@ export function middleware(request: NextRequest) {
 
   // Check if the route is public
   if (publicRoutes.some(route => pathname.startsWith(route))) {
-    return NextResponse.next()
+    return response
   }
 
   // Get the token from cookies or headers
@@ -54,7 +60,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  return response
 }
 
 export const config = {
