@@ -8,9 +8,6 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 
-// Disable static generation
-export const revalidate = 0
-
 function RegisterPageContent() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')

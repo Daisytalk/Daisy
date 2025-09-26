@@ -10,9 +10,6 @@ import type { OnboardingData } from '@/shared/types/auth'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
-// Disable static generation
-export const revalidate = 0
-
 function DashboardPageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
   const [isLoading, setIsLoading] = useState(true)

@@ -3,8 +3,6 @@ import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import type { OnboardingData, OnboardingAnswer } from '@/shared/types/auth'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { userId: string } }

@@ -17,9 +17,6 @@ import { container, TOKENS } from '@/shared/lib/di'
 import type { IAnalyticsService } from '@/shared/services/analytics'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 
-// Disable static generation
-export const revalidate = 0
-
 function HomeContent() {
   const handleGetStarted = () => {
     // Track analytics event

@@ -10,9 +10,6 @@ import type { OnboardingSection, OnboardingAnswer, OnboardingAnswerValue, Onboar
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 
-// Disable static generation
-export const revalidate = 0
-
 // A generic component to render different question types
 const QuestionComponent = ({ question, answer, onChange }: { question: OnboardingQuestion, answer: OnboardingAnswerValue, onChange: (value: OnboardingAnswerValue) => void }) => {
   switch (question.type) {

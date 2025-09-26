@@ -4,11 +4,7 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Force all responses to be dynamic
   const response = NextResponse.next()
-  response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
-  response.headers.set('Pragma', 'no-cache')
-  response.headers.set('Expires', '0')
 
   // Public routes that don't require authentication
   const publicRoutes = [

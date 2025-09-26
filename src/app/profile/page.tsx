@@ -10,9 +10,6 @@ import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
-// Disable static generation
-export const revalidate = 0
-
 function ProfilePageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([])
