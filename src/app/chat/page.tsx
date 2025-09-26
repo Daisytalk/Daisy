@@ -10,9 +10,6 @@ import { DefaultChatTransport } from "ai"
 import { ClientOnly } from "@/shared/components/ClientOnly"
 import { ProtectedRoute } from "@/shared/components/ProtectedRoute"
 
-// Prevent static generation completely
-export const dynamic = 'force-dynamic'
-
 function ChatPageContent() {
   const { user } = useAuth()
   const router = useRouter()

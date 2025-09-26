@@ -8,8 +8,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 
-// Prevent static generation completely
-export const dynamic = 'force-dynamic'
+// Disable static generation
+export const revalidate = 0
 
 function RegisterPageContent() {
   const [name, setName] = useState('')
