@@ -8,6 +8,7 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingSection, OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
+import { ClientOnly } from '@/shared/components/ClientOnly'
 
 // A generic component to render different question types
 const QuestionComponent = ({ question, answer, onChange }: { question: OnboardingQuestion, answer: OnboardingAnswerValue, onChange: (value: OnboardingAnswerValue) => void }) => {
@@ -114,7 +115,7 @@ function OnboardingPageContent() {
       setIsSubmitting(false);
     }
   }
-  
+
   if (isLoading || isAuthLoading || sections.length === 0) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-12 h-12 animate-spin" /></div>
   }
@@ -149,7 +150,7 @@ function OnboardingPageContent() {
             <button type="button" onClick={prevSection} disabled={currentSectionIndex === 0} className="px-6 py-2 border rounded-md disabled:opacity-50 flex items-center">
               <ArrowLeft className="w-4 h-4 mr-2" /> Previous
             </button>
-            
+
             {currentSectionIndex < sections.length - 1 ? (
               <button type="button" onClick={nextSection} className="px-6 py-2 bg-blue-600 text-white rounded-md flex items-center">
                 Next <ArrowRight className="w-4 h-4 ml-2" />
@@ -167,5 +168,9 @@ function OnboardingPageContent() {
 }
 
 export default function OnboardingPage() {
-  return <OnboardingPageContent />
+  return (
+    <ClientOnly>
+      <OnboardingPageContent />
+    </ClientOnly>
+  )
 }

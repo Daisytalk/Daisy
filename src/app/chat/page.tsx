@@ -7,6 +7,7 @@ import { Send, User, Bot, Loader2, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/shared/hooks/useAuth"
 import { useRouter } from "next/navigation"
 import { DefaultChatTransport } from "ai"
+import { ClientOnly } from "@/shared/components/ClientOnly"
 
 function ChatPageContent() {
   const { user } = useAuth()
@@ -62,11 +63,10 @@ function ChatPageContent() {
                 </div>
               )}
               <div
-                className={`max-w-xl p-4 rounded-2xl shadow-sm ${
-                  m.role === "user"
+                className={`max-w-xl p-4 rounded-2xl shadow-sm ${m.role === "user"
                     ? "bg-blue-500 text-white rounded-br-none"
                     : "bg-white text-gray-800 rounded-bl-none"
-                }`}
+                  }`}
               >
                 <p className="whitespace-pre-wrap">{textFrom(m)}</p>
               </div>
@@ -130,5 +130,9 @@ function ChatPageContent() {
 }
 
 export default function ChatPage() {
-  return <ChatPageContent />
+  return (
+    <ClientOnly>
+      <ChatPageContent />
+    </ClientOnly>
+  )
 }

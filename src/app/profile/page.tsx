@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
+import { ClientOnly } from '@/shared/components/ClientOnly'
 
 function ProfilePageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
@@ -123,10 +124,10 @@ function ProfilePageContent() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Subscription Status</label>
               <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${user?.subscriptionStatus === 'trial'
-                  ? 'bg-blue-100 text-blue-800'
-                  : user?.subscriptionStatus === 'active'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                ? 'bg-blue-100 text-blue-800'
+                : user?.subscriptionStatus === 'active'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
                 }`}>
                 {user?.subscriptionStatus === 'trial' ? 'Free Trial' : user?.subscriptionStatus}
               </span>
@@ -222,5 +223,9 @@ function ProfilePageContent() {
 }
 
 export default function ProfilePage() {
-  return <ProfilePageContent />
+  return (
+    <ClientOnly>
+      <ProfilePageContent />
+    </ClientOnly>
+  )
 }
