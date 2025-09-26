@@ -8,6 +8,7 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
 import { ClientOnly } from '@/shared/components/ClientOnly'
+import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
 function ProfilePageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
@@ -225,7 +226,9 @@ function ProfilePageContent() {
 export default function ProfilePage() {
   return (
     <ClientOnly>
-      <ProfilePageContent />
+      <ProtectedRoute>
+        <ProfilePageContent />
+      </ProtectedRoute>
     </ClientOnly>
   )
 }

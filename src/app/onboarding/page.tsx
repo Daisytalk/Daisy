@@ -9,6 +9,7 @@ import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingSection, OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
 import { ClientOnly } from '@/shared/components/ClientOnly'
+import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
 // A generic component to render different question types
 const QuestionComponent = ({ question, answer, onChange }: { question: OnboardingQuestion, answer: OnboardingAnswerValue, onChange: (value: OnboardingAnswerValue) => void }) => {
@@ -170,7 +171,9 @@ function OnboardingPageContent() {
 export default function OnboardingPage() {
   return (
     <ClientOnly>
-      <OnboardingPageContent />
+      <ProtectedRoute>
+        <OnboardingPageContent />
+      </ProtectedRoute>
     </ClientOnly>
   )
 }

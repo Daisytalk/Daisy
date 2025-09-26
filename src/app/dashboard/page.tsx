@@ -8,6 +8,7 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData } from '@/shared/types/auth'
 import { ClientOnly } from '@/shared/components/ClientOnly'
+import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
 function DashboardPageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
@@ -230,7 +231,9 @@ function DashboardPageContent() {
 export default function DashboardPage() {
   return (
     <ClientOnly>
-      <DashboardPageContent />
+      <ProtectedRoute>
+        <DashboardPageContent />
+      </ProtectedRoute>
     </ClientOnly>
   )
 }
