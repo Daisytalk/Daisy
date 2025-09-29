@@ -7,7 +7,7 @@ export const env = {
     GOOGLE_ANALYTICS_ID: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || '',
 
     // Gemini AI / Vertex AI
-    API_KEY: process.env.API_KEY || '',
+    API_KEY: process.env.API_KEY || 'dcdc',
     GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID || '',
     GOOGLE_CLOUD_LOCATION: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',

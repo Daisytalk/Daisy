@@ -33,7 +33,7 @@ export function BenefitsSection() {
             viewport={{ once: true }}
             className="lg:pr-4"
           >
-            <div className="text-2xl sm:text-3xl lg:text-4xl tracking-tight text-gray-900 space-y-4 sm:space-y-6">
+            <div className="text-xl sm:text-2xl lg:text-3xl tracking-tight text-gray-900 space-y-4 sm:space-y-6">
               <p className="leading-tight font-semibold">Can't wait weeks for therapy?</p>
               <p className="leading-tight font-base text-xl sm:text-2xl lg:text-3xl"> You still deserve relief. Daisy listens without judgment and offers gentle, psychology-informed steps you can take today.</p>
               <p className="leading-tight font-semibold">A new standard for everyday mental support: <span className="font-normal">quick, private, always-on.</span></p>

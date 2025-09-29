@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/shared/ui'
 import { LanguageSwitcher } from '@/shared/ui/language-switcher'
-import { Menu, X, UserCircle, Beaker, Brain } from 'lucide-react'
+import { Menu, X, Brain, Bot, Heart } from 'lucide-react'
 
 interface HeroSectionProps {
   onGetStarted?: () => void
@@ -24,15 +24,15 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
   const features = [
     {
       name: 'Personalized AI Companion',
-      icon: Brain,
+      icon: Bot,
     },
     {
       name: 'Strong Scientific Background',
-      icon: Beaker,
+      icon: Brain,
     },
     {
-      name: 'Personalized AI Companion',
-      icon: Brain,
+      name: 'Quick Responses',
+      icon: Heart,
     },
   ]
 
@@ -65,7 +65,6 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
               ))}
             </div>
             <div className="hidden lg:flex lg:justify-end lg:gap-x-3 xl:gap-x-4 lg:items-center">
-              <LanguageSwitcher />
               <Button
                 variant="outline"
                 className="text-white border-white bg-transparent rounded-full px-4 xl:px-6 py-2 text-sm xl:text-base"
@@ -75,7 +74,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
               </Button>
               <Button
                 onClick={() => window.location.href = '/register'}
-                className="bg-white text-black hover:bg-gray-200 rounded-full px-4 xl:px-6 py-2 text-sm xl:text-base"
+                className="bg-[#FFDC61] text-black hover:bg-gray-200 rounded-full px-4 xl:px-6 py-2 text-sm xl:text-base"
               >
                 Talk To Daisy
               </Button>
@@ -177,7 +176,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
             </p>
             <Button
               onClick={() => window.location.href = '/register'}
-              className="rounded-full bg-[#7E9EC4] px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white w-full sm:w-auto"
+              className="rounded-full bg-[#FFDC61] px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-black shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white w-full sm:w-auto"
             >
               Am I A Candidate?
             </Button>
@@ -189,7 +188,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="w-full lg:w-auto"
           >
-            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3 sm:p-4 ring-1 ring-white/20">
+            <div className="rounded-xl bg-white/15 backdrop-blur-sm p-3 sm:p-4 ring-1 ring-white/20">
               <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center">
                 {features.map((feature, index) => (
                   <div key={index} className="flex items-center gap-3">
