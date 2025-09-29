@@ -3,6 +3,6 @@
 import { AuthProvider } from "@/shared/hooks/useAuth"
 import { ReactNode } from "react"
 
-export function ClientAuthProvider({ children }: { children: ReactNode }) {
+export function AuthProviderClient({ children }: { children: ReactNode }) {
   return <AuthProvider>{children}</AuthProvider>
 }

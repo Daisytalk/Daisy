@@ -27,9 +27,5 @@ if (typeof window !== 'undefined' && !container.has(TOKENS.AI_SERVICE)) {
 }
 
 export function Providers({ children }: { children: ReactNode }) {
-  return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
-  )
+  return <>{children}</>
 }

@@ -1,27 +1,67 @@
-import { type NextRequest, NextResponse } from 'next/server'
 
-const protectedRoutes = ['/dashboard', '/profile', '/chat', '/onboarding']
-const authRoutes = ['/login', '/register']
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { AuthService } from '@/shared/lib/auth'
 
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get('auth-token')?.value
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const token = request.cookies.get('auth_token')?.value
+  const publicRoutes = [
+    '/',
+    '/login',
+    '/register',
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/logout',
+    '/api/newsletter',
+    '/api/onboarding/questions',
+    '/terms',
+    '/privacy',
+  ]
 
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
-  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
-
-  if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  if (publicRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next()
   }
 
-  if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (!token) {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
-  return NextResponse.next()
+  try {
+    const decoded = AuthService.verifyToken(token)
+
+    if (!decoded) {
+      const response = NextResponse.redirect(new URL('/login', request.url))
+      response.cookies.delete('auth_token')
+      return response
+    }
+
+    const { isOnboarded } = decoded
+    
+    if (!isOnboarded) {
+      if (pathname !== '/onboarding') {
+        return NextResponse.redirect(new URL('/onboarding', request.url))
+      }
+    } else {
+      if (pathname === '/onboarding') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+    }
+    
+    return NextResponse.next()
+    
+  } catch (error) {
+    console.error('Middleware error:', error)
+    const response = NextResponse.redirect(new URL('/login', request.url))
+    response.cookies.delete('auth_token')
+    return response
+  }
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile/:path*', '/chat/:path*', '/onboarding/:path*', '/login', '/register'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
 }

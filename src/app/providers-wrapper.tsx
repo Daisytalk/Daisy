@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { ReactNode } from "react"
-import { Providers } from "./providers"
-import { ClientAuthProvider } from "./client-auth-provider"
+import { ReactNode } from "react";
+import { AuthProviderClient } from "./auth-provider-client";
+import { Providers } from "./providers";
 
 export function ProvidersWrapper({ children }: { children: ReactNode }) {
   return (
     <Providers>
-      <ClientAuthProvider>{children}</ClientAuthProvider>
+      <AuthProviderClient>{children}</AuthProviderClient>
     </Providers>
-  )
+  );
 }
