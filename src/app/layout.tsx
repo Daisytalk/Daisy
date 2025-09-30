@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { ProvidersWrapper } from './providers-wrapper'
+import { ContextualProviders } from './ContextualProviders'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        <ProvidersWrapper>{children}</ProvidersWrapper>
+        <ContextualProviders>{children}</ContextualProviders>
       </body>
     </html>
   )

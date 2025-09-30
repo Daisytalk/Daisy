@@ -17,6 +17,7 @@ function RegisterPageContent() {
   const [isLoading, setIsLoading] = useState(false)
   const { register, error, clearError } = useAuth()
   const router = useRouter()
+  const [hasPendingOnboarding, setHasPendingOnboarding] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +26,26 @@ function RegisterPageContent() {
 
     try {
       await register({ name, email, password })
-      router.push('/onboarding') // Redirect to onboarding after registration
+
+      // After registration, if there are pending onboarding answers saved locally, submit them
+      try {
+        const pending = typeof window !== 'undefined' ? localStorage.getItem('pending_onboarding') : null
+        if (pending) {
+          const parsed = JSON.parse(pending)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // Use the same OnboardingApiService used elsewhere
+            const { OnboardingApiService } = await import('@/shared/services/onboarding')
+            const svc = new OnboardingApiService()
+            await svc.submitAnswers(parsed)
+            localStorage.removeItem('pending_onboarding')
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to submit pending onboarding after registration', err)
+      }
+
+      // Redirect to dashboard after successful registration + onboarding submit
+      router.push('/dashboard')
     } catch (error) {
       // Error is handled by the auth context
     } finally {
@@ -33,8 +53,16 @@ function RegisterPageContent() {
     }
   }
 
+  // Detect pending onboarding answers to show message
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pending = localStorage.getItem('pending_onboarding')
+      if (pending) setHasPendingOnboarding(true)
+    }
+  }, [])
+
   const handleGoogleLogin = () => {
-    console.log('Google login not implemented yet')
+    window.location.href = '/api/auth/google/start'
   }
 
   return (
@@ -48,6 +76,11 @@ function RegisterPageContent() {
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
           <p className="text-sm sm:text-base text-gray-600">Start your journey to better mental health</p>
+          {hasPendingOnboarding && (
+            <div className="mt-3 inline-block bg-yellow-50 text-yellow-800 px-3 py-2 rounded-md text-sm">
+              Register to continue with your personal AI Companion
+            </div>
+          )}
         </div>
 
         {error && (
@@ -162,9 +195,7 @@ function RegisterPageContent() {
 export default function RegisterPage() {
   return (
     <ClientOnly>
-      <ProtectedRoute>
-        <RegisterPageContent />
-      </ProtectedRoute>
+      <RegisterPageContent />
     </ClientOnly>
   )
 }

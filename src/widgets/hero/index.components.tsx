@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/shared/ui'
 import { LanguageSwitcher } from '@/shared/ui/language-switcher'
@@ -13,6 +14,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const router = useRouter()
 
   const navigation = [
     { name: 'How It Works', href: '#how-it-works' },
@@ -68,12 +70,12 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
               <Button
                 variant="outline"
                 className="text-white border-white bg-transparent rounded-full px-4 xl:px-6 py-2 text-sm xl:text-base"
-                onClick={() => window.location.href = '/login'}
+                onClick={() => router.push('/login')}
               >
                 Login
               </Button>
               <Button
-                onClick={() => window.location.href = '/register'}
+                onClick={onGetStarted}
                 className="bg-[#FFDC61] text-black hover:bg-gray-200 rounded-full px-4 xl:px-6 py-2 text-sm xl:text-base"
               >
                 Talk To Daisy
@@ -132,12 +134,12 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
                     <Button
                       variant="outline"
                       className="w-full text-white border-white hover:bg-gray-800 py-3 text-base"
-                      onClick={() => window.location.href = '/login'}
+                      onClick={() => router.push('/login')}
                     >
                       Login
                     </Button>
                     <Button
-                      onClick={() => window.location.href = '/register'}
+                      onClick={onGetStarted}
                       className="w-full bg-white text-black hover:bg-gray-200 py-3 text-base"
                     >
                       Talk To Daisy
@@ -175,7 +177,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
               A smart, personalized tool to support your mental well-being anytime and anywhere
             </p>
             <Button
-              onClick={() => window.location.href = '/register'}
+              onClick={onGetStarted}
               className="rounded-full bg-[#FFDC61] px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-black shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white w-full sm:w-auto"
             >
               Am I A Candidate?

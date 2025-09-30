@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
@@ -10,6 +9,8 @@ export async function middleware(request: NextRequest) {
     '/',
     '/login',
     '/register',
+    '/onboarding',
+    '/onboarding/',
     '/api/auth/login',
     '/api/auth/register',
     '/api/auth/logout',

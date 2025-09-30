@@ -34,8 +34,8 @@ function LoginPageContent() {
   }
 
   const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google login not implemented yet')
+    // Start Google OAuth flow
+    window.location.href = '/api/auth/google/start'
   }
 
   return (
@@ -148,9 +148,7 @@ function LoginPageContent() {
 export default function LoginPage() {
   return (
     <ClientOnly>
-      <ProtectedRoute>
-        <LoginPageContent />
-      </ProtectedRoute>
+      <LoginPageContent />
     </ClientOnly>
   )
 }

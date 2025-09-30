@@ -19,7 +19,7 @@ export default function GlobalError({
             We encountered an unexpected error. Please try refreshing the page.
           </p>
         </div>
-        
+
         <div className="flex flex-col gap-3">
           <button
             onClick={reset}

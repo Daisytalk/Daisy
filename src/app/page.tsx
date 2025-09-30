@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { HeroSection } from '@/widgets/hero'
 import { BenefitsSection } from '@/widgets/benefits'
 import { ChatDemoSection } from '@/widgets/chat-demo'
@@ -18,6 +19,7 @@ import type { IAnalyticsService } from '@/shared/services/analytics'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 
 function HomeContent() {
+  const router = useRouter()
   const handleGetStarted = () => {
     // Track analytics event
     const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
@@ -27,8 +29,12 @@ function HomeContent() {
       label: 'get_started',
     })
 
-    // Navigate to onboarding (implement routing as needed)
-    console.log('Navigate to onboarding')
+    // Navigate to onboarding (use full navigation to avoid any client-side guard race)
+    if (typeof window !== 'undefined') {
+      window.location.href = '/onboarding'
+    } else {
+      router.push('/onboarding')
+    }
   }
 
   const handleLearnMore = () => {
