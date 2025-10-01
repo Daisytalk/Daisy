@@ -3,8 +3,17 @@ import prisma from '@/shared/lib/database'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 Waitlist API called')
+    console.log('🔍 Environment check:', {
+      NODE_ENV: process.env.NODE_ENV,
+      DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set',
+      DATABASE_URL_LENGTH: process.env.DATABASE_URL?.length || 0
+    })
+
     const body = await request.json()
     const { name, preferredName, email, telegram, message } = body
+
+    console.log('📝 Form data received:', { name, preferredName, email, telegram, messageLength: message.length })
 
     // Validate required fields
     if (!name || !preferredName || !email || !telegram || !message) {
@@ -33,16 +42,22 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     }
 
-    console.log('Waitlist submission received:', submissionData)
+    console.log('✅ Validation passed, attempting database operation...')
 
     try {
-      console.log('🔍 Attempting to connect to database...')
+      console.log('🔍 Initializing Prisma client...')
       
       // Test database connection first
+      console.log('🔍 Testing database connection...')
       await prisma.$connect()
       console.log('✅ Database connection successful')
 
-      // Try to save to database
+      // Test basic query first
+      console.log('🔍 Testing basic waitlist query...')
+      const totalCount = await prisma.waitlist.count()
+      console.log('✅ Waitlist table accessible, total entries:', totalCount)
+
+      // Check for existing email
       console.log('🔍 Checking for existing email:', email)
       const existingEntry = await prisma.waitlist.findFirst({
         where: { email }
@@ -85,27 +100,43 @@ export async function POST(request: NextRequest) {
     } catch (dbError) {
       // Database error - provide detailed logging
       console.error('❌ Database error details:', {
-        error: dbError,
+        name: dbError instanceof Error ? dbError.name : 'Unknown',
         message: dbError instanceof Error ? dbError.message : 'Unknown error',
-        stack: dbError instanceof Error ? dbError.stack : undefined
+        code: (dbError as any)?.code,
+        meta: (dbError as any)?.meta,
       })
       
-      // Check if it's a table/model not found error
-      if (dbError instanceof Error && dbError.message.includes('waitlist')) {
-        console.error('🚨 Waitlist table/model not found. Run: npx prisma migrate deploy')
+      // Log the full error for debugging
+      console.error('❌ Full error object:', dbError)
+      
+      // Check for specific error types
+      if (dbError instanceof Error) {
+        if (dbError.message.includes('waitlist')) {
+          console.error('🚨 Waitlist table/model issue')
+        }
+        if (dbError.message.includes('connect')) {
+          console.error('🚨 Database connection issue')
+        }
+        if (dbError.message.includes('timeout')) {
+          console.error('🚨 Database timeout issue')
+        }
       }
       
-      console.log('📝 WAITLIST SUBMISSION (DB UNAVAILABLE):', JSON.stringify(submissionData, null, 2))
+      console.log('📝 WAITLIST SUBMISSION (DB ERROR):', JSON.stringify(submissionData, null, 2))
       
-      // Return error instead of success so we know there's an issue
+      // Return detailed error for debugging
       return NextResponse.json(
         { 
           error: 'Database temporarily unavailable. Your submission has been logged.',
+          details: dbError instanceof Error ? dbError.message : 'Unknown database error',
           id: `temp_${Date.now()}`,
           saved: false
         },
         { status: 503 }
       )
+    } finally {
+      // Always disconnect
+      await prisma.$disconnect()
     }
 
   } catch (error) {
