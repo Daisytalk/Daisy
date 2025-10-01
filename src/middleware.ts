@@ -19,6 +19,7 @@ export async function middleware(request: NextRequest) {
     '/api/onboarding/questions',
     '/api/waitlist',
     '/api/admin/waitlist',
+    '/api/test-db',
     '/terms',
     '/privacy',
   ]

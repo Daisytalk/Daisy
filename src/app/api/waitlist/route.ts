@@ -36,19 +36,28 @@ export async function POST(request: NextRequest) {
     console.log('Waitlist submission received:', submissionData)
 
     try {
+      console.log('🔍 Attempting to connect to database...')
+      
+      // Test database connection first
+      await prisma.$connect()
+      console.log('✅ Database connection successful')
+
       // Try to save to database
-      const existingEntry = await (prisma as any).waitlist.findFirst({
+      console.log('🔍 Checking for existing email:', email)
+      const existingEntry = await prisma.waitlist.findFirst({
         where: { email }
       })
 
       if (existingEntry) {
+        console.log('❌ Email already exists in waitlist')
         return NextResponse.json(
           { error: 'This email is already on the waitlist' },
           { status: 409 }
         )
       }
 
-      const waitlistEntry = await (prisma as any).waitlist.create({
+      console.log('🔍 Creating new waitlist entry...')
+      const waitlistEntry = await prisma.waitlist.create({
         data: {
           name,
           preferredName,
@@ -58,7 +67,7 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      console.log('Waitlist submission saved to database:', {
+      console.log('✅ Waitlist submission saved to database:', {
         id: waitlistEntry.id,
         email: waitlistEntry.email,
         timestamp: waitlistEntry.createdAt
@@ -67,23 +76,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           message: 'Successfully submitted to waitlist',
-          id: waitlistEntry.id
+          id: waitlistEntry.id,
+          saved: true
         },
         { status: 200 }
       )
 
     } catch (dbError) {
-      // Database error - log the submission and continue
-      console.error('Database error, logging submission:', dbError)
-      console.log('WAITLIST SUBMISSION (DB UNAVAILABLE):', JSON.stringify(submissionData, null, 2))
+      // Database error - provide detailed logging
+      console.error('❌ Database error details:', {
+        error: dbError,
+        message: dbError instanceof Error ? dbError.message : 'Unknown error',
+        stack: dbError instanceof Error ? dbError.stack : undefined
+      })
       
-      // Still return success to user since we've logged their submission
+      // Check if it's a table/model not found error
+      if (dbError instanceof Error && dbError.message.includes('waitlist')) {
+        console.error('🚨 Waitlist table/model not found. Run: npx prisma migrate deploy')
+      }
+      
+      console.log('📝 WAITLIST SUBMISSION (DB UNAVAILABLE):', JSON.stringify(submissionData, null, 2))
+      
+      // Return error instead of success so we know there's an issue
       return NextResponse.json(
         { 
-          message: 'Successfully submitted to waitlist',
-          id: `temp_${Date.now()}`
+          error: 'Database temporarily unavailable. Your submission has been logged.',
+          id: `temp_${Date.now()}`,
+          saved: false
         },
-        { status: 200 }
+        { status: 503 }
       )
     }
 
