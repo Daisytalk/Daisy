@@ -7,7 +7,7 @@ applications:
             - npm install -g pnpm
             - rm -rf node_modules .next
             - pnpm install
-            - npx prisma generate
+            - pnpm prisma generate
             - pnpm prisma migrate deploy
         build:
           commands:
