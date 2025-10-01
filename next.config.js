@@ -14,6 +14,15 @@ const nextConfig = {
     return 'build-' + Date.now()
   },
   trailingSlash: false,
+  async redirects() {
+    return [
+      {
+        source: '/register',
+        destination: '/waitlist',
+        permanent: false,
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

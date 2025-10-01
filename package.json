@@ -10,7 +10,8 @@
     "type-check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "setup:waitlist": "node scripts/setup-waitlist.js"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.15",

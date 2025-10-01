@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
     '/',
     '/login',
     '/register',
+    '/waitlist',
     '/onboarding',
     '/onboarding/',
     '/api/auth/login',
@@ -16,6 +17,8 @@ export async function middleware(request: NextRequest) {
     '/api/auth/logout',
     '/api/newsletter',
     '/api/onboarding/questions',
+    '/api/waitlist',
+    '/api/admin/waitlist',
     '/terms',
     '/privacy',
   ]
@@ -40,7 +43,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const { isOnboarded } = decoded
-    
+
     if (!isOnboarded) {
       if (pathname !== '/onboarding') {
         return NextResponse.redirect(new URL('/onboarding', request.url))
@@ -50,9 +53,9 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', request.url))
       }
     }
-    
+
     return NextResponse.next()
-    
+
   } catch (error) {
     console.error('Middleware error:', error)
     const response = NextResponse.redirect(new URL('/login', request.url))

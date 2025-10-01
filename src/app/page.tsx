@@ -31,9 +31,9 @@ function HomeContent() {
 
     // Navigate to onboarding (use full navigation to avoid any client-side guard race)
     if (typeof window !== 'undefined') {
-      window.location.href = '/onboarding'
+      window.location.href = '/waitlist'
     } else {
-      router.push('/onboarding')
+      router.push('/waitlist')
     }
   }
 
