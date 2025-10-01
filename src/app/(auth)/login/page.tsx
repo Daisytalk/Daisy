@@ -15,7 +15,7 @@ function LoginPageContent() {
       >
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-            oops! seems Daisy is needed extra today.
+            Oops! Looks like Daisy is in high demand today.  
           </h1>
           <p className="text-sm sm:text-base text-gray-600 mb-6">
             We're temporarily unavailable while we make Daisy even better for you.

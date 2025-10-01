@@ -10,7 +10,9 @@
     "type-check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:migrate": "prisma migrate deploy",
     "db:studio": "prisma studio",
+    "db:test": "node scripts/test-database.js",
     "setup:waitlist": "node scripts/setup-waitlist.js"
   },
   "dependencies": {

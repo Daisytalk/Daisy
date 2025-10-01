@@ -99,10 +99,10 @@ function WaitlistPageContent() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 leading-tight">
-                        oops! seems Daisy is needed extra today.
+                        Oops! Looks like Daisy is in high demand today.
                     </h1>
                     <p className="text-gray-600 text-sm sm:text-base">
-                        please send us your application below and as your queue comes – you will be the one to try out our Daisy
+                        Send us your application below, and when your turn comes, you’ll be the lucky one to try out Daisy!
                     </p>
                 </div>
 
@@ -233,13 +233,13 @@ function WaitlistPageContent() {
                         disabled={isSubmitting}
                         className="w-full bg-rose-500 text-white py-3 px-6 rounded-2xl font-semibold hover:bg-rose-600 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base"
                     >
-                        {isSubmitting ? 'Sending...' : 'send ❤️'}
+                        {isSubmitting ? 'Sending...' : 'Send ❤️'}
                     </button>
                 </form>
 
                 {/* Footer */}
                 <p className="mt-8 text-center text-xs sm:text-sm text-gray-500 italic">
-                    please check your inbox... Daisy will reach you out right about the time!
+                    Check your inbox… Daisy will reach out to you just in time!
                 </p>
             </motion.div>
         </div>

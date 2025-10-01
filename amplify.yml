@@ -7,7 +7,8 @@ applications:
             - npm install -g pnpm
             - rm -rf node_modules .next
             - pnpm install
-            - pnpm db:generate
+            - npx prisma generate
+            - pnpm prisma migrate deploy
         build:
           commands:
             - pnpm run build   # only build, do NOT run next export
