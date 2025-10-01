@@ -94,10 +94,10 @@ export function HelpTopicsSection() {
         </div>
 
         <div className="mt-16 relative">
-          {/* Left Navigation */}
+          {/* Left Navigation - Desktop Only */}
           <button
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/30 transition-colors -translate-x-16"
+            className="hidden xl:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white items-center justify-center hover:bg-white/30 transition-colors -translate-x-16"
             aria-label="Previous topics"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -142,10 +142,10 @@ export function HelpTopicsSection() {
             ))}
           </div>
 
-          {/* Right Navigation */}
+          {/* Right Navigation - Desktop Only */}
           <button
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/30 transition-colors translate-x-16"
+            className="hidden xl:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white items-center justify-center hover:bg-white/30 transition-colors translate-x-16"
             aria-label="Next topics"
           >
             <ChevronRight className="w-6 h-6" />

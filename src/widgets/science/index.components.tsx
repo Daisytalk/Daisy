@@ -143,10 +143,10 @@ export function ScienceSection() {
 
         {/* Synchronized Carousel */}
         <div className="mt-16 relative flex flex-col justify-center max-w-7xl">
-          {/* Left Navigation */}
+          {/* Left Navigation - Desktop Only */}
           <button
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 shadow-lg flex items-center justify-center hover:bg-white transition-colors -translate-x-16"
+            className="hidden xl:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 shadow-lg items-center justify-center hover:bg-white transition-colors -translate-x-16"
             aria-label="Previous content"
           >
             <ChevronLeft className="w-6 h-6 text-gray-600" />
@@ -218,10 +218,10 @@ export function ScienceSection() {
             </div>
           </div>
 
-          {/* Right Navigation */}
+          {/* Right Navigation - Desktop Only */}
           <button
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 shadow-lg flex items-center justify-center hover:bg-white transition-colors translate-x-16"
+            className="hidden xl:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 shadow-lg items-center justify-center hover:bg-white transition-colors translate-x-16"
             aria-label="Next content"
           >
             <ChevronRight className="w-6 h-6 text-gray-600" />

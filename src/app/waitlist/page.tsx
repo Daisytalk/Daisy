@@ -15,6 +15,7 @@ function WaitlistPageContent() {
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
@@ -22,11 +23,14 @@ function WaitlistPageContent() {
             ...prev,
             [name]: value
         }))
+        // Clear error when user starts typing
+        if (error) setError(null)
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
+        setError(null)
 
         try {
             const response = await fetch('/api/waitlist', {
@@ -37,14 +41,27 @@ function WaitlistPageContent() {
                 body: JSON.stringify(formData),
             })
 
+            const data = await response.json()
+
             if (!response.ok) {
-                throw new Error('Failed to submit form')
+                // Handle specific error cases
+                if (response.status === 409) {
+                    throw new Error('This email is already on our waitlist. Thank you for your interest!')
+                } else if (response.status === 400) {
+                    throw new Error(data.error || 'Please check your information and try again.')
+                } else {
+                    throw new Error(data.error || 'Unable to submit your application right now. Please try again in a moment.')
+                }
             }
 
             setIsSubmitted(true)
         } catch (error) {
             console.error('Form submission error:', error)
-            alert('There was an error submitting your application. Please try again.')
+            if (error instanceof Error) {
+                setError(error.message)
+            } else {
+                setError('There was an unexpected error. Please try again.')
+            }
         } finally {
             setIsSubmitting(false)
         }
@@ -88,6 +105,28 @@ function WaitlistPageContent() {
                         please send us your application below and as your queue comes – you will be the one to try out our Daisy
                     </p>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl mb-6"
+                    >
+                        <div className="flex items-start justify-between">
+                            <p className="text-sm flex-1">{error}</p>
+                            <button
+                                onClick={() => setError(null)}
+                                className="ml-3 text-red-500 hover:text-red-700 transition-colors"
+                                aria-label="Dismiss error"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-6">
