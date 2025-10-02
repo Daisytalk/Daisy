@@ -13,8 +13,6 @@ const plans = [
     features: [
       'Unlimited messaging with your therapist',
       'Weekly 30-minute live sessions',
-      'Access to self-help resources',
-      'Mobile app access',
       'Secure & private platform'
     ],
     popular: false,
@@ -26,14 +24,11 @@ const plans = [
     price: 40,
     period: 'for 3 months',
     originalPrice: 45,
-    description: 'Most popular plan with enhanced features',
+    description: 'Most popular plan',
     features: [
       'Everything in 1 Month',
       'Bi-weekly 45-minute live sessions',
-      'Priority therapist matching',
-      'Crisis support access',
       'Progress tracking & insights',
-      'Couples therapy add-on available'
     ],
     popular: true,
     cta: 'Start 3 Month Plan',
