@@ -25,15 +25,15 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
 
   const features = [
     {
-      name: 'Personalized AI Companion',
+      name: 'Adaptive AI with 12 Therapeutic Styles',
       icon: Bot,
     },
     {
-      name: 'Strong Scientific Background',
+      name: 'Powered by Evidence-Based Psychology',
       icon: Brain,
     },
     {
-      name: 'Quick Responses',
+      name: 'Smart Onboarding & Wellness Tracking',
       icon: Heart,
     },
   ]
@@ -153,7 +153,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
       </header>
 
       {/* Hero Content */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 min-h-screen flex flex-col justify-center items-center relative">
+      <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8 min-h-screen flex flex-col justify-center items-center relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -181,7 +181,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
                 onClick={onGetStarted}
                 className="rounded-full bg-[#FFDC61] px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-semibold text-black shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white w-full sm:w-auto"
               >
-                Am I A Candidate?
+                Talk to Daisy
               </Button>
             </motion.div>
 

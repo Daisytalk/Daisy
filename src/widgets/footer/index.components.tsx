@@ -39,14 +39,14 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
 
           {/* Services */}
           <div className="sm:col-span-1">
-            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 lg:mb-6">Services</h3>
+            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 lg:mb-6"></h3>
             <ul className="space-y-2 sm:space-y-3">
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Individual Therapy</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Couples Therapy</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Family Therapy</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Group Sessions</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Crisis Support</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Psychiatric Care</a></li>
+              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors"></a></li>
+              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors"></a></li>
+              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors"></a></li>
+              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors"></a></li>
+              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors"></a></li>
+              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors"></a></li>
             </ul>
           </div>
 
@@ -108,7 +108,6 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-end space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-3 text-xs sm:text-sm text-gray-600 text-center">
               <span className="flex items-center whitespace-nowrap">🔒 HIPAA Compliant</span>
-              <span className="flex items-center whitespace-nowrap">✓ Licensed Therapists</span>
               <span className="flex items-center whitespace-nowrap">🛡️ Secure Platform</span>
             </div>
           </div>
@@ -116,13 +115,13 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
       </div>
 
       {/* Crisis Banner */}
-      <div className="bg-red-600 text-white py-2 sm:py-3">
+      {/* <div className="bg-red-600 text-white py-2 sm:py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
           <p className="text-xs sm:text-sm leading-relaxed">
             <strong>Crisis Support:</strong> If you're in immediate danger, call 911 or text HOME to 741741 for 24/7 crisis support.
           </p>
         </div>
-      </div>
+      </div> */}
     </footer>
   )
 }

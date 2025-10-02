@@ -155,39 +155,6 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
             </motion.div>
           ))}
         </div>
-
-        {/* FAQ Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="bg-gray-50 rounded-2xl p-6 sm:p-8 lg:p-12"
-        >
-          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Frequently Asked Questions</h3>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Is my information secure?</h4>
-              <p className="text-gray-600 text-sm sm:text-base">Yes, we use bank-level encryption and are HIPAA compliant to ensure your privacy and security.</p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Can I change plans anytime?</h4>
-              <p className="text-gray-600 text-sm sm:text-base">Absolutely! You can upgrade, downgrade, or cancel your plan at any time with no penalties.</p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Are the therapists licensed?</h4>
-              <p className="text-gray-600 text-sm sm:text-base">Yes, all our therapists are licensed professionals with extensive experience in mental health care.</p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">What if I need crisis support?</h4>
-              <p className="text-gray-600 text-sm sm:text-base">We provide 24/7 crisis support and emergency resources for all our users when they need immediate help.</p>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </section>
   )

@@ -91,7 +91,7 @@ function HomeContent() {
       <NeuroplasticitySection />
       <ScienceSection />
       <ChatDemoSection />
-      <AboutSection />
+      {/* <AboutSection /> */}
       <ReviewsSection />
       <FAQSection />
       <PricingSection onSelectPlan={handleSelectPlan} />

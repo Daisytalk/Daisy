@@ -10,7 +10,7 @@ const scienceData = [
       {
         title: 'Can AI Replace Psychotherapists? Exploring The Future Of Mental Health Care',
         date: 'October, 2024 - 10 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=420&h=210&fit=crop&crop=center',
+        imageUrl: 'https://plus.unsplash.com/premium_photo-1680608979589-e9349ed066d5?w=420&h=210&fit=crop&crop=center',
       },
       {
         title: 'Conversational Artificial Intelligence In Psychotherapy: A New Therapeutic Tool Or Agent?',
@@ -20,7 +20,7 @@ const scienceData = [
       {
         title: 'Artificial Intelligence (AI) In Psychotherapy: A Challenging Frontier',
         date: 'August, 2025 - 10 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=420&h=210&fit=crop&crop=center',
+        imageUrl: 'https://plus.unsplash.com/premium_photo-1723507348942-58d245d27c52?w=420&h=210&fit=crop&crop=center',
       },
     ],
     references: [
@@ -34,12 +34,12 @@ const scienceData = [
       {
         title: 'Digital Mental Health Solutions: The Future of Therapy',
         date: 'September, 2024 - 8 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=420&h=210&fit=crop&crop=center',
+        imageUrl: 'https://images.unsplash.com/photo-1758691463193-9d2b21fdb3ba?w=420&h=210&fit=crop&crop=center',
       },
       {
         title: 'Machine Learning in Mental Health Assessment',
         date: 'July, 2024 - 12 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=420&h=210&fit=crop&crop=center',
+        imageUrl: 'https://images.unsplash.com/photo-1758691463110-697a814b2033?w=420&h=210&fit=crop&crop=center',
       },
       {
         title: 'Ethical AI in Mental Healthcare',
@@ -135,7 +135,7 @@ export function ScienceSection() {
               href="#"
               className="rounded-full px-6 py-3 text-lg font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-900 hover:bg-gray-50 whitespace-nowrap self-start md:self-center transition-colors"
             >
-              Get Support
+              Talk to Daisy
             </a>
 
           </motion.div>
