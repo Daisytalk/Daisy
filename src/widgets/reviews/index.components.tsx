@@ -6,25 +6,32 @@ import { ChevronUp, ChevronDown } from 'lucide-react'
 
 const testimonials = [
   {
-    quote: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.",
-    author: "Guy Hawkins",
-    date: "1/28/17",
-    avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&facepad=2",
-    imageUrl: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=360&fit=crop&crop=center",
+    quote: "This platform has been life-changing. I was skeptical at first, but after just a few weeks I noticed real improvements in how I manage stress. It feels like having support 24/7.",
+    author: "Emily Carter",
+    date: "6/14/23",
+    avatarUrl: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=80&h=80&fit=crop&crop=faces&facepad=3",
+    imageUrl: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=600&h=360&fit=crop&crop=center",
   },
   {
-    quote: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-    author: "Jane Doe",
-    date: "2/15/18",
-    avatarUrl: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face&facepad=2",
-    imageUrl: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=600&h=360&fit=crop&crop=center",
+    quote: "The sessions are short but surprisingly impactful. I never thought a 10-minute daily routine could help me reset my mindset this effectively. Highly recommended.",
+    author: "Michael Thompson",
+    date: "8/02/23",
+    avatarUrl: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=80&h=80&fit=crop&crop=faces&facepad=3",
+    imageUrl: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&h=360&fit=crop&crop=center",
   },
   {
-    quote: "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.",
-    author: "John Smith",
-    date: "3/22/19",
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face&facepad=2",
-    imageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=600&h=360&fit=crop&crop=center",
+    quote: "I appreciate how easy it is to use. The reminders keep me consistent, and the guidance feels personal rather than generic. My sleep and focus have noticeably improved.",
+    author: "Sophia Nguyen",
+    date: "11/19/23",
+    avatarUrl: "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=80&h=80&fit=crop&crop=faces&facepad=3",
+    imageUrl: "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=600&h=360&fit=crop&crop=center",
+  },
+  {
+    quote: "What stands out is the simplicity. It doesn’t overwhelm you with features—you just get exactly what you need to calm down and reset. A real gem for mental wellness.",
+    author: "David Patel",
+    date: "1/07/24",
+    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=faces&facepad=3",
+    imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=360&fit=crop&crop=center",
   },
 ]
 
