@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState, useEffect, useContext, createContext, ReactNode } from 'react'
 import type { User, AuthState, LoginCredentials, RegisterCredentials } from '@/shared/types/auth'
@@ -112,8 +112,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
+
+  if (context === null) {
+    if (typeof window !== 'undefined') {
+      // Client but outside provider → return safe defaults instead of throwing
+      return {
+        user: null,
+        isLoading: false,
+        error: 'AuthProvider is missing',
+        login: async () => {},
+        register: async () => {},
+        logout: async () => {},
+        clearError: () => {},
+      }
+    }
+
+    // On the server → safe defaults for prerendering
+    return {
+      user: null,
+      isLoading: true,
+      error: null,
+      login: async () => {},
+      register: async () => {},
+      logout: async () => {},
+      clearError: () => {},
+    }
   }
+
   return context
 }

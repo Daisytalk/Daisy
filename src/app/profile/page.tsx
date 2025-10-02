@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
@@ -7,8 +7,10 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
+import { ClientOnly } from '@/shared/components/ClientOnly'
+import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -18,29 +20,22 @@ export default function ProfilePage() {
   const onboardingService = new OnboardingApiService()
 
   useEffect(() => {
-    if (!user) {
-      router.push('/login')
-      return
+    if (user) {
+      loadData()
     }
-
-    if (!user.isOnboarded) {
-      router.push('/onboarding')
-      return
-    }
-
-    loadData()
-  }, [user, router])
+  }, [user])
 
   const loadData = async () => {
     if (!user) return
-    
+
     try {
-      const [data, questionsData] = await Promise.all([
+      const [data, sections] = await Promise.all([
         onboardingService.getOnboardingData(user.id),
         onboardingService.getQuestions()
       ])
       setOnboardingData(data)
-      setQuestions(questionsData)
+      const allQuestions: OnboardingQuestion[] = sections.flatMap(section => section.questions)
+      setQuestions(allQuestions)
     } catch (error) {
       console.error('Failed to load profile data:', error)
     } finally {
@@ -63,7 +58,7 @@ export default function ProfilePage() {
     return String(answer)
   }
 
-  const trialDaysLeft = user?.trialEndsAt 
+  const trialDaysLeft = user?.trialEndsAt
     ? Math.ceil((new Date(user.trialEndsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : 0
 
@@ -129,13 +124,12 @@ export default function ProfilePage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Subscription Status</label>
-              <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                user?.subscriptionStatus === 'trial' 
-                  ? 'bg-blue-100 text-blue-800'
-                  : user?.subscriptionStatus === 'active'
+              <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${user?.subscriptionStatus === 'trial'
+                ? 'bg-blue-100 text-blue-800'
+                : user?.subscriptionStatus === 'active'
                   ? 'bg-green-100 text-green-800'
                   : 'bg-red-100 text-red-800'
-              }`}>
+                }`}>
                 {user?.subscriptionStatus === 'trial' ? 'Free Trial' : user?.subscriptionStatus}
               </span>
             </div>
@@ -164,7 +158,7 @@ export default function ProfilePage() {
                 Completed on {new Date(onboardingData.completedAt).toLocaleDateString()}
               </p>
             </div>
-            
+
             <div className="space-y-6">
               {onboardingData.answers.map((answer, index) => (
                 <motion.div
@@ -186,7 +180,7 @@ export default function ProfilePage() {
 
             <div className="mt-8 p-4 bg-blue-50 rounded-lg">
               <p className="text-blue-800">
-                <strong>AI Personalization:</strong> These responses help Daisy understand your unique needs 
+                <strong>AI Personalization:</strong> These responses help Daisy understand your unique needs
                 and provide personalized mental health support tailored specifically for you.
               </p>
             </div>
@@ -226,5 +220,15 @@ export default function ProfilePage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <ClientOnly>
+      <ProtectedRoute>
+        <ProfilePageContent />
+      </ProtectedRoute>
+    </ClientOnly>
   )
 }

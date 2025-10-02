@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { HeroSection } from '@/widgets/hero'
 import { BenefitsSection } from '@/widgets/benefits'
 import { ChatDemoSection } from '@/widgets/chat-demo'
@@ -15,8 +16,10 @@ import { FooterSection } from '@/widgets/footer'
 import { subscribeToNewsletter } from '@/features/newsletter-signup'
 import { container, TOKENS } from '@/shared/lib/di'
 import type { IAnalyticsService } from '@/shared/services/analytics'
+import { ClientOnly } from '@/shared/components/ClientOnly'
 
-export default function Home() {
+function HomeContent() {
+  const router = useRouter()
   const handleGetStarted = () => {
     // Track analytics event
     const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
@@ -26,8 +29,12 @@ export default function Home() {
       label: 'get_started',
     })
 
-    // Navigate to onboarding (implement routing as needed)
-    console.log('Navigate to onboarding')
+    // Navigate to onboarding (use full navigation to avoid any client-side guard race)
+    if (typeof window !== 'undefined') {
+      window.location.href = '/waitlist'
+    } else {
+      router.push('/waitlist')
+    }
   }
 
   const handleLearnMore = () => {
@@ -84,12 +91,20 @@ export default function Home() {
       <NeuroplasticitySection />
       <ScienceSection />
       <ChatDemoSection />
-      <AboutSection />
+      {/* <AboutSection /> */}
       <ReviewsSection />
       <FAQSection />
       <PricingSection onSelectPlan={handleSelectPlan} />
       <CTASection onGetStarted={handleGetStarted} />
       <FooterSection onNewsletterSubmit={handleNewsletterSubmit} />
     </main>
+  )
+}
+
+export default function Home() {
+  return (
+    <ClientOnly>
+      <HomeContent />
+    </ClientOnly>
   )
 }

@@ -2,6 +2,7 @@ export interface User {
   id: string
   email: string
   name?: string
+  password: string
   createdAt: Date
   updatedAt: Date
 }
@@ -9,8 +10,11 @@ export interface User {
 export interface CreateUserData {
   email: string
   name?: string
+  password: string
 }
 
 export interface UpdateUserData {
+  email: string
   name?: string
+  password: string
 }

@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
-import type { User } from '@/shared/types/auth'
-
-// Mock database - replace with your actual database
-const users: User[] = []
+import prisma from '@/shared/lib/database'
 
 export async function POST(request: NextRequest) {
   try {
     const { name, email, password } = await request.json()
 
-    // Validate input
     if (!name || !email || !password) {
       return NextResponse.json(
         { message: 'Name, email, and password are required' },
@@ -17,8 +13,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user already exists
-    const existingUser = users.find(user => user.email === email)
+    const existingUser = await prisma.user.findUnique({ where: { email } })
     if (existingUser) {
       return NextResponse.json(
         { message: 'User already exists with this email' },
@@ -26,35 +21,53 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash password
     const hashedPassword = await AuthService.hashPassword(password)
 
-    // Create user
-    const user: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name,
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      },
+    })
+
+    // Create corresponding onboarding data and AI session entries
+    await prisma.onboardingData.create({
+      data: {
+        userId: newUser.id,
+        responses: {},
+        completed: false,
+      }
+    });
+
+    await prisma.aiSession.create({
+      data: {
+        userId: newUser.id,
+        messages: [],
+        context: { persona: 'intake_specialist' }
+      }
+    })
+
+    const trialEndsAt = AuthService.generateTrialEndDate();
+    const token = AuthService.generateToken({
+      id: newUser.id,
+      email: newUser.email,
+      name: newUser.name ?? undefined,
       isOnboarded: false,
+      createdAt: newUser.createdAt,
+      updatedAt: newUser.updatedAt,
       subscriptionStatus: 'trial',
-      trialEndsAt: AuthService.generateTrialEndDate(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    // Store user (in real app, save to database)
-    users.push(user)
-
-    // Generate JWT token
-    const token = AuthService.generateToken(user)
+      trialEndsAt,
+    })
 
     return NextResponse.json({
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        isOnboarded: user.isOnboarded,
-        subscriptionStatus: user.subscriptionStatus,
-        trialEndsAt: user.trialEndsAt,
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        isOnboarded: false,
+        subscriptionStatus: 'trial',
+        trialEndsAt,
       },
       token,
     })

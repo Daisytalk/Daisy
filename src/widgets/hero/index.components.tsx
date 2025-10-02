@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/shared/ui'
 import { LanguageSwitcher } from '@/shared/ui/language-switcher'
-import { Menu, X, UserCircle, Beaker, Brain } from 'lucide-react'
+import { Menu, X, Brain, Bot, Heart } from 'lucide-react'
 
 interface HeroSectionProps {
   onGetStarted?: () => void
@@ -13,6 +14,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const router = useRouter()
 
   const navigation = [
     { name: 'How It Works', href: '#how-it-works' },
@@ -23,16 +25,16 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
 
   const features = [
     {
-      name: 'Personalized AI Companion',
+      name: 'Adaptive AI with 12 Therapeutic Styles',
+      icon: Bot,
+    },
+    {
+      name: 'Powered by Evidence-Based Psychology',
       icon: Brain,
     },
     {
-      name: 'Strong Scientific Background',
-      icon: Beaker,
-    },
-    {
-      name: 'Personalized AI Companion',
-      icon: Brain,
+      name: 'Smart Onboarding & Wellness Tracking',
+      icon: Heart,
     },
   ]
 
@@ -50,32 +52,31 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
 
       {/* Navigation */}
       <header className="absolute inset-x-0 top-0 z-50">
-        <nav className="mx-auto flex max-w-8xl items-center justify-between p-4 sm:p-6 lg:px-8" aria-label="Global">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 sm:p-6 lg:px-8" aria-label="Global">
           <div className="flex lg:flex-1">
             <a href="/" className="-m-1.5 p-1.5">
-              <img src="/images/logo.svg" className="h-10 sm:h-12 w-auto" alt="Daisy logo" />
+              <img src="/images/logo.svg" className="h-8 sm:h-10 lg:h-12 w-auto" alt="Daisy logo" />
             </a>
           </div>
-          <div className="flex flex-1 justify-end items-center lg:space-x-4 xl:space-x-8">
-            <div className="hidden lg:flex lg:gap-x-8 xl:gap-x-12">
+          <div className="flex flex-1 justify-end items-center">
+            <div className="hidden lg:flex lg:gap-x-6 xl:gap-x-8 mr-6 xl:mr-8">
               {navigation.map((item) => (
-                <a key={item.name} href={item.href} className="text-base xl:text-lg font-medium leading-6 text-white hover:text-gray-300 transition-colors whitespace-nowrap">
+                <a key={item.name} href={item.href} className="text-sm xl:text-base font-medium leading-6 text-white hover:text-gray-300 transition-colors whitespace-nowrap">
                   {item.name}
                 </a>
               ))}
             </div>
-            <div className="hidden lg:flex lg:justify-end lg:gap-x-3 xl:gap-x-4 lg:items-center">
-              <LanguageSwitcher />
+            <div className="hidden lg:flex lg:justify-end lg:gap-x-2 xl:gap-x-3 lg:items-center">
               <Button
                 variant="outline"
-                className="text-white border-white bg-transparent rounded-full px-4 xl:px-6 py-2 text-sm xl:text-base"
-                onClick={() => window.location.href = '/login'}
+                className="text-white border-white bg-transparent rounded-full px-3 xl:px-4 py-1.5 xl:py-2 text-xs xl:text-sm"
+                onClick={() => router.push('/login')}
               >
                 Login
               </Button>
               <Button
-                onClick={() => window.location.href = '/register'}
-                className="bg-white text-black hover:bg-gray-200 rounded-full px-4 xl:px-6 py-2 text-sm xl:text-base"
+                onClick={onGetStarted}
+                className="bg-[#FFDC61] text-black hover:bg-gray-200 rounded-full px-3 xl:px-4 py-1.5 xl:py-2 text-xs xl:text-sm whitespace-nowrap"
               >
                 Talk To Daisy
               </Button>
@@ -87,7 +88,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
                 onClick={() => setMobileMenuOpen(true)}
               >
                 <span className="sr-only">Open main menu</span>
-                <Menu className="h-6 w-6" aria-hidden="true" />
+                <Menu className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -133,12 +134,12 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
                     <Button
                       variant="outline"
                       className="w-full text-white border-white hover:bg-gray-800 py-3 text-base"
-                      onClick={() => window.location.href = '/login'}
+                      onClick={() => router.push('/login')}
                     >
                       Login
                     </Button>
                     <Button
-                      onClick={() => window.location.href = '/register'}
+                      onClick={onGetStarted}
                       className="w-full bg-white text-black hover:bg-gray-200 py-3 text-base"
                     >
                       Talk To Daisy
@@ -157,52 +158,54 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-12 sm:mb-16 lg:mb-20 pt-20 sm:pt-24 lg:pt-0"
+          className="text-center mb-8 sm:mb-12 lg:mb-16 pt-16 sm:pt-20 lg:pt-0 px-2"
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-medium tracking-tight text-white leading-tight px-4">
-            Daisy - Your 24/7 <br />
-            Mental Health Companion
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium tracking-tight text-white leading-tight">
+            Daisy - Your 24/7 <br className="hidden sm:block" />
+            <span className="sm:hidden"> </span>Mental Health Companion
           </h1>
         </motion.div>
 
-        <div className="absolute bottom-8 sm:bottom-12 lg:bottom-16 flex px-4 sm:px-6 flex-col lg:flex-row items-center lg:items-end justify-between gap-6 sm:gap-8 w-full max-w-8xl">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="max-w-md text-center lg:text-left"
-          >
-            <p className="text-base sm:text-lg leading-6 sm:leading-8 text-white mb-6">
-              A smart, personalized tool to support your mental well-being anytime and anywhere
-            </p>
-            <Button
-              onClick={() => window.location.href = '/register'}
-              className="rounded-full bg-[#7E9EC4] px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white w-full sm:w-auto"
+        <div className="absolute bottom-4 sm:bottom-8 lg:bottom-12 left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8">
+          <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="w-full lg:max-w-md text-center lg:text-left"
             >
-              Am I A Candidate?
-            </Button>
-          </motion.div>
+              <p className="text-sm sm:text-base lg:text-lg leading-5 sm:leading-6 lg:leading-7 text-white mb-4 sm:mb-6">
+                A smart, personalized tool to support your mental well-being anytime and anywhere
+              </p>
+              <Button
+                onClick={onGetStarted}
+                className="rounded-full bg-[#FFDC61] px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-semibold text-black shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white w-full sm:w-auto"
+              >
+                Talk to Daisy
+              </Button>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="w-full lg:w-auto"
-          >
-            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3 sm:p-4 ring-1 ring-white/20">
-              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center">
-                {features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="text-white">
-                      <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" aria-hidden="true" />
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="w-full lg:w-auto"
+            >
+              <div className="rounded-xl bg-white/15 backdrop-blur-sm p-3 sm:p-4 ring-1 ring-white/20">
+                <div className="flex flex-col sm:flex-row lg:flex-row items-center gap-3 sm:gap-4 lg:gap-6">
+                  {features.map((feature, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+                      <div className="text-white">
+                        <feature.icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" aria-hidden="true" />
+                      </div>
+                      <div className="text-xs sm:text-sm font-semibold text-white text-center">{feature.name}</div>
+                      {index < features.length - 1 && <div className="hidden sm:block h-6 lg:h-8 w-px bg-white/50"></div>}
                     </div>
-                    <div className="text-xs sm:text-sm font-semibold text-white text-center sm:whitespace-nowrap">{feature.name}</div>
-                    {index < features.length - 1 && <div className="hidden sm:block h-8 w-px bg-white/50 ml-0 sm:ml-6"></div>}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,335 +1,328 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, User, MapPin, MoreHorizontal, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/shared/hooks/useAuth'
-import { OnboardingApiService } from '@/shared/services/onboarding'
-import type { OnboardingQuestion, OnboardingAnswer } from '@/shared/types/auth'
+import { ClientOnly } from '@/shared/components/ClientOnly';
+import { useAuth } from '@/shared/hooks/useAuth';
+import { OnboardingApiService } from '@/shared/services/onboarding';
+import { OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion, OnboardingSection } from '@/shared/types/auth';
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { FormEvent, useEffect, useState } from 'react';
 
-// Default questions that match your image
-const defaultQuestions: OnboardingQuestion[] = [
-  {
-    id: '1',
-    type: 'single-choice',
-    question: 'Choose your gender/sex',
-    options: ['Male', 'Female', 'Prefer not to say', 'Other'],
-    required: true,
-    order: 1
-  }
-]
+// A generic component to render different question types
+const QuestionComponent = ({
+  question,
+  answer,
+  onChange,
+}: {
+  question: OnboardingQuestion;
+  answer: OnboardingAnswerValue;
+  onChange: (value: OnboardingAnswerValue) => void;
+}) => {
+  // Special UI for the gender question to match design
+  if (question.id === 'gender' || /gender|sex/i.test(question.id)) {
+    const options = [
+      { id: 'male', label: 'Male', icon: '♂' },
+      { id: 'female', label: 'Female', icon: '♀' },
+      { id: 'prefer_not_to_say', label: 'Prefer not to say', icon: '✕' },
+      { id: 'other', label: 'Other', icon: '…' },
+    ];
 
-export default function OnboardingPage() {
-  const [questions, setQuestions] = useState<OnboardingQuestion[]>(defaultQuestions)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, OnboardingAnswer>>({})
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { user } = useAuth()
-  const router = useRouter()
-  const onboardingService = new OnboardingApiService()
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/login')
-      return
-    }
-
-    if (user.isOnboarded) {
-      router.push('/dashboard')
-      return
-    }
-
-    loadQuestions()
-  }, [user, router])
-
-  const loadQuestions = async () => {
-    try {
-      const fetchedQuestions = await onboardingService.getQuestions()
-      if (fetchedQuestions.length > 0) {
-        setQuestions(fetchedQuestions.sort((a, b) => a.order - b.order))
-      }
-    } catch (error) {
-      console.error('Failed to load questions:', error)
-      // Use default questions if API fails
-    } finally {
-      setIsLoading(false)
-    }
+    return (
+      <div className="space-y-3">
+        {options.map((opt) => {
+          const selected = answer === opt.id
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => onChange(opt.id)}
+              className={`w-full text-left p-3 border rounded-lg flex items-center space-x-4 transition-colors focus:outline-none ${
+                selected
+                  ? 'bg-[#dff6ff] border-[#7fd6ff] shadow-sm'
+                  : 'bg-white hover:bg-gray-50 border-gray-200'
+              }`}
+              aria-pressed={selected}
+            >
+              <span className={`inline-flex items-center justify-center w-10 h-10 rounded-md border ${selected ? 'bg-[#0EA5E9] text-white border-transparent' : 'bg-white text-[#0EA5E9] border-[#E6EEF6]'}`}>
+                <span className="text-base font-semibold">{opt.icon}</span>
+              </span>
+              <span className="text-sm font-medium text-gray-800">{opt.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    )
   }
 
-  const currentQuestion = questions[currentQuestionIndex]
-  const isLastQuestion = currentQuestionIndex === questions.length - 1
-  const canProceed = !currentQuestion?.required || answers[currentQuestion.id]
-
-  const handleAnswer = (questionId: string, answer: string | string[] | number | boolean) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: { questionId, answer }
-    }))
-  }
-
-  const handleNext = () => {
-    if (isLastQuestion) {
-      handleSubmit()
-    } else {
-      setCurrentQuestionIndex(prev => prev + 1)
-    }
-  }
-
-  const handleBack = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1)
-    }
-  }
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true)
-    try {
-      await onboardingService.submitAnswers(Object.values(answers))
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Failed to submit onboarding:', error)
-      alert('Failed to submit onboarding. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const renderQuestionInput = (question: OnboardingQuestion) => {
-    const currentAnswer = answers[question.id]?.answer
-
-    switch (question.type) {
-      case 'single-choice':
-        return (
-          <div className="space-y-3">
-            {question.options?.map((option, index) => {
-              const icons = [User, MapPin, X, MoreHorizontal]
-              const Icon = icons[index] || User
-              const isSelected = currentAnswer === option
-
-              return (
-                <button
-                  key={option}
-                  onClick={() => handleAnswer(question.id, option)}
-                  className={`w-full p-4 rounded-lg border-2 text-left transition-all ${isSelected
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                >
-                  <div className="flex items-center">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 ${isSelected ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
-                      }`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className="font-medium text-gray-900">{option}</span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )
-
-      case 'multiple-choice':
-        return (
-          <div className="space-y-3">
-            {question.options?.map((option) => {
-              const selectedOptions = (currentAnswer as string[]) || []
-              const isSelected = selectedOptions.includes(option)
-
-              return (
-                <button
-                  key={option}
-                  onClick={() => {
-                    const newSelection = isSelected
-                      ? selectedOptions.filter(item => item !== option)
-                      : [...selectedOptions, option]
-                    handleAnswer(question.id, newSelection)
-                  }}
-                  className={`w-full p-4 rounded-lg border-2 text-left transition-all ${isSelected
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                >
-                  <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded border-2 mr-4 flex items-center justify-center ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-                      }`}>
-                      {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
-                    </div>
-                    <span className="font-medium text-gray-900">{option}</span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )
-
-      case 'text':
-        return (
-          <textarea
-            value={(currentAnswer as string) || ''}
-            onChange={(e) => handleAnswer(question.id, e.target.value)}
-            className="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
-            rows={4}
-            placeholder="Type your answer here..."
-          />
-        )
-
-      case 'scale':
-        return (
-          <div className="space-y-4">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Not at all</span>
-              <span>Extremely</span>
-            </div>
-            <div className="flex justify-between">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                <button
-                  key={value}
-                  onClick={() => handleAnswer(question.id, value)}
-                  className={`w-10 h-10 rounded-full border-2 font-semibold transition-all ${currentAnswer === value
-                    ? 'border-blue-500 bg-blue-500 text-white'
-                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
-                    }`}
-                >
-                  {value}
-                </button>
-              ))}
-            </div>
-          </div>
-        )
-
-      case 'boolean':
-        return (
-          <div className="flex space-x-4">
-            {['Yes', 'No'].map((option) => (
+  switch (question.type) {
+    case 'date':
+      return (
+        <input
+          type="date"
+          value={(answer as string) || ''}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full p-2 border rounded"
+          required={question.required}
+        />
+      )
+    case 'single-choice':
+      return (
+        <div className="flex flex-col space-y-2">
+          {question.options?.map((option) => (
+            <label key={option} className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name={question.id}
+                value={option}
+                checked={answer === option}
+                onChange={(e) => onChange(e.target.value)}
+                required={question.required}
+              />
+              <span>{option}</span>
+            </label>
+          ))}
+        </div>
+      )
+    case 'text':
+      return (
+        <textarea
+          value={(answer as string) || ''}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full p-2 border rounded"
+          rows={3}
+          placeholder={question.question}
+          required={question.required}
+        />
+      )
+    case 'scale-with-comment':
+      const rating = (answer as { rating: number; comment: string })?.rating || 0
+      const comment = (answer as { rating: number; comment: string })?.comment || ''
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between">
+            {[1, 2, 3, 4, 5].map((val) => (
               <button
-                key={option}
-                onClick={() => handleAnswer(question.id, option === 'Yes')}
-                className={`flex-1 p-4 rounded-lg border-2 font-semibold transition-all ${currentAnswer === (option === 'Yes')
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
+                key={val}
+                type="button"
+                onClick={() => onChange({ rating: val, comment })}
+                className={`w-10 h-10 rounded-full border ${
+                  rating === val ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                }`}
               >
-                {option}
+                {val}
               </button>
             ))}
           </div>
-        )
+          <textarea
+            value={comment}
+            onChange={(e) => onChange({ rating, comment: e.target.value })}
+            className="w-full p-2 border rounded"
+            placeholder={question.commentLabel}
+          />
+        </div>
+      )
+    default:
+      return null
+  }
+}
 
-      default:
-        return null
+function OnboardingPageContent() {
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const router = useRouter();
+  const [sections, setSections] = useState<OnboardingSection[]>([]);
+  const [answers, setAnswers] = useState<Record<string, OnboardingAnswerValue>>({});
+  // Flattened list of questions so we can show one question per page
+  const [flatQuestions, setFlatQuestions] = useState<OnboardingQuestion[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
+  const onboardingService = new OnboardingApiService();
+
+  useEffect(() => {
+    // Middleware now handles redirects, but we can still show a loading state.
+    if (!isAuthLoading && user?.isOnboarded) {
+      router.push('/dashboard');
     }
+  }, [user, isAuthLoading, router]);
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const data = await onboardingService.getQuestions();
+        setSections(data);
+        // build flattened question list preserving order
+        const flat = data.flatMap((s) => s.questions.map((q) => ({ ...q })));
+        setFlatQuestions(flat);
+      } catch (error) {
+        console.error('Failed to load onboarding questions', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchQuestions();
+  }, []);
+
+  const handleAnswerChange = (questionId: string, value: OnboardingAnswerValue) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestionIndex < flatQuestions.length - 1) {
+      setCurrentQuestionIndex((i) => i + 1);
+    }
+  };
+
+  const prevQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex((i) => i - 1);
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const finalAnswers: OnboardingAnswer[] = Object.entries(answers).map(([questionId, answer]) => ({
+      questionId,
+      answer,
+    }));
+
+    try {
+      if (user) {
+        // Authenticated: submit directly to backend which will persist to DB
+        await onboardingService.submitAnswers(finalAnswers);
+        router.push('/dashboard');
+      } else {
+        // Unauthenticated: persist to localStorage and prompt to register
+        localStorage.setItem('pending_onboarding', JSON.stringify(finalAnswers));
+        // Show a message and a button to navigate to register
+        setShowRegisterPrompt(true);
+      }
+    } catch (error) {
+      console.error('Failed to submit onboarding answers', error);
+      // TODO: show error to user
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading || isAuthLoading || flatQuestions.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin" />
+      </div>
+    );
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    )
-  }
-
-  if (!currentQuestion) {
-    return (
-      <div className="min-h-screen bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
-        <div className="text-white text-xl">No questions available</div>
-      </div>
-    )
-  }
+  const currentQuestion = flatQuestions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / flatQuestions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-600 to-blue-800 flex">
-      {/* Left Panel */}
-      <div className="w-1/3 p-12 flex flex-col justify-center text-white">
+    <div className="grid md:grid-cols-2 min-h-screen">
+      <div className="bg-blue-600 text-white p-12 flex flex-col justify-center">
+        <h1 className="text-4xl font-bold">Get Yourself Personalized AI Therapist With TalkToDaisy.</h1>
+        <p className="text-xl mt-4">We Will Have An Onboarding Before Moving Forward</p>
+      </div>
+      <div className="bg-gray-50 flex flex-col items-center justify-center p-4">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-6"
         >
-          <h1 className="text-4xl font-bold mb-6">
-            Get Yourself Personalized AI Therapist With TalkToDaisy.
-          </h1>
-          <p className="text-xl text-blue-100">
-            We Will Have An Onboarding Before Moving Forward
-          </p>
+          <h2 className="text-2xl font-bold text-gray-800">{currentQuestion ? currentQuestion.question : 'Question'}</h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-8">
+              {currentQuestion && (
+                <div key={currentQuestion.id}>
+                  <label className="block text-md font-medium text-gray-700 mb-2">
+                    {currentQuestion.question}
+                    {currentQuestion.required && <span className="text-red-500">*</span>}
+                  </label>
+                  <QuestionComponent question={currentQuestion} answer={answers[currentQuestion.id]} onChange={(value) => handleAnswerChange(currentQuestion.id, value)} />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 flex justify-between">
+              <button
+                type="button"
+                onClick={prevQuestion}
+                disabled={currentQuestionIndex === 0}
+                className="px-6 py-2 border rounded-md disabled:opacity-50 flex items-center"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              </button>
+
+              {currentQuestionIndex < flatQuestions.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={nextQuestion}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-md flex items-center"
+                >
+                  Next <ArrowRight className="w-4 h-4 ml-2" />
+                </button>
+              ) : (
+                <div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 py-2 bg-green-600 text-white rounded-md disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...
+                      </>
+                    ) : (
+                      'Complete Onboarding'
+                    )}
+                  </button>
+                  {showRegisterPrompt && (
+                    <div className="mt-4 p-4 bg-yellow-50 rounded-md">
+                      <p className="text-sm text-gray-800 mb-2">
+                        Register to continue with your personal AI Companion
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => router.push('/register')}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                        >
+                          Register
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            localStorage.removeItem('pending_onboarding');
+                            router.push('/');
+                          }}
+                          className="px-4 py-2 border rounded-md"
+                        >
+                          Skip
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              By entering your information and continuing you agree to our Terms of Service | Privacy Policy
+              <br />
+              Please review before continuing
+            </p>
+          </form>
         </motion.div>
       </div>
-
-      {/* Right Panel */}
-      <div className="flex-1 bg-gray-50 p-12 flex flex-col justify-center">
-        <div className="max-w-2xl mx-auto w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentQuestionIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                  {currentQuestion.question}
-                </h2>
-                {renderQuestionInput(currentQuestion)}
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Navigation */}
-          <div className="flex justify-between items-center mt-12">
-            <button
-              onClick={handleBack}
-              disabled={currentQuestionIndex === 0}
-              className="flex items-center px-6 py-3 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5 mr-2" />
-              Back
-            </button>
-
-            <button
-              onClick={handleNext}
-              disabled={!canProceed || isSubmitting}
-              className="flex items-center px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSubmitting ? (
-                'Submitting...'
-              ) : isLastQuestion ? (
-                'Complete'
-              ) : (
-                <>
-                  Next
-                  <ChevronRight className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Progress */}
-          <div className="mt-8">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-              <span>{Math.round(((currentQuestionIndex + 1) / questions.length) * 100)}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Terms */}
-          <p className="text-sm text-gray-500 text-center mt-8">
-            By entering your information and continuing you agree to our{' '}
-            <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a>
-            {' | '}
-            <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
-            <br />
-            Please review before continuing
-          </p>
-        </div>
-      </div>
     </div>
-  )
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <ClientOnly>
+      <OnboardingPageContent />
+    </ClientOnly>
+  );
 }

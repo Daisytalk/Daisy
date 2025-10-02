@@ -56,22 +56,22 @@ export function AboutSection() {
     <section className="py-24 bg-[#D1E2D3]">
       <div className="max-w-7xl mx-auto px-6">
         {/* About Carousel */}
-        <div className="relative">
-          {/* Left Navigation */}
+        <div className="relative max-w-6xl mx-auto">
+          {/* Desktop Navigation */}
           <button
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 shadow-lg flex items-center justify-center hover:bg-white transition-colors -translate-x-16"
+            className="hidden xl:block absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 shadow-lg flex items-center justify-center hover:bg-white transition-colors -translate-x-16"
             aria-label="Previous content"
           >
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
 
           <div 
-            className="flex justify-center"
+            className="px-4 sm:px-6"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <div className="grid lg:grid-cols-2 gap-16 items-center max-w-6xl">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
               {/* Content */}
               <motion.div
                 key={`content-${currentIndex}`}
@@ -80,13 +80,13 @@ export function AboutSection() {
                 transition={{ duration: 0.8 }}
                 className="order-2 lg:order-1"
               >
-                <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
                   {currentData.title}
                 </h1>
-                <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+                <p className="text-sm sm:text-base lg:text-lg text-gray-700 mb-6 sm:mb-8 leading-relaxed">
                   {currentData.content}
                 </p>
-                <button className="rounded-full border-2 border-gray-900 px-8 py-3 text-lg font-medium text-gray-900 hover:bg-gray-900 hover:text-white transition-colors">
+                <button className="rounded-full border-2 border-gray-900 px-4 sm:px-6 lg:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg font-medium text-gray-900 hover:bg-gray-900 hover:text-white transition-colors w-full sm:w-auto">
                   {currentData.buttonText}
                 </button>
               </motion.div>
@@ -97,14 +97,14 @@ export function AboutSection() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
-                className="order-1 lg:order-2 flex flex-col items-end"
+                className="order-1 lg:order-2 flex flex-col items-center lg:items-end"
               >
-                <div className="mb-4 text-right">
-                  <p className="text-sm font-semibold text-gray-600 tracking-wider">
+                <div className="mb-3 sm:mb-4 text-center lg:text-right">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-600 tracking-wider">
                     {currentData.subtitle}
                   </p>
                 </div>
-                <div className="w-80 h-80 rounded-full overflow-hidden">
+                <div className="w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 rounded-full overflow-hidden">
                   <img 
                     src={currentData.image} 
                     alt={currentData.title}
@@ -115,18 +115,19 @@ export function AboutSection() {
             </div>
           </div>
 
-          {/* Right Navigation */}
+          {/* Desktop Navigation */}
           <button
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 shadow-lg flex items-center justify-center hover:bg-white transition-colors translate-x-16"
+            className="hidden xl:block absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/80 shadow-lg flex items-center justify-center hover:bg-white transition-colors translate-x-16"
             aria-label="Next content"
           >
             <ChevronRight className="w-6 h-6 text-gray-600" />
           </button>
+
         </div>
 
         {/* Indicators */}
-        <div className="flex justify-center mt-12 gap-3">
+        <div className="flex justify-center mt-8 sm:mt-12 gap-3">
           {aboutData.map((_, index) => (
             <button
               key={index}

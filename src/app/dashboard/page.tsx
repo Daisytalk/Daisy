@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
@@ -7,8 +7,10 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import type { OnboardingData } from '@/shared/types/auth'
+import { ClientOnly } from '@/shared/components/ClientOnly'
+import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { user, logout } = useAuth()
@@ -16,18 +18,10 @@ export default function DashboardPage() {
   const onboardingService = new OnboardingApiService()
 
   useEffect(() => {
-    if (!user) {
-      router.push('/login')
-      return
+    if (user) {
+      loadOnboardingData()
     }
-
-    if (!user.isOnboarded) {
-      router.push('/onboarding')
-      return
-    }
-
-    loadOnboardingData()
-  }, [user, router])
+  }, [user])
 
   const loadOnboardingData = async () => {
     if (!user) return
@@ -231,5 +225,15 @@ export default function DashboardPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <ClientOnly>
+      <ProtectedRoute>
+        <DashboardPageContent />
+      </ProtectedRoute>
+    </ClientOnly>
   )
 }

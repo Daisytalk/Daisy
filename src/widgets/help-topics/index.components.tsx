@@ -74,7 +74,7 @@ export function HelpTopicsSection() {
     <div className="relative py-24 sm:py-32">
       <div className="absolute inset-0">
         <img
-          src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&crop=center"
+          src="https://images.unsplash.com/photo-1750650983022-874bab0db460?w=1920&h=1080&fit=crop&crop=center"
           alt="Mountain landscape"
           className="w-full h-full object-cover"
         />
@@ -87,17 +87,17 @@ export function HelpTopicsSection() {
             How It Works
           </div>
           <div className="max-w-xl text-left lg:text-right">
-            <h2 className="mt-2 text-4xl font-semibold tracking-tight text-gray-800 sm:text-6xl">
+            <h2 className="mt-2 text-4xl font-semibold tracking-tight text-white sm:text-6xl">
               What Can Daisy Help You With?
             </h2>
           </div>
         </div>
 
         <div className="mt-16 relative">
-          {/* Left Navigation */}
+          {/* Left Navigation - Desktop Only */}
           <button
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/30 transition-colors -translate-x-16"
+            className="hidden xl:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white items-center justify-center hover:bg-white/30 transition-colors -translate-x-16"
             aria-label="Previous topics"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -142,10 +142,10 @@ export function HelpTopicsSection() {
             ))}
           </div>
 
-          {/* Right Navigation */}
+          {/* Right Navigation - Desktop Only */}
           <button
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/30 transition-colors translate-x-16"
+            className="hidden xl:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white items-center justify-center hover:bg-white/30 transition-colors translate-x-16"
             aria-label="Next topics"
           >
             <ChevronRight className="w-6 h-6" />
@@ -160,7 +160,7 @@ export function HelpTopicsSection() {
           className="mt-16 flex justify-center"
         >
           <a href="#" className="rounded-full bg-[#7E9EC4] px-8 py-4 text-lg font-semibold text-white shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 transition-colors">
-            Get Support
+             Talk to Daisy
           </a>
         </motion.div>
       </div>

@@ -5,19 +5,19 @@ import { CirclePlus } from 'lucide-react'
 
 const benefits = [
   {
-    name: 'Any minute, anywhere',
-    description: 'Tap to talk-at home, on the way, or between meetings.',
-    imageUrl: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=210&h=126&fit=crop&crop=center',
-  },
-  {
-    name: 'Designed with psychologists',
-    description: 'And grounded in modern methods (CBT, DBT, gentle activation).',
-    imageUrl: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=210&h=126&fit=crop&crop=center',
-  },
-  {
-    name: 'Daisy keeps context over time',
-    description: 'so you never start from scratch.',
+    name: 'Instant support, anytime',
+    description: 'Just one tap to connect, even in moments of crisis.',
     imageUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=210&h=126&fit=crop&crop=center',
+  },
+  {
+    name: 'Scientifically grounded',
+    description: 'Powered by CBT and DBT – the most validated therapeutic approaches.',
+    imageUrl: 'https://images.unsplash.com/photo-1758691462667-f2fb90a067ff?w=210&h=126&fit=crop&crop=center',
+  },
+  {
+    name: 'Consistent care',
+    description: 'Your conversations are remembered, so you never have to start over.',
+    imageUrl: 'https://plus.unsplash.com/premium_photo-1661344296685-35460b960e35?w=210&h=126&fit=crop&crop=center',
   },
 ]
 
@@ -33,10 +33,10 @@ export function BenefitsSection() {
             viewport={{ once: true }}
             className="lg:pr-4"
           >
-            <div className="text-2xl sm:text-3xl lg:text-4xl tracking-tight text-gray-900 space-y-4 sm:space-y-6">
-              <p className="leading-tight font-semibold">Can't wait weeks for therapy?</p>
-              <p className="leading-tight font-base text-xl sm:text-2xl lg:text-3xl"> You still deserve relief. Daisy listens without judgment and offers gentle, psychology-informed steps you can take today.</p>
-              <p className="leading-tight font-semibold">A new standard for everyday mental support: <span className="font-normal">quick, private, always-on.</span></p>
+            <div className="text-xl sm:text-2xl lg:text-3xl tracking-tight text-gray-900 space-y-4 sm:space-y-6">
+              <p className="leading-tight font-semibold">Feeling overwhelmed and in need of support? Struggling to manage stress and emotions?</p>
+              <p className="leading-tight font-base text-xl sm:text-2xl lg:text-3xl">Daisy offers a safe space without judgment, guiding you with evidence-based steps for everyday well-being.</p>
+              <p className="leading-tight font-normal">Smart mental health tracking: <span className="font-semibold">private, fast, and grounded in science</span></p>
             </div>
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
               <a href="#how-it-works" className="rounded-full px-6 py-3 text-base sm:text-lg font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-900 hover:bg-gray-50 transition-colors text-center">

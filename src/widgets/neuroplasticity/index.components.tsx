@@ -30,14 +30,14 @@ export function NeuroplasticitySection() {
                 Neuroplasticity means your brain <i>can</i> change.
               </h2>
               <h4 className="mt-6 text-base leading-8 text-gray-300">
-                Practice changes pathways. Short, daily chats with Daisy rehearse calm, clear responses - until they become your default.
+                With daily chats, Daisy helps you practice responding to stress with calm and clarity, turning small steps into lasting habits for a more balanced life.
               </h4>
               <div className="mt-10">
                 <a
                   href="#"
                   className="rounded-full bg-white px-6 py-3 text-base font-semibold text-black shadow-sm hover:bg-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
                 >
-                  Get Help
+                  Talk to Daisy
                 </a>
               </div>
             </div>
