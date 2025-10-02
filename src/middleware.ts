@@ -20,6 +20,7 @@ export async function middleware(request: NextRequest) {
     '/api/waitlist',
     '/api/admin/waitlist',
     '/api/test-db',
+    '/api/env-test',
     '/terms',
     '/privacy',
   ]

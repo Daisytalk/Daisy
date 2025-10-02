@@ -1,14 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/shared/lib/database'
+import { PrismaClient } from '@prisma/client'
 
 export async function POST(request: NextRequest) {
   try {
     console.log('🚀 Waitlist API called')
+    
+    // Check environment variables
+    const databaseUrl = process.env.DATABASE_URL
     console.log('🔍 Environment check:', {
       NODE_ENV: process.env.NODE_ENV,
-      DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set',
-      DATABASE_URL_LENGTH: process.env.DATABASE_URL?.length || 0
+      DATABASE_URL: databaseUrl ? 'Set' : 'Not set',
+      DATABASE_URL_LENGTH: databaseUrl?.length || 0,
+      ALL_ENV_VARS: Object.keys(process.env).filter(key => key.includes('DATABASE')),
     })
+    
+    // If DATABASE_URL is not available, return early with helpful error
+    if (!databaseUrl) {
+      console.error('❌ DATABASE_URL not found in environment variables')
+      console.log('Available environment variables:', Object.keys(process.env).sort())
+      
+      return NextResponse.json(
+        { 
+          error: 'Database configuration missing. Please check environment variables.',
+          details: 'DATABASE_URL environment variable not found',
+          id: `temp_${Date.now()}`,
+          saved: false
+        },
+        { status: 503 }
+      )
+    }
 
     const body = await request.json()
     const { name, preferredName, email, telegram, message } = body
@@ -44,8 +64,19 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Validation passed, attempting database operation...')
 
+    // Create Prisma client directly with the environment variable
+    let prisma: PrismaClient | null = null
+    
     try {
-      console.log('🔍 Initializing Prisma client...')
+      console.log('🔍 Creating Prisma client directly with DATABASE_URL...')
+      
+      prisma = new PrismaClient({
+        datasources: {
+          db: {
+            url: databaseUrl
+          }
+        }
+      })
       
       // Test database connection first
       console.log('🔍 Testing database connection...')
@@ -65,6 +96,7 @@ export async function POST(request: NextRequest) {
 
       if (existingEntry) {
         console.log('❌ Email already exists in waitlist')
+        await prisma.$disconnect()
         return NextResponse.json(
           { error: 'This email is already on the waitlist' },
           { status: 409 }
@@ -87,6 +119,8 @@ export async function POST(request: NextRequest) {
         email: waitlistEntry.email,
         timestamp: waitlistEntry.createdAt
       })
+
+      await prisma.$disconnect()
 
       return NextResponse.json(
         { 
@@ -135,8 +169,14 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       )
     } finally {
-      // Always disconnect
-      await prisma.$disconnect()
+      // Always disconnect if prisma was created
+      if (prisma) {
+        try {
+          await prisma.$disconnect()
+        } catch (disconnectError) {
+          console.log('Note: Could not disconnect Prisma client')
+        }
+      }
     }
 
   } catch (error) {
