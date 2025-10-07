@@ -1,21 +1,62 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { AuthService } from '@/shared/lib/auth'
+import prisma from '@/shared/lib/database'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    // In a real application, you might want to:
-    // 1. Invalidate the JWT token on the server side
-    // 2. Clear any server-side sessions
-    // 3. Log the logout event
+    // Try to get token from cookie first, then fall back to Authorization header
+    let token = request.cookies.get('auth_token')?.value
     
-    // For now, we'll just return a success response
-    // The client will handle removing the token from localStorage
+    if (!token) {
+      const authHeader = request.headers.get('authorization')
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7)
+      }
+    }
     
-    return NextResponse.json({ message: 'Logged out successfully' })
+    if (token) {
+      try {
+        const decoded = AuthService.verifyToken(token)
+        
+        if (decoded && decoded.userId) {
+          console.log(`User ${decoded.userId} logged out at ${new Date().toISOString()}`)
+          
+          await prisma.user.update({
+            where: { id: decoded.userId },
+            data: { updatedAt: new Date() }
+          }).catch(err => {
+            console.error('Failed to update user timestamp on logout:', err)
+          })
+        }
+      } catch (tokenError) {
+        console.log('Logout attempted with invalid token')
+      }
+    }
+
+    const response = NextResponse.json({ 
+      message: 'Logged out successfully',
+      success: true 
+    })
+
+    // Delete the auth cookie
+    response.cookies.delete('auth_token')
+
+    return response
+
   } catch (error) {
     console.error('Logout error:', error)
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
+    
+    const response = NextResponse.json(
+      { 
+        message: 'Logged out successfully',
+        success: true 
+      },
+      { status: 200 }
     )
+
+    // Still delete the cookie even on error
+    response.cookies.delete('auth_token')
+
+    return response
   }
 }
