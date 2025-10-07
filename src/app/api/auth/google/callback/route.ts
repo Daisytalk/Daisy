@@ -8,8 +8,8 @@ export async function GET(req: NextRequest) {
     const code = searchParams.get('code')
     if (!code) return NextResponse.json({ message: 'Missing code' }, { status: 400 })
 
-    const clientId = process.env.GOOGLE_CLIENT_ID
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    const clientSecret = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET
     const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT || 'http://localhost:3000/(auth)/oauth/success'
 
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {

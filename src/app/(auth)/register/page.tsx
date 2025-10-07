@@ -329,6 +329,7 @@ function RegisterPageContent() {
             <div className="grid gap-4">
               <button
                 type="button"
+                onClick={() => window.location.href = '/api/auth/google'}
                 className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 <FaGoogle className="w-5 h-5 text-[#4285F4]" />
