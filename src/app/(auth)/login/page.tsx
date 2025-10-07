@@ -244,7 +244,7 @@ function LoginPageContent() {
             </div>
 
             {/* Social Login */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4">
               <button
                 type="button"
                 onClick={() => window.location.href = '/api/auth/google'}

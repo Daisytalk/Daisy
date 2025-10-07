@@ -64,13 +64,21 @@ async function handleStream(
 export async function POST(request: NextRequest) {
   try {
     const { messages: clientMessages } = await request.json()
-    const authHeader = request.headers.get('authorization')
+    
+    // Try to get token from cookie first, then fall back to Authorization header
+    let token = request.cookies.get('auth_token')?.value
+    
+    if (!token) {
+      const authHeader = request.headers.get('authorization')
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7)
+      }
+    }
 
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!token) {
       return NextResponse.json({ message: 'Authorization token required' }, { status: 401 })
     }
 
-    const token = authHeader.substring(7)
     const decoded = AuthService.verifyToken(token)
     if (!decoded) {
       return NextResponse.json({ message: 'Invalid token' }, { status: 401 })

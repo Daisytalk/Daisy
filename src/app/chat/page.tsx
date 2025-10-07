@@ -18,16 +18,20 @@ function ChatPageContent() {
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
-      headers: async () => {
-        // Get token from cookie
+      credentials: 'include', // Include cookies in requests (for HttpOnly cookies)
+      headers: () => {
+        // Get token from cookie (fallback for client-side accessible cookies)
         const token = document.cookie
           .split('; ')
           .find(row => row.startsWith('auth_token='))
           ?.split('=')[1]
 
-        return {
-          'Authorization': `Bearer ${token || ''}`,
+        // Return headers object - Authorization header if token exists
+        const headers: Record<string, string> = {}
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`
         }
+        return headers
       },
     }),
   })
@@ -145,8 +149,8 @@ function ChatPageContent() {
               )}
               <div
                 className={`max-w-[85%] sm:max-w-xl p-4 sm:p-5 rounded-2xl shadow-lg ${m.role === "user"
-                    ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-none"
-                    : "bg-white text-gray-800 rounded-bl-none border border-gray-100"
+                  ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-none"
+                  : "bg-white text-gray-800 rounded-bl-none border border-gray-100"
                   }`}
               >
                 <p className="whitespace-pre-wrap leading-relaxed">{textFrom(m)}</p>
