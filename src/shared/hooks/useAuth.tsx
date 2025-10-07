@@ -3,7 +3,6 @@
 import { useState, useEffect, useContext, createContext, ReactNode } from 'react'
 import type { User, AuthState, LoginCredentials, RegisterCredentials } from '@/shared/types/auth'
 import { AuthApiService } from '@/shared/services/auth'
-import { getAuthToken, setAuthToken, removeAuthToken } from '@/shared/lib/auth'
 
 interface AuthContextType {
   user: User | null
@@ -32,16 +31,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuthStatus = async () => {
     try {
-      const token = getAuthToken()
-      if (!token) {
-        setState(prev => ({ ...prev, isLoading: false }))
-        return
-      }
-
       const user = await authService.getCurrentUser()
       setState(prev => ({ ...prev, user, isLoading: false }))
     } catch (err) {
-      removeAuthToken()
       setState(prev => ({ ...prev, user: null, isLoading: false }))
     }
   }
@@ -49,14 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: LoginCredentials) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
     try {
-      const { user, token } = await authService.login(credentials)
-      setAuthToken(token)
+      const { user } = await authService.login(credentials)
       setState(prev => ({ ...prev, user, isLoading: false }))
     } catch (err) {
-      setState(prev => ({ 
-        ...prev, 
+      setState(prev => ({
+        ...prev,
         error: err instanceof Error ? err.message : 'Login failed',
-        isLoading: false 
+        isLoading: false
       }))
       throw err
     }
@@ -65,14 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (credentials: RegisterCredentials) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
     try {
-      const { user, token } = await authService.register(credentials)
-      setAuthToken(token)
+      const { user } = await authService.register(credentials)
       setState(prev => ({ ...prev, user, isLoading: false }))
     } catch (err) {
-      setState(prev => ({ 
-        ...prev, 
+      setState(prev => ({
+        ...prev,
         error: err instanceof Error ? err.message : 'Registration failed',
-        isLoading: false 
+        isLoading: false
       }))
       throw err
     }
@@ -82,7 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, isLoading: true }))
     try {
       await authService.logout()
-      removeAuthToken()
       setState({ user: null, isLoading: false, error: null })
     } catch (err) {
       setState(prev => ({ ...prev, isLoading: false }))
@@ -120,10 +109,10 @@ export function useAuth(): AuthContextType {
         user: null,
         isLoading: false,
         error: 'AuthProvider is missing',
-        login: async () => {},
-        register: async () => {},
-        logout: async () => {},
-        clearError: () => {},
+        login: async () => { },
+        register: async () => { },
+        logout: async () => { },
+        clearError: () => { },
       }
     }
 
@@ -132,10 +121,10 @@ export function useAuth(): AuthContextType {
       user: null,
       isLoading: true,
       error: null,
-      login: async () => {},
-      register: async () => {},
-      logout: async () => {},
-      clearError: () => {},
+      login: async () => { },
+      register: async () => { },
+      logout: async () => { },
+      clearError: () => { },
     }
   }
 
