@@ -1,7 +1,7 @@
 'use client'
 
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react'
-import { Tiktok } from '@radix-ui/react-slot'
+import { Mail, MapPin } from 'lucide-react'
+import { FaTiktok, FaInstagram } from 'react-icons/fa'
 import { NewsletterForm } from '@/features/newsletter-signup'
 
 interface FooterSectionProps {
@@ -23,17 +23,11 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
               Connecting you with licensed professionals for quality care.
             </p>
             <div className="flex space-x-3 sm:space-x-4">
-              <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
-                <Facebook className="w-4 h-4 sm:w-5 sm:h-5" />
+              <a href="https://www.tiktok.com/@talk.to.daisy2?_t=ZN-90KL5339oGc&_r=1" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
+                <FaTiktok className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
-              <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
-                <Twitter className="w-4 h-4 sm:w-5 sm:h-5" />
-              </a>
-              <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
-                <Instagram className="w-4 h-4 sm:w-5 sm:h-5" />
-              </a>
-              <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
-                <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
+              <a href="https://www.instagram.com/talk_to_daisy?igsh=cGdkeW5nYmtuZDlh" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
+                <FaInstagram className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
             </div>
           </div>
