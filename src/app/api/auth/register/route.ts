@@ -4,7 +4,7 @@ import prisma from '@/shared/lib/database'
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password } = await request.json()
+    const { name, email, password, onboardingAnswers } = await request.json()
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -28,15 +28,17 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password: hashedPassword,
+        // Mark as onboarded if they completed onboarding before registration
+        isOnboarded: !!onboardingAnswers && onboardingAnswers.length > 0,
       },
     })
 
-    // Create corresponding onboarding data and AI session entries
+    // Create corresponding onboarding data with answers if provided
     await prisma.onboardingData.create({
       data: {
         userId: newUser.id,
-        responses: {},
-        completed: false,
+        responses: onboardingAnswers || {},
+        completed: !!onboardingAnswers && onboardingAnswers.length > 0,
       }
     });
 
@@ -49,11 +51,13 @@ export async function POST(request: NextRequest) {
     })
 
     const trialEndsAt = AuthService.generateTrialEndDate();
+    const isOnboarded = !!onboardingAnswers && onboardingAnswers.length > 0;
+    
     const token = AuthService.generateToken({
       id: newUser.id,
       email: newUser.email,
       name: newUser.name ?? undefined,
-      isOnboarded: false,
+      isOnboarded,
       createdAt: newUser.createdAt,
       updatedAt: newUser.updatedAt,
       subscriptionStatus: 'trial',
@@ -65,7 +69,7 @@ export async function POST(request: NextRequest) {
         id: newUser.id,
         email: newUser.email,
         name: newUser.name,
-        isOnboarded: false,
+        isOnboarded,
         subscriptionStatus: 'trial',
         trialEndsAt,
       },

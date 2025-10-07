@@ -19,7 +19,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
   const navigation = [
     { name: 'How It Works', href: '#how-it-works' },
     { name: 'Why Daisy', href: '#about' },
-    { name: 'Reviews', href: '#testimonials' },
+    // { name: 'Reviews', href: '#testimonials' },
     { name: 'Pricing', href: '#pricing' },
   ]
 
@@ -42,17 +42,20 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
     <div className="relative isolate min-h-screen">
       {/* Background Image - Mountain landscape */}
       <div className="absolute inset-0 -z-10">
-        <img
-          src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&h=1080&fit=crop&crop=center"
-          alt="Mountain landscape"
-          className="w-full h-full object-cover"
-        />
+        <video
+          src="videos/daisy - starting page.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover">
+        </video>
         <div className="absolute inset-0 bg-black/40" />
       </div>
 
       {/* Navigation */}
       <header className="absolute inset-x-0 top-0 z-50">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 sm:p-6 lg:px-8" aria-label="Global">
+        <nav className="mx-auto flex max-w-8xl items-center justify-between p-4 sm:p-6 lg:px-8" aria-label="Global">
           <div className="flex lg:flex-1">
             <a href="/" className="-m-1.5 p-1.5">
               <img src="/images/logo.svg" className="h-8 sm:h-10 lg:h-12 w-auto" alt="Daisy logo" />
@@ -162,12 +165,12 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
         >
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium tracking-tight text-white leading-tight">
             Daisy - Your 24/7 <br className="hidden sm:block" />
-            <span className="sm:hidden"> </span>Mental Health Companion
+            <span className="sm:hidden"> </span>Mental Health Assistant
           </h1>
         </motion.div>
 
         <div className="absolute bottom-4 sm:bottom-8 lg:bottom-12 left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8">
-          <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-4 sm:gap-6 lg:gap-8 max-w-8xl mx-auto">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}

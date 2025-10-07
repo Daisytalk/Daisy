@@ -26,7 +26,7 @@ export function ChatDemoSection() {
             See How Daisy Supports You
           </h2>
           <p className="text-lg text-gray-600">
-            Experience a real conversation with our AI-powered mental health companion
+            Experience a real conversation with our AI-powered mental health assistant
           </p>
         </motion.div>
 

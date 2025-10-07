@@ -29,11 +29,11 @@ function HomeContent() {
       label: 'get_started',
     })
 
-    // Navigate to onboarding (use full navigation to avoid any client-side guard race)
+    // Navigate to onboarding first
     if (typeof window !== 'undefined') {
-      window.location.href = '/waitlist'
+      window.location.href = '/onboarding'
     } else {
-      router.push('/waitlist')
+      router.push('/onboarding')
     }
   }
 
@@ -94,7 +94,7 @@ function HomeContent() {
       {/* <AboutSection /> */}
       <ReviewsSection />
       <FAQSection />
-      <PricingSection onSelectPlan={handleSelectPlan} />
+      {/* <PricingSection onSelectPlan={handleSelectPlan} /> */}
       <CTASection onGetStarted={handleGetStarted} />
       <FooterSection onNewsletterSubmit={handleNewsletterSubmit} />
     </main>
