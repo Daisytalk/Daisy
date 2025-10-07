@@ -131,12 +131,9 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
                     ))}
                   </div>
                   <div className="py-6 space-y-4">
-                    <div className="mb-6">
-                      <LanguageSwitcher />
-                    </div>
                     <Button
                       variant="outline"
-                      className="w-full text-white border-white hover:bg-gray-800 py-3 text-base"
+                      className="w-full text-black border-white hover:bg-gray-800 py-3 text-base"
                       onClick={() => router.push('/login')}
                     >
                       Login

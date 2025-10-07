@@ -17,14 +17,14 @@ export async function GET(request: NextRequest) {
   try {
     // Try to get token from cookie first, then fall back to Authorization header
     let token = request.cookies.get('auth_token')?.value
-    
+
     if (!token) {
       const authHeader = request.headers.get('authorization')
       if (authHeader && authHeader.startsWith('Bearer ')) {
         token = authHeader.substring(7)
       }
     }
-    
+
     if (!token) {
       return NextResponse.json(
         { message: 'Authorization token required' },
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     const decoded = AuthService.verifyToken(token)
-    
+
     if (!decoded || !decoded.userId) {
       return NextResponse.json(
         { message: 'Invalid or expired token' },
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const user = await prisma.user.findUnique({ 
+    const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
         id: true,
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Me endpoint error:', error)
-    
+
     if (error instanceof Error) {
       if (error.name === 'TokenExpiredError') {
         return NextResponse.json(
