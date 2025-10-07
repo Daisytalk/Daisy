@@ -30,14 +30,14 @@ export function CTASection({ onGetStarted }: CTASectionProps) {
           className="mx-auto max-w-2xl text-center"
         >
           <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-            Receive The Help From Your Own AI Companion
+            Receive The Help From Your Own AI Assistant
           </h2>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <button
               onClick={onGetStarted}
               className="rounded-full bg-white px-8 py-4 text-lg font-semibold text-black shadow-lg ring-1 ring-gray-200 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
             >
-              Am I A Candidate?
+              Talk To Daisy
             </button>
           </div>
         </motion.div>

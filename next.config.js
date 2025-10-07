@@ -24,11 +24,7 @@ const nextConfig = {
   trailingSlash: false,
   async redirects() {
     return [
-      {
-        source: '/register',
-        destination: '/waitlist',
-        permanent: false,
-      },
+
     ]
   },
 }

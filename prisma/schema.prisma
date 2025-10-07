@@ -64,16 +64,3 @@ model Newsletter {
 
   @@map("newsletter")
 }
-
-model Waitlist {
-  id            String @id @default(cuid())
-  name          String
-  preferredName String
-  email         String
-  telegram      String
-  message       String
-
-  createdAt DateTime @default(now())
-
-  @@map("waitlist")
-}

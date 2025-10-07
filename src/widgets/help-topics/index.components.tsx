@@ -159,7 +159,7 @@ export function HelpTopicsSection() {
           viewport={{ once: true }}
           className="mt-16 flex justify-center"
         >
-          <a href="#" className="rounded-full bg-[#7E9EC4] px-8 py-4 text-lg font-semibold text-white shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 transition-colors">
+          <a href="#" className="rounded-full bg-[#FFDC61] px-8 py-4 text-lg font-semibold text-black shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 transition-colors">
              Talk to Daisy
           </a>
         </motion.div>

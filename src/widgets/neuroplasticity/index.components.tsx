@@ -35,7 +35,7 @@ export function NeuroplasticitySection() {
               <div className="mt-10">
                 <a
                   href="#"
-                  className="rounded-full bg-white px-6 py-3 text-base font-semibold text-black shadow-sm hover:bg-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
+                  className="rounded-full bg-[#FFDC61] px-6 py-3 text-base font-semibold text-black shadow-sm hover:bg-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
                 >
                   Talk to Daisy
                 </a>

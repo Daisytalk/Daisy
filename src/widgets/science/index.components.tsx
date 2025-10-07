@@ -3,81 +3,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
+import { getAllResearchPapers, type ResearchPaper } from '@/shared/data/research-papers'
 
-const scienceData = [
-  {
-    articles: [
-      {
-        title: 'Can AI Replace Psychotherapists? Exploring The Future Of Mental Health Care',
-        date: 'October, 2024 - 10 min read',
-        imageUrl: 'https://plus.unsplash.com/premium_photo-1680608979589-e9349ed066d5?w=420&h=210&fit=crop&crop=center',
-      },
-      {
-        title: 'Conversational Artificial Intelligence In Psychotherapy: A New Therapeutic Tool Or Agent?',
-        date: 'May, 2023 - 10 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=420&h=210&fit=crop&crop=center',
-      },
-      {
-        title: 'Artificial Intelligence (AI) In Psychotherapy: A Challenging Frontier',
-        date: 'August, 2025 - 10 min read',
-        imageUrl: 'https://plus.unsplash.com/premium_photo-1723507348942-58d245d27c52?w=420&h=210&fit=crop&crop=center',
-      },
-    ],
-    references: [
-      "1. Jesudason, D., Bacchi, S., & Bastiampillai, T. (2025). Artificial intelligence (AI) in psychotherapy: A challenging frontier. Australasian psychiatry : bulletin of Royal Australian and New Zealand College of Psychiatrists, 33(4), 629-632. https://doi.org/10.1177/10398562251346075",
-      "2. Smith, J., & Johnson, A. (2024). Digital therapeutic interventions in mental health care: A systematic review. Journal of Medical Internet Research, 26(8), e45123. https://doi.org/10.2196/45123",
-      "3. Brown, L., Davis, M., & Wilson, K. (2024). Machine learning applications in psychological assessment: Current trends and future directions. Clinical Psychology Review, 98, 102234. https://doi.org/10.1016/j.cpr.2024.102234",
-    ]
-  },
-  {
-    articles: [
-      {
-        title: 'Digital Mental Health Solutions: The Future of Therapy',
-        date: 'September, 2024 - 8 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1758691463193-9d2b21fdb3ba?w=420&h=210&fit=crop&crop=center',
-      },
-      {
-        title: 'Machine Learning in Mental Health Assessment',
-        date: 'July, 2024 - 12 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1758691463110-697a814b2033?w=420&h=210&fit=crop&crop=center',
-      },
-      {
-        title: 'Ethical AI in Mental Healthcare',
-        date: 'June, 2024 - 15 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=420&h=210&fit=crop&crop=center',
-      },
-    ],
-    references: [
-      "4. Garcia, R., & Martinez, S. (2023). Conversational AI in mental health: Opportunities and challenges. Nature Digital Medicine, 6, 145. https://doi.org/10.1038/s41746-023-00892-1",
-      "5. Thompson, P., Lee, H., & Anderson, C. (2024). Ethical considerations in AI-powered mental health interventions. AI & Society, 39(3), 1123-1135. https://doi.org/10.1007/s00146-023-01789-2",
-      "6. Wilson, M., & Davis, K. (2024). Privacy and security in digital mental health platforms. Computers in Human Behavior, 152, 108089. https://doi.org/10.1016/j.chb.2024.108089",
-    ]
-  },
-  {
-    articles: [
-      {
-        title: 'Natural Language Processing in Therapy',
-        date: 'April, 2024 - 11 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=420&h=210&fit=crop&crop=center',
-      },
-      {
-        title: 'Virtual Reality Therapy Applications',
-        date: 'March, 2024 - 9 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=420&h=210&fit=crop&crop=center',
-      },
-      {
-        title: 'Predictive Analytics in Mental Health',
-        date: 'February, 2024 - 13 min read',
-        imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=420&h=210&fit=crop&crop=center',
-      },
-    ],
-    references: [
-      "7. Johnson, L., & Brown, A. (2024). Natural language processing applications in psychological assessment. Journal of Clinical Psychology, 80(4), 892-908. https://doi.org/10.1002/jclp.23456",
-      "8. Miller, S., et al. (2024). Virtual reality interventions for anxiety disorders: A meta-analysis. Clinical Psychology Review, 99, 102245. https://doi.org/10.1016/j.cpr.2024.102245",
-      "9. Anderson, R., & Taylor, M. (2024). Predictive modeling in mental health: Current applications and future directions. Psychological Medicine, 54(8), 1567-1580. https://doi.org/10.1017/S0033291724000123",
-    ]
-  }
-]
+// Group papers into sets of 3 for carousel
+const allPapers = getAllResearchPapers()
+const scienceData: { articles: ResearchPaper[] }[] = []
+for (let i = 0; i < allPapers.length; i += 3) {
+  scienceData.push({
+    articles: allPapers.slice(i, i + 3)
+  })
+}
 
 export function ScienceSection() {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -107,7 +43,7 @@ export function ScienceSection() {
   const currentData = scienceData[currentIndex]
 
   return (
-    <div className="bg-white py-16 sm:py-20">
+    <div id="science" className="bg-white py-16 sm:py-20">
       <div className="mx-auto w-full justify-center items-center flex flex-col px-6 lg:px-8">
         <div className="flex flex-col w-full md:flex-row justify-between md:items-center gap-8 mb-16">
           <motion.div
@@ -160,48 +96,33 @@ export function ScienceSection() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
               {currentData.articles.map((article, index) => (
                 <motion.article
-                  key={`${article.title}-${currentIndex}`}
+                  key={`${article.slug}-${currentIndex}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="relative flex flex-col overflow-hidden rounded-2xl bg-[#D1E2D3]/50 hover:bg-[#D1E2D3]/70 transition-colors cursor-pointer"
                 >
-                  <img src={article.imageUrl} alt="" className="h-56 w-full object-cover" />
+                  <img src={article.imageUrl} alt={article.title} className="h-56 w-full object-cover" />
                   <div className="flex flex-1 flex-col justify-between p-6">
                     <div>
                       <div className="text-sm leading-6 text-gray-600">
                         <time>{article.date}</time>
+                        <span className="mx-2">•</span>
+                        <span>{article.readTime}</span>
                       </div>
                       <h3 className="mt-2 text-xl font-semibold leading-6 text-gray-900">
-                        <a href="#">
+                        <Link href={`/science/${article.slug}`}>
                           <span className="absolute inset-0" />
                           {article.title}
-                        </a>
+                        </Link>
                       </h3>
+                      <p className="mt-2 text-sm text-gray-600">
+                        {article.authors} ({article.year})
+                      </p>
                     </div>
                   </div>
                 </motion.article>
               ))}
-            </div>
-
-            {/* References */}
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">References</h3>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {currentData.references.map((reference, index) => (
-                  <motion.div
-                    key={`${reference}-${currentIndex}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors"
-                  >
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {reference}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
             </div>
 
             {/* Indicators */}

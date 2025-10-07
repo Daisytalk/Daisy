@@ -1,6 +1,7 @@
 'use client'
 
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react'
+import { Mail, MapPin } from 'lucide-react'
+import { FaTiktok, FaInstagram } from 'react-icons/fa'
 import { NewsletterForm } from '@/features/newsletter-signup'
 
 interface FooterSectionProps {
@@ -10,7 +11,7 @@ interface FooterSectionProps {
 export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
   return (
     <footer className="bg-white border-t border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12 mb-8 sm:mb-12">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
@@ -22,17 +23,11 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
               Connecting you with licensed professionals for quality care.
             </p>
             <div className="flex space-x-3 sm:space-x-4">
-              <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
-                <Facebook className="w-4 h-4 sm:w-5 sm:h-5" />
+              <a href="https://www.tiktok.com/@talk.to.daisy2?_t=ZN-90KL5339oGc&_r=1" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
+                <FaTiktok className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
-              <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
-                <Twitter className="w-4 h-4 sm:w-5 sm:h-5" />
-              </a>
-              <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
-                <Instagram className="w-4 h-4 sm:w-5 sm:h-5" />
-              </a>
-              <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
-                <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
+              <a href="https://www.instagram.com/talk_to_daisy?igsh=cGdkeW5nYmtuZDlh" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
+                <FaInstagram className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
             </div>
           </div>
@@ -54,10 +49,7 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
           <div className="sm:col-span-1">
             <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 lg:mb-6">Resources</h3>
             <ul className="space-y-2 sm:space-y-3">
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Mental Health Blog</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Self-Help Tools</a></li>
               <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Crisis Resources</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Insurance Guide</a></li>
               <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">FAQ</a></li>
               <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Support Center</a></li>
             </ul>
@@ -73,13 +65,13 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
                 <span className="text-xs sm:text-sm lg:text-base break-all">support@daisy.com</span>
               </div>
               <div className="flex items-center text-gray-600">
-                <Phone className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="text-xs sm:text-sm lg:text-base">+7-777-777-77-77</span>
-              </div>
-              <div className="flex items-center text-gray-600">
                 <MapPin className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="text-xs sm:text-sm lg:text-base">Astana, Kazakhstan</span>
+                <span className="text-xs sm:text-sm lg:text-base">London, UK</span>
               </div>
+              {/* <div className="flex items-center text-gray-600">
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2 sm:mr-3 flex-shrink-0" />
+                <span className="text-xs sm:text-sm lg:text-base">London, UK</span>
+              </div> */}
             </div>
 
             <div>

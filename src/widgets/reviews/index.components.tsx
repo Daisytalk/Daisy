@@ -59,7 +59,7 @@ export function ReviewsSection() {
 
   return (
     <section className="bg-white py-16 sm:py-24 lg:py-32">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left side - Content */}
           <div className="flex flex-col h-full text-center lg:text-left">
@@ -91,8 +91,8 @@ export function ReviewsSection() {
               viewport={{ once: true }}
               className="mb-8 sm:mb-12"
             >
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">10k+</div>
-              <div className="text-base sm:text-lg text-gray-600">people are receiving therapy</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-2"></div>
+              <div className="text-base sm:text-lg text-gray-600"></div>
             </motion.div>
           </div>
 
