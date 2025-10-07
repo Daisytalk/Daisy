@@ -16,7 +16,20 @@ function ChatPageContent() {
   const [inputValue, setInputValue] = useState("")
 
   const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+      headers: async () => {
+        // Get token from cookie
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('auth_token='))
+          ?.split('=')[1]
+
+        return {
+          'Authorization': `Bearer ${token || ''}`,
+        }
+      },
+    }),
   })
 
   const isLoading = status === "streaming"
@@ -92,7 +105,7 @@ function ChatPageContent() {
             <p className="text-lg text-gray-600 mb-8">
               Your personalized AI therapist is here to support you. How are you feeling today?
             </p>
-            
+
             {/* Quick Reply Suggestions */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
               {quickReplies.map((reply, index) => (
@@ -131,11 +144,10 @@ function ChatPageContent() {
                 </div>
               )}
               <div
-                className={`max-w-[85%] sm:max-w-xl p-4 sm:p-5 rounded-2xl shadow-lg ${
-                  m.role === "user"
+                className={`max-w-[85%] sm:max-w-xl p-4 sm:p-5 rounded-2xl shadow-lg ${m.role === "user"
                     ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-none"
                     : "bg-white text-gray-800 rounded-bl-none border border-gray-100"
-                }`}
+                  }`}
               >
                 <p className="whitespace-pre-wrap leading-relaxed">{textFrom(m)}</p>
                 <p className={`text-xs mt-2 ${m.role === "user" ? "text-blue-100" : "text-gray-400"}`}>
