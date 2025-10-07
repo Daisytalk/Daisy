@@ -211,8 +211,8 @@ function LoginPageContent() {
           {/* Sign up link */}
           <p className="mt-8 text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <Link href="/register" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors">
-              Sign up for free
+            <Link href="/onboarding" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+              Sign up
             </Link>
           </p>
         </motion.div>
