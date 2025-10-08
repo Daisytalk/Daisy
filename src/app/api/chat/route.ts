@@ -1,27 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
-import { GoogleGenAI, Content } from '@google/genai'
 import { streamText } from 'ai'
 import { google } from '@ai-sdk/google'
 import prisma from '@/shared/lib/database'
 import { RAGService, Persona } from '@/shared/services/rag'
 import { User } from '@/shared/types/auth'
 
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const ragService = new RAGService();
 
-// A more sophisticated logic to transition between agent personas.
-// This can be expanded with more complex NLP or keyword analysis.
-function determineNextPersona(currentPersona: Persona, conversationHistory: Content[], fullResponse: string): Persona {
-  const userMessages = conversationHistory.filter(m => m.role === 'user').length;
+// Type definitions for message conversion
+interface GeminiContent {
+  role: 'user' | 'model'
+  parts: Array<{ text: string }>
+}
 
-  // After the first few exchanges, move from intake to a more directive role.
-  if (currentPersona === 'intake_specialist' && userMessages > 2) {
+interface AISdkMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+// Convert Gemini format to AI SDK format
+function geminiToAiSdk(geminiMessages: GeminiContent[]): AISdkMessage[] {
+  return geminiMessages.map(msg => ({
+    role: msg.role === 'model' ? 'assistant' : 'user',
+    content: msg.parts.map(p => p.text).join('')
+  }))
+}
+
+// Convert AI SDK format to Gemini format
+function aiSdkToGemini(aiMessages: AISdkMessage[]): GeminiContent[] {
+  return aiMessages.map(msg => ({
+    role: msg.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: msg.content }]
+  }))
+}
+
+// Determine next persona based on conversation
+function determineNextPersona(currentPersona: Persona, messageCount: number, fullResponse: string): Persona {
+  // After the first few exchanges, move from intake to a more directive role
+  if (currentPersona === 'intake_specialist' && messageCount > 2) {
     return 'questioner_and_clarifier';
   }
 
-  // If the user starts talking about specific actions, switch to the behavioral coach.
+  // If the user starts talking about specific actions, switch to the behavioral coach
   if (fullResponse.toLowerCase().includes('i should try') || fullResponse.toLowerCase().includes('my goal is')) {
     return 'goal_setting_coach';
   }
@@ -29,56 +50,18 @@ function determineNextPersona(currentPersona: Persona, conversationHistory: Cont
   return currentPersona;
 }
 
-async function handleStream(
-  stream: ReadableStream<Uint8Array>,
-  sessionId: string,
-  history: Content[],
-  userMessage: Content,
-  currentPersona: Persona
-) {
-  const reader = stream.getReader();
-  let fullResponse = '';
-  const decoder = new TextDecoder();
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    fullResponse += decoder.decode(value, { stream: true });
-  }
-
-  const aiMessage: Content = { role: 'model', parts: [{ text: fullResponse }] };
-  const nextPersona = determineNextPersona(currentPersona, [...history, userMessage], fullResponse);
-
-  await prisma.aiSession.update({
-    where: { id: sessionId },
-    data: {
-      messages: {
-        // @ts-ignore
-        push: [userMessage, aiMessage],
-      },
-      context: {
-        persona: nextPersona,
-      },
-    },
-  });
-}
-
-
 export async function POST(request: NextRequest) {
   try {
+    // Parse request body
     const body = await request.json()
-
-    // Log the full body to understand the format
-    console.log('Chat API received body:', JSON.stringify(body, null, 2))
-
-    const clientMessages = body.messages || []
+    const clientMessages: AISdkMessage[] = body.messages || []
 
     console.log('Chat API called with:', {
       messageCount: clientMessages.length,
-      lastMessage: clientMessages[clientMessages.length - 1],
-      bodyKeys: Object.keys(body)
+      lastMessage: clientMessages[clientMessages.length - 1]
     })
 
-    // Try to get token from cookie first, then fall back to Authorization header
+    // Authentication - try cookie first, then Bearer token
     let token = request.cookies.get('auth_token')?.value
 
     if (!token) {
@@ -89,23 +72,27 @@ export async function POST(request: NextRequest) {
     }
 
     if (!token) {
-      return NextResponse.json({ message: 'Authorization token required' }, { status: 401 })
+      return NextResponse.json({ error: 'Authorization token required' }, { status: 401 })
     }
 
     const decoded = AuthService.verifyToken(token)
     if (!decoded) {
-      return NextResponse.json({ message: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    })
+
     if (!user) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 })
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // Get or create AI session
     let session = await prisma.aiSession.findFirst({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
-    });
+    })
 
     if (!session) {
       session = await prisma.aiSession.create({
@@ -114,94 +101,87 @@ export async function POST(request: NextRequest) {
           messages: [],
           context: { persona: 'intake_specialist' }
         }
-      });
+      })
     }
 
+    // Get current persona from session context
     // @ts-ignore
-    const currentPersona = (session.context?.persona || 'intake_specialist') as Persona;
-    const history = (session.messages || []) as Content[];
+    const currentPersona = (session.context?.persona || 'intake_specialist') as Persona
 
-    // Extract message text from the client message format
-    // @ai-sdk/react sends: { messages: [{ role: 'user', parts: [{ type: 'text', text: '...' }] }] }
+    // Get system instruction from RAG service
+    const { systemInstruction } = await ragService.getContext(user as User, currentPersona)
 
-    let newMessageContent = '';
+    // Convert stored Gemini history to AI SDK format
+    const historyMessages = geminiToAiSdk((session.messages as unknown as GeminiContent[]) || [])
 
-    if (clientMessages.length > 0) {
-      const lastMessage = clientMessages[clientMessages.length - 1];
+    // Combine history with new messages
+    const allMessages = [...historyMessages, ...clientMessages]
 
-      // Check different possible formats
-      if (lastMessage.parts && Array.isArray(lastMessage.parts)) {
-        // Format: { parts: [{ type: 'text', text: '...' }] }
-        const textPart = lastMessage.parts.find((p: any) => p.type === 'text' || p.text);
-        newMessageContent = textPart?.text || '';
-      } else if (lastMessage.text) {
-        // Format: { text: '...' }
-        newMessageContent = lastMessage.text;
-      } else if (lastMessage.content) {
-        // Format: { content: '...' }
-        newMessageContent = lastMessage.content;
-      }
-    } else if (body.text) {
-      // Direct text in body
-      newMessageContent = body.text;
-    } else if (body.content) {
-      // Direct content in body
-      newMessageContent = body.content;
-    }
+    console.log('Streaming with:', {
+      historyCount: historyMessages.length,
+      newMessagesCount: clientMessages.length,
+      totalMessages: allMessages.length,
+      persona: currentPersona
+    })
 
-    console.log('Extracted message content:', newMessageContent)
+    // Stream response using AI SDK
+    const result = await streamText({
+      model: google('gemini-2.0-flash-exp'),
+      messages: allMessages,
+      system: systemInstruction,
+      temperature: 0.7,
+      async onFinish({ text, finishReason, usage }) {
+        try {
+          // Save the conversation to database
+          const newUserMessage = clientMessages[clientMessages.length - 1]
+          const assistantMessage: AISdkMessage = {
+            role: 'assistant',
+            content: text
+          }
 
-    if (!newMessageContent || newMessageContent.trim() === '') {
-      console.error('No message content found in request:', body)
-      return NextResponse.json({
-        message: 'Message content is required',
-        debug: {
-          receivedBody: body,
-          lastMessage: clientMessages[clientMessages.length - 1]
+          // Convert to Gemini format for storage
+          const updatedHistory = aiSdkToGemini([
+            ...historyMessages,
+            newUserMessage,
+            assistantMessage
+          ])
+
+          // Determine next persona
+          const nextPersona = determineNextPersona(
+            currentPersona,
+            updatedHistory.filter(m => m.role === 'user').length,
+            text
+          )
+
+          // Update session in database
+          await prisma.aiSession.update({
+            where: { id: session.id },
+            data: {
+              messages: updatedHistory,
+              context: { persona: nextPersona },
+              updatedAt: new Date()
+            }
+          })
+
+          console.log('Conversation saved:', {
+            messageCount: updatedHistory.length,
+            finishReason,
+            usage,
+            nextPersona
+          })
+        } catch (error) {
+          console.error('Error saving conversation:', error)
         }
-      }, { status: 400 })
-    }
-
-    const userMessage: Content = { role: 'user', parts: [{ text: newMessageContent }] };
-
-    const { systemInstruction } = await ragService.getContext(user as User, currentPersona);
-
-    const contents: Content[] = [...history, userMessage];
-
-    const resultStream = await ai.models.generateContentStream({
-      model: 'gemini-2.5-flash',
-      contents,
-      config: {
-        systemInstruction
       }
-    });
+    })
 
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        for await (const chunk of resultStream) {
-          const chunkText = chunk.text ?? '';
-          controller.enqueue(new TextEncoder().encode(chunkText));
-        }
-        controller.close();
-      },
-    });
+    // Return the streaming response in AI SDK format
+    return result.toTextStreamResponse()
 
-    const [stream1, stream2] = readableStream.tee();
-
-    // Persist conversation in the background without blocking the response
-    handleStream(stream2, session.id, history, userMessage, currentPersona).catch(console.error);
-
-    return new Response(stream1, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-      },
-    });
-
-  } catch (error) {
+  } catch (error: any) {
     console.error('Chat API error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { message: errorMessage },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     )
   }

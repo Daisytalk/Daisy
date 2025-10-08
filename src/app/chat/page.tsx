@@ -3,10 +3,9 @@
 import { useChat, type UIMessage } from "@ai-sdk/react"
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Send, User, Bot, Loader2, ArrowLeft, Sparkles, MoreVertical, Smile } from "lucide-react"
+import { Send, User, Loader2, ArrowLeft, Sparkles, MoreVertical, Smile } from "lucide-react"
 import { useAuth } from "@/shared/hooks/useAuth"
 import { useRouter } from "next/navigation"
-import { DefaultChatTransport } from "ai"
 import { ClientOnly } from "@/shared/components/ClientOnly"
 import { ProtectedRoute } from "@/shared/components/ProtectedRoute"
 
@@ -16,24 +15,9 @@ function ChatPageContent() {
   const [inputValue, setInputValue] = useState("")
 
   const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/chat",
-      credentials: 'include', // Include cookies in requests (for HttpOnly cookies)
-      headers: () => {
-        // Get token from cookie (fallback for client-side accessible cookies)
-        const token = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('auth_token='))
-          ?.split('=')[1]
-
-        // Return headers object - Authorization header if token exists
-        const headers: Record<string, string> = {}
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`
-        }
-        return headers
-      },
-    }),
+    onError: (error) => {
+      console.error('Chat error:', error)
+    },
   })
 
   const isLoading = status === "streaming"
@@ -43,14 +27,17 @@ function ChatPageContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  // Extract text content from message
   const textFrom = (m: UIMessage) => m.parts.map((p) => (p.type === "text" ? p.text : "")).join("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (inputValue.trim() && !isLoading) {
-      sendMessage({ text: inputValue })
-      setInputValue("")
-    }
+    if (!inputValue.trim() || isLoading) return
+
+    // Send message
+    await sendMessage({ text: inputValue })
+
+    setInputValue("")
   }
 
   const quickReplies = [
@@ -118,9 +105,9 @@ function ChatPageContent() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index }}
-                  onClick={() => {
+                  onClick={async () => {
                     setInputValue(reply)
-                    sendMessage({ text: reply })
+                    await sendMessage({ text: reply })
                   }}
                   className="p-4 bg-white hover:bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-[#FFDC61] transition-all text-left group"
                 >
