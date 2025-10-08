@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import { GoogleGenAI, Content } from '@google/genai'
+import { streamText } from 'ai'
+import { google } from '@ai-sdk/google'
 import prisma from '@/shared/lib/database'
 import { RAGService, Persona } from '@/shared/services/rag'
 import { User } from '@/shared/types/auth'
@@ -64,11 +66,16 @@ async function handleStream(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+
+    // Log the full body to understand the format
+    console.log('Chat API received body:', JSON.stringify(body, null, 2))
+
     const clientMessages = body.messages || []
 
     console.log('Chat API called with:', {
       messageCount: clientMessages.length,
-      lastMessage: clientMessages[clientMessages.length - 1]
+      lastMessage: clientMessages[clientMessages.length - 1],
+      bodyKeys: Object.keys(body)
     })
 
     // Try to get token from cookie first, then fall back to Authorization header
@@ -115,12 +122,44 @@ export async function POST(request: NextRequest) {
     const history = (session.messages || []) as Content[];
 
     // Extract message text from the client message format
-    // @ai-sdk/react sends messages as { text: string } or { content: string }
-    const lastMessage = clientMessages[clientMessages.length - 1];
-    const newMessageContent = lastMessage.text || lastMessage.content || '';
+    // @ai-sdk/react sends: { messages: [{ role: 'user', parts: [{ type: 'text', text: '...' }] }] }
 
-    if (!newMessageContent) {
-      return NextResponse.json({ message: 'Message content is required' }, { status: 400 })
+    let newMessageContent = '';
+
+    if (clientMessages.length > 0) {
+      const lastMessage = clientMessages[clientMessages.length - 1];
+
+      // Check different possible formats
+      if (lastMessage.parts && Array.isArray(lastMessage.parts)) {
+        // Format: { parts: [{ type: 'text', text: '...' }] }
+        const textPart = lastMessage.parts.find((p: any) => p.type === 'text' || p.text);
+        newMessageContent = textPart?.text || '';
+      } else if (lastMessage.text) {
+        // Format: { text: '...' }
+        newMessageContent = lastMessage.text;
+      } else if (lastMessage.content) {
+        // Format: { content: '...' }
+        newMessageContent = lastMessage.content;
+      }
+    } else if (body.text) {
+      // Direct text in body
+      newMessageContent = body.text;
+    } else if (body.content) {
+      // Direct content in body
+      newMessageContent = body.content;
+    }
+
+    console.log('Extracted message content:', newMessageContent)
+
+    if (!newMessageContent || newMessageContent.trim() === '') {
+      console.error('No message content found in request:', body)
+      return NextResponse.json({
+        message: 'Message content is required',
+        debug: {
+          receivedBody: body,
+          lastMessage: clientMessages[clientMessages.length - 1]
+        }
+      }, { status: 400 })
     }
 
     const userMessage: Content = { role: 'user', parts: [{ text: newMessageContent }] };
