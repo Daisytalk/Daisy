@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Return the streaming response in AI SDK format
+    // Return the streaming response
     return result.toTextStreamResponse()
 
   } catch (error: any) {

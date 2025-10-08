@@ -14,7 +14,7 @@ export class OnboardingApiService implements IOnboardingService {
 
   async getQuestions(): Promise<OnboardingSection[]> {
     const response = await fetch(`${this.baseUrl}/questions`)
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch onboarding questions')
     }
@@ -24,7 +24,7 @@ export class OnboardingApiService implements IOnboardingService {
 
   async submitAnswers(answers: OnboardingAnswer[]): Promise<void> {
     const token = localStorage.getItem('auth_token')
-    
+
     const response = await fetch(`${this.baseUrl}/submit`, {
       method: 'POST',
       headers: {
@@ -42,7 +42,7 @@ export class OnboardingApiService implements IOnboardingService {
 
   async getOnboardingData(userId: string): Promise<OnboardingData | null> {
     const token = localStorage.getItem('auth_token')
-    
+
     const response = await fetch(`${this.baseUrl}/data/${userId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -59,7 +59,7 @@ export class OnboardingApiService implements IOnboardingService {
 
   async addQuestion(question: Omit<OnboardingQuestion, 'id'>): Promise<OnboardingQuestion> {
     const token = localStorage.getItem('auth_token')
-    
+
     const response = await fetch(`${this.baseUrl}/questions`, {
       method: 'POST',
       headers: {
@@ -79,7 +79,7 @@ export class OnboardingApiService implements IOnboardingService {
 
   async updateQuestion(id: string, question: Partial<OnboardingQuestion>): Promise<OnboardingQuestion> {
     const token = localStorage.getItem('auth_token')
-    
+
     const response = await fetch(`${this.baseUrl}/questions/${id}`, {
       method: 'PUT',
       headers: {
@@ -99,7 +99,7 @@ export class OnboardingApiService implements IOnboardingService {
 
   async deleteQuestion(id: string): Promise<void> {
     const token = localStorage.getItem('auth_token')
-    
+
     const response = await fetch(`${this.baseUrl}/questions/${id}`, {
       method: 'DELETE',
       headers: {

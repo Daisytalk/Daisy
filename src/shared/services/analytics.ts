@@ -39,12 +39,12 @@ export class GoogleAnalyticsService implements IAnalyticsService {
 
     // Initialize gtag
     window.dataLayer = window.dataLayer || []
-    window.gtag = function() {
+    window.gtag = function () {
       window.dataLayer.push(arguments)
     }
     window.gtag('js', new Date())
     window.gtag('config', env.GOOGLE_ANALYTICS_ID)
-    
+
     this.isInitialized = true
   }
 

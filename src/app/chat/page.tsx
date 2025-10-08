@@ -20,6 +20,13 @@ function ChatPageContent() {
     },
   })
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Messages updated:', messages)
+    console.log('Status:', status)
+    console.log('Error:', error)
+  }, [messages, status, error])
+
   const isLoading = status === "streaming"
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
