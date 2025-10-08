@@ -19,20 +19,36 @@ interface AISdkMessage {
   content: string
 }
 
-// Convert Gemini format to AI SDK format
+// Convert Gemini format to AI SDK format with defensive checks
 function geminiToAiSdk(geminiMessages: GeminiContent[]): AISdkMessage[] {
-  return geminiMessages.map(msg => ({
-    role: msg.role === 'model' ? 'assistant' : 'user',
-    content: msg.parts.map(p => p.text).join('')
-  }))
+  // Ensure input is an array
+  if (!Array.isArray(geminiMessages)) {
+    console.error('geminiToAiSdk: Input is not an array', typeof geminiMessages)
+    return []
+  }
+
+  return geminiMessages
+    .filter((msg): msg is GeminiContent => Boolean(msg && msg.role && Array.isArray(msg.parts))) // Filter out invalid messages
+    .map(msg => ({
+      role: msg.role === 'model' ? 'assistant' : 'user',
+      content: msg.parts.map(p => p?.text || '').join('')
+    }))
 }
 
-// Convert AI SDK format to Gemini format
+// Convert AI SDK format to Gemini format with defensive checks
 function aiSdkToGemini(aiMessages: AISdkMessage[]): GeminiContent[] {
-  return aiMessages.map(msg => ({
-    role: msg.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: msg.content }]
-  }))
+  // Ensure input is an array
+  if (!Array.isArray(aiMessages)) {
+    console.error('aiSdkToGemini: Input is not an array', typeof aiMessages)
+    return []
+  }
+
+  return aiMessages
+    .filter((msg): msg is AISdkMessage => Boolean(msg && msg.role && msg.content)) // Filter out invalid messages
+    .map(msg => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content || '' }]
+    }))
 }
 
 // Determine next persona based on conversation
@@ -54,7 +70,16 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json()
-    const clientMessages: AISdkMessage[] = body.messages || []
+
+    // Defensive check: Ensure messages is an array
+    let clientMessages: AISdkMessage[] = []
+    if (Array.isArray(body.messages)) {
+      clientMessages = body.messages.filter((msg: any): msg is AISdkMessage =>
+        msg && msg.role && msg.content
+      )
+    } else {
+      console.warn('Invalid messages format received:', typeof body.messages)
+    }
 
     console.log('Chat API called with:', {
       messageCount: clientMessages.length,
@@ -111,8 +136,23 @@ export async function POST(request: NextRequest) {
     // Get system instruction from RAG service
     const { systemInstruction } = await ragService.getContext(user as User, currentPersona)
 
-    // Convert stored Gemini history to AI SDK format
-    const historyMessages = geminiToAiSdk((session.messages as unknown as GeminiContent[]) || [])
+    // Convert stored Gemini history to AI SDK format with defensive checks
+    let historyMessages: AISdkMessage[] = []
+
+    try {
+      // Ensure session.messages is an array before converting
+      const storedMessages = session.messages
+
+      if (Array.isArray(storedMessages) && storedMessages.length > 0) {
+        historyMessages = geminiToAiSdk(storedMessages as unknown as GeminiContent[])
+      } else {
+        console.log('No valid message history found, starting fresh')
+      }
+    } catch (error) {
+      console.error('Error converting message history:', error)
+      // Continue with empty history if conversion fails
+      historyMessages = []
+    }
 
     // Combine history with new messages
     const allMessages = [...historyMessages, ...clientMessages]
@@ -132,11 +172,23 @@ export async function POST(request: NextRequest) {
       temperature: 0.7,
       async onFinish({ text, finishReason, usage }) {
         try {
+          // Defensive check: Ensure we have client messages
+          if (!Array.isArray(clientMessages) || clientMessages.length === 0) {
+            console.error('No client messages to save')
+            return
+          }
+
           // Save the conversation to database
           const newUserMessage = clientMessages[clientMessages.length - 1]
+
+          if (!newUserMessage || !newUserMessage.content) {
+            console.error('Invalid user message')
+            return
+          }
+
           const assistantMessage: AISdkMessage = {
             role: 'assistant',
-            content: text
+            content: text || ''
           }
 
           // Convert to Gemini format for storage

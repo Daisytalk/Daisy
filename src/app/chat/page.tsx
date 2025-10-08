@@ -106,10 +106,12 @@ function ChatPageContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index }}
                   onClick={async () => {
-                    setInputValue(reply)
+                    // Send message directly without setting input value
                     await sendMessage({ text: reply })
+                    // Keep input field empty
                   }}
-                  className="p-4 bg-white hover:bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-[#FFDC61] transition-all text-left group"
+                  disabled={isLoading}
+                  className="p-4 bg-white hover:bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-[#FFDC61] transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <p className="text-gray-700 group-hover:text-gray-900 font-medium">{reply}</p>
                 </motion.button>
