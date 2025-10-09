@@ -1,7 +1,8 @@
 "use client"
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
-import { useEffect, useRef, useState } from "react"
+import { DefaultChatTransport } from "ai"
+import { useEffect, useRef, useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Send, User, Loader2, ArrowLeft, Sparkles, MoreVertical, Smile } from "lucide-react"
 import { useAuth } from "@/shared/hooks/useAuth"
@@ -14,11 +15,26 @@ function ChatPageContent() {
   const router = useRouter()
   const [inputValue, setInputValue] = useState("")
 
+  // Create transport with auth headers
+  const transport = useMemo(() => {
+    return new DefaultChatTransport({
+      headers: () => {
+        const token = localStorage.getItem('auth_token')
+        return {
+          'Authorization': token ? `Bearer ${token}` : '',
+        }
+      },
+    })
+  }, [])
+
   const { messages, sendMessage, status, error } = useChat({
+    transport,
     onError: (error) => {
       console.error('Chat error:', error)
     },
   })
+
+  const isLoading = status === 'streaming'
 
   // Debug logging
   useEffect(() => {
@@ -26,8 +42,6 @@ function ChatPageContent() {
     console.log('Status:', status)
     console.log('Error:', error)
   }, [messages, status, error])
-
-  const isLoading = status === "streaming"
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -41,7 +55,7 @@ function ChatPageContent() {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
-    // Send message
+    // Send message (auth header is handled by transport)
     await sendMessage({ text: inputValue })
 
     setInputValue("")
@@ -113,9 +127,8 @@ function ChatPageContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index }}
                   onClick={async () => {
-                    // Send message directly without setting input value
+                    // Send message directly (auth header is handled by transport)
                     await sendMessage({ text: reply })
-                    // Keep input field empty
                   }}
                   disabled={isLoading}
                   className="p-4 bg-white hover:bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-[#FFDC61] transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"

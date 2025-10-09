@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
-import { streamText } from 'ai'
+import { streamText, convertToCoreMessages } from 'ai'
 import { google } from '@ai-sdk/google'
 import prisma from '@/shared/lib/database'
 import { RAGService, Persona } from '@/shared/services/rag'
@@ -21,18 +21,16 @@ interface AISdkMessage {
 
 // Convert Gemini format to AI SDK format with defensive checks
 function geminiToAiSdk(geminiMessages: GeminiContent[]): AISdkMessage[] {
-  // Ensure input is an array
   if (!Array.isArray(geminiMessages)) {
-    console.error('geminiToAiSdk: Input is not an array', typeof geminiMessages)
-    return []
+    console.error('geminiToAiSdk: Input is not an array', typeof geminiMessages);
+    return [];
   }
-
   return geminiMessages
-    .filter((msg): msg is GeminiContent => Boolean(msg && msg.role && Array.isArray(msg.parts))) // Filter out invalid messages
+    .filter((msg): msg is GeminiContent => Boolean(msg && msg.role && Array.isArray(msg.parts)))
     .map(msg => ({
       role: msg.role === 'model' ? 'assistant' : 'user',
       content: msg.parts.map(p => p?.text || '').join('')
-    }))
+    }));
 }
 
 // Convert AI SDK format to Gemini format with defensive checks
@@ -70,20 +68,57 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json()
-
-    // Defensive check: Ensure messages is an array
-    let clientMessages: AISdkMessage[] = []
-    if (Array.isArray(body.messages)) {
-      clientMessages = body.messages.filter((msg: any): msg is AISdkMessage =>
-        msg && msg.role && msg.content
-      )
-    } else {
-      console.warn('Invalid messages format received:', typeof body.messages)
+    
+    console.log('Raw request body keys:', Object.keys(body))
+    console.log('Messages array length:', body.messages?.length)
+    if (body.messages?.length > 0) {
+      console.log('First message sample:', JSON.stringify(body.messages[0], null, 2))
     }
 
-    console.log('Chat API called with:', {
-      messageCount: clientMessages.length,
-      lastMessage: clientMessages[clientMessages.length - 1]
+    // Use AI SDK's built-in converter for UIMessages
+    let clientMessages: AISdkMessage[] = []
+    if (Array.isArray(body.messages) && body.messages.length > 0) {
+      try {
+        // Convert UIMessages to CoreMessages, then to our format
+        const coreMessages = convertToCoreMessages(body.messages)
+        clientMessages = coreMessages.map(msg => ({
+          role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant',
+          content: typeof msg.content === 'string' ? msg.content : 
+                   Array.isArray(msg.content) ? msg.content.map((p: any) => p.type === 'text' ? p.text : '').join('') : ''
+        })).filter((msg): msg is AISdkMessage => msg.content.length > 0)
+      } catch (error) {
+        console.error('Error converting messages:', error)
+        // Fallback: try manual parsing
+        clientMessages = body.messages
+          .filter((msg: any) => msg && msg.role)
+          .map((msg: any): AISdkMessage | null => {
+            if (msg.parts && Array.isArray(msg.parts)) {
+              const textContent = msg.parts
+                .filter((part: any) => part.type === 'text')
+                .map((part: any) => part.text)
+                .join('')
+              return { 
+                role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant', 
+                content: textContent 
+              }
+            }
+            if (msg.content) {
+              return { 
+                role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant', 
+                content: msg.content 
+              }
+            }
+            return null
+          })
+          .filter((msg: AISdkMessage | null): msg is AISdkMessage => msg !== null && msg.content.length > 0)
+      }
+    } else {
+      console.warn('No messages array in request body')
+    }
+
+    console.log('Parsed client messages:', {
+      count: clientMessages.length,
+      messages: clientMessages
     })
 
     // Authentication - try cookie first, then Bearer token
@@ -164,7 +199,14 @@ export async function POST(request: NextRequest) {
       persona: currentPersona
     })
 
+    // Validate we have messages before streaming
+    if (allMessages.length === 0) {
+      console.error('No messages to process, returning error')
+      return NextResponse.json({ error: 'No messages provided' }, { status: 400 })
+    }
+
     // Stream response using AI SDK
+    console.log('Starting streamText with model', 'gemini-2.0-flash-exp', { systemInstruction, messageCount: allMessages.length });
     const result = await streamText({
       model: google('gemini-2.0-flash-exp'),
       messages: allMessages,
@@ -172,40 +214,24 @@ export async function POST(request: NextRequest) {
       temperature: 0.7,
       async onFinish({ text, finishReason, usage }) {
         try {
-          // Defensive check: Ensure we have client messages
+          console.log('Stream finished:', { finishReason, usage, textLength: text.length });
+          
+          // Ensure we have valid client messages to save
           if (!Array.isArray(clientMessages) || clientMessages.length === 0) {
             console.error('No client messages to save')
             return
           }
 
-          // Save the conversation to database
           const newUserMessage = clientMessages[clientMessages.length - 1]
-
           if (!newUserMessage || !newUserMessage.content) {
             console.error('Invalid user message')
             return
           }
 
-          const assistantMessage: AISdkMessage = {
-            role: 'assistant',
-            content: text || ''
-          }
+          const assistantMessage: AISdkMessage = { role: 'assistant', content: text || '' }
+          const updatedHistory = aiSdkToGemini([...historyMessages, newUserMessage, assistantMessage])
+          const nextPersona = determineNextPersona(currentPersona, updatedHistory.filter(m => m.role === 'user').length, text)
 
-          // Convert to Gemini format for storage
-          const updatedHistory = aiSdkToGemini([
-            ...historyMessages,
-            newUserMessage,
-            assistantMessage
-          ])
-
-          // Determine next persona
-          const nextPersona = determineNextPersona(
-            currentPersona,
-            updatedHistory.filter(m => m.role === 'user').length,
-            text
-          )
-
-          // Update session in database
           await prisma.aiSession.update({
             where: { id: session.id },
             data: {
@@ -215,20 +241,16 @@ export async function POST(request: NextRequest) {
             }
           })
 
-          console.log('Conversation saved:', {
-            messageCount: updatedHistory.length,
-            finishReason,
-            usage,
-            nextPersona
-          })
+          console.log('Conversation saved:', { messageCount: updatedHistory.length, finishReason, usage, nextPersona })
         } catch (error) {
           console.error('Error saving conversation:', error)
         }
       }
-    })
+    });
 
     // Return the streaming response
     return result.toTextStreamResponse()
+
 
   } catch (error: any) {
     console.error('Chat API error:', error)

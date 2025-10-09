@@ -54,6 +54,28 @@ ${firstContactProtocol}
 
   public async getUserContext(userId: string): Promise<string> {
     try {
+      // Server-side: fetch directly from database instead of using API service
+      if (typeof window === 'undefined') {
+        const prisma = (await import('@/shared/lib/database')).default
+        const onboardingData = await prisma.onboardingData.findUnique({
+          where: { userId }
+        })
+        
+        if (!onboardingData || !onboardingData.completed) {
+          return 'No specific concerns mentioned during onboarding.'
+        }
+        
+        // Convert Prisma responses (JSON) to OnboardingData format
+        const formattedData: OnboardingData = {
+          userId: onboardingData.userId,
+          answers: (onboardingData.responses as any)?.answers || [],
+          completedAt: onboardingData.updatedAt
+        }
+        
+        return this.formatOnboardingDataForContext(formattedData)
+      }
+      
+      // Client-side: use API service
       const data = await this.onboardingService.getOnboardingData(userId)
       if (!data) {
         return 'No specific concerns mentioned during onboarding.'
