@@ -71,12 +71,22 @@ function RegisterPageContent() {
         throw new Error(data.message || 'Registration failed')
       }
 
+      // Store auth token and user data
+      localStorage.setItem('auth_token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+
+      // Set cookie for middleware
+      document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 days
+
       // Clear onboarding data from localStorage
       localStorage.removeItem('pending_onboarding')
       localStorage.removeItem('onboarding_session_id')
 
-      // Redirect to login or dashboard
-      router.push('/login?registered=true')
+      // Show success message briefly before redirect
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Redirect to dashboard
+      router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
     } finally {
@@ -319,6 +329,7 @@ function RegisterPageContent() {
             <div className="grid gap-4">
               <button
                 type="button"
+                onClick={() => window.location.href = '/api/auth/google'}
                 className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 <FaGoogle className="w-5 h-5 text-[#4285F4]" />

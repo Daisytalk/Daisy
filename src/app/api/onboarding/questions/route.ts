@@ -29,14 +29,6 @@ const sections: OnboardingSection[] = [
         question: 'Current physical health conditions: For example: asthma, migraines, digestive disorders, hormonal imbalances, etc.',
         required: false,
       },
-      {
-        id: 'financial-status',
-        order: 4,
-        type: 'scale-with-comment',
-        question: 'Current financial status: How financially secure do you feel?',
-        required: true,
-        commentLabel: 'Comment',
-      },
     ],
   },
   {
@@ -45,7 +37,7 @@ const sections: OnboardingSection[] = [
     questions: [
       {
         id: 'professional-life',
-        order: 5,
+        order: 4,
         type: 'scale-with-comment',
         question: 'Professional or educational life: How do you feel about your work or studies?',
         required: true,
@@ -53,7 +45,7 @@ const sections: OnboardingSection[] = [
       },
       {
         id: 'romantic-relationships',
-        order: 6,
+        order: 5,
         type: 'scale-with-comment',
         question: 'Intimate / romantic relationships: How satisfied are you with your romantic relationships (if any)? (Quality, stability, support, conflicts)',
         required: true,
@@ -61,7 +53,7 @@ const sections: OnboardingSection[] = [
       },
       {
         id: 'family-relationships',
-        order: 7,
+        order: 6,
         type: 'scale-with-comment',
         question: 'Family relationships (parents, children, relatives): How are your relationships with family members? (Support, conflicts, responsibilities)',
         required: true,
@@ -69,7 +61,7 @@ const sections: OnboardingSection[] = [
       },
       {
         id: 'social-relationships',
-        order: 8,
+        order: 7,
         type: 'scale-with-comment',
         question: 'Social relationships and friendships: Do you have a supportive social circle? (Friends, colleagues, participation in social life)',
         required: true,
@@ -77,7 +69,7 @@ const sections: OnboardingSection[] = [
       },
       {
         id: 'autonomy',
-        order: 9,
+        order: 8,
         type: 'scale-with-comment',
         question: 'Ability to be alone / autonomy: How comfortable are you spending time by yourself? (Sense of solitude, independence, self-reflection)',
         required: true,
@@ -85,7 +77,7 @@ const sections: OnboardingSection[] = [
       },
       {
         id: 'physical-health-rating',
-        order: 10,
+        order: 9,
         type: 'scale-with-comment',
         question: 'Physical health: How would you rate your current physical health? (Sleep, nutrition, chronic conditions, energy levels)',
         required: true,
@@ -93,7 +85,7 @@ const sections: OnboardingSection[] = [
       },
       {
         id: 'emotional-wellbeing',
-        order: 11,
+        order: 10,
         type: 'scale-with-comment',
         question: 'Emotional well-being: How often do you experience emotional discomfort? (Anxiety, low mood, mood swings)',
         required: true,
@@ -101,7 +93,7 @@ const sections: OnboardingSection[] = [
       },
       {
         id: 'leisure-hobbies',
-        order: 12,
+        order: 11,
         type: 'scale-with-comment',
         question: 'Leisure and hobbies: Do you have regular activities that bring you joy and relaxation?',
         required: true,
@@ -109,9 +101,17 @@ const sections: OnboardingSection[] = [
       },
       {
         id: 'living-conditions',
-        order: 13,
+        order: 12,
         type: 'scale-with-comment',
         question: 'Living conditions and safety: Do you feel safe and comfortable in your current living situation?',
+        required: true,
+        commentLabel: 'Comment',
+      },
+      {
+        id: 'financial-status',
+        order: 13,
+        type: 'scale-with-comment',
+        question: 'Current financial status: How financially secure do you feel?',
         required: true,
         commentLabel: 'Comment',
       },

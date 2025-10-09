@@ -3,6 +3,14 @@ import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 
 export async function POST(request: NextRequest) {
+  if (!process.env.JWT_SECRET) {
+    console.error('JWT_SECRET environment variable is not set')
+    return NextResponse.json(
+      { message: 'Server configuration error' },
+      { status: 500 }
+    )
+  }
+
   try {
     const { name, email, password, onboardingAnswers } = await request.json()
 
@@ -13,7 +21,32 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const existingUser = await prisma.user.findUnique({ where: { email } })
+    if (name.trim().length < 2) {
+      return NextResponse.json(
+        { message: 'Name must be at least 2 characters' },
+        { status: 400 }
+      )
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { message: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json(
+        { message: 'Password must be at least 8 characters' },
+        { status: 400 }
+      )
+    }
+
+    const existingUser = await prisma.user.findUnique({ 
+      where: { email: email.toLowerCase() } 
+    })
+    
     if (existingUser) {
       return NextResponse.json(
         { message: 'User already exists with this email' },
@@ -22,36 +55,37 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPassword = await AuthService.hashPassword(password)
+    const isOnboarded = !!onboardingAnswers && Object.keys(onboardingAnswers).length > 0
 
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        // Mark as onboarded if they completed onboarding before registration
-        isOnboarded: !!onboardingAnswers && onboardingAnswers.length > 0,
-      },
+    const newUser = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          name: name.trim(),
+          email: email.toLowerCase(),
+          password: hashedPassword,
+        },
+      })
+
+      await tx.onboardingData.create({
+        data: {
+          userId: user.id,
+          responses: onboardingAnswers || {},
+          completed: isOnboarded,
+        }
+      })
+
+      await tx.aiSession.create({
+        data: {
+          userId: user.id,
+          messages: [],
+          context: { persona: 'intake_specialist' }
+        }
+      })
+
+      return user
     })
 
-    // Create corresponding onboarding data with answers if provided
-    await prisma.onboardingData.create({
-      data: {
-        userId: newUser.id,
-        responses: onboardingAnswers || {},
-        completed: !!onboardingAnswers && onboardingAnswers.length > 0,
-      }
-    });
-
-    await prisma.aiSession.create({
-      data: {
-        userId: newUser.id,
-        messages: [],
-        context: { persona: 'intake_specialist' }
-      }
-    })
-
-    const trialEndsAt = AuthService.generateTrialEndDate();
-    const isOnboarded = !!onboardingAnswers && onboardingAnswers.length > 0;
+    const trialEndsAt = AuthService.generateTrialEndDate()
     
     const token = AuthService.generateToken({
       id: newUser.id,
@@ -64,7 +98,7 @@ export async function POST(request: NextRequest) {
       trialEndsAt,
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       user: {
         id: newUser.id,
         email: newUser.email,
@@ -73,10 +107,32 @@ export async function POST(request: NextRequest) {
         subscriptionStatus: 'trial',
         trialEndsAt,
       },
-      token,
+      token, // Still return token for backwards compatibility
+    }, { status: 201 })
+
+    // Set HttpOnly cookie
+    response.cookies.set('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
     })
+
+    return response
+
   } catch (error) {
     console.error('Registration error:', error)
+    
+    if (error instanceof Error) {
+      if (error.message.includes('Unique constraint')) {
+        return NextResponse.json(
+          { message: 'User already exists with this email' },
+          { status: 409 }
+        )
+      }
+    }
+
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

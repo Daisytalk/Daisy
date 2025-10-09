@@ -92,9 +92,9 @@ function HomeContent() {
       <ScienceSection />
       <ChatDemoSection />
       {/* <AboutSection /> */}
-      <ReviewsSection />
+      {/* <ReviewsSection /> */}
       <FAQSection />
-      {/* <PricingSection onSelectPlan={handleSelectPlan} /> */}
+      <PricingSection onSelectPlan={handleSelectPlan} />
       <CTASection onGetStarted={handleGetStarted} />
       <FooterSection onNewsletterSubmit={handleNewsletterSubmit} />
     </main>

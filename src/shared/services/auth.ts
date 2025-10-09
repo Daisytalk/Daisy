@@ -1,5 +1,4 @@
 import type { User, LoginCredentials, RegisterCredentials } from '@/shared/types/auth'
-import { getAuthToken } from '@/shared/lib/auth'
 
 export interface IAuthService {
   login(credentials: LoginCredentials): Promise<{ user: User; token: string }>
@@ -19,6 +18,7 @@ export class AuthApiService implements IAuthService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(credentials),
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -36,6 +36,7 @@ export class AuthApiService implements IAuthService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(credentials),
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -49,27 +50,21 @@ export class AuthApiService implements IAuthService {
   async logout(): Promise<void> {
     await fetch(`${this.baseUrl}/logout`, {
       method: 'POST',
+      credentials: 'include',
     })
   }
 
   async getCurrentUser(): Promise<User | null> {
-    const token = getAuthToken()
-    if (!token) return null
-
     try {
       const response = await fetch('/api/auth/me', {
         cache: 'no-store',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        // Token is invalid or expired, clear it
-        localStorage.removeItem('auth_token');
         return null;
       }
-      
+
       const user: User = await response.json();
       return user;
     } catch (error) {
@@ -81,6 +76,7 @@ export class AuthApiService implements IAuthService {
   async refreshToken(): Promise<string> {
     const response = await fetch(`${this.baseUrl}/refresh`, {
       method: 'POST',
+      credentials: 'include',
     })
 
     if (!response.ok) {

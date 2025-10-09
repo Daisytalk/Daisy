@@ -1,10 +1,21 @@
+// middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const token = request.cookies.get('auth_token')?.value
+  
+  // Try cookie first, then Authorization header
+  let token = request.cookies.get('auth_token')?.value
+  
+  if (!token) {
+    const authHeader = request.headers.get('authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7)
+    }
+  }
+  
   const publicRoutes = [
     '/',
     '/login',

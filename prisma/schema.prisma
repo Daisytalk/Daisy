@@ -15,6 +15,7 @@ model User {
   email              String   @unique
   name               String?
   password           String
+  googleId           String?  @unique
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   isOnboarded        Boolean  @default(false)
@@ -63,4 +64,15 @@ model Newsletter {
   createdAt DateTime @default(now())
 
   @@map("newsletter")
+}
+
+model TokenBlacklist {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }

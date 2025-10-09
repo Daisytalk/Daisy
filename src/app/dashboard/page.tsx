@@ -142,7 +142,8 @@ function DashboardPageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl shadow-sm p-4 sm:p-6"
+            className="bg-white rounded-xl shadow-sm p-4 sm:p-6 cursor-pointer hover:shadow-lg transition-all"
+            onClick={() => router.push('/history')}
           >
             <div className="flex items-center">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -150,8 +151,8 @@ function DashboardPageContent() {
               </div>
               <div className="ml-3 sm:ml-4">
                 <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Sessions</h3>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">0</p>
-                <p className="text-xs sm:text-sm text-gray-600">Total conversations</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">View All</p>
+                <p className="text-xs sm:text-sm text-gray-600">Chat history →</p>
               </div>
             </div>
           </motion.div>

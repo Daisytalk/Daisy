@@ -3,21 +3,56 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ClientOnly } from '@/shared/components/ClientOnly'
-import { Eye, EyeOff, Mail, Lock, Sparkles } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, Sparkles, AlertCircle, CheckCircle } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
 
 function LoginPageContent() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
     setIsLoading(true)
-    // Add your login logic here
-    setTimeout(() => setIsLoading(false), 1000)
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed')
+      }
+
+      // Store auth token and user data
+      localStorage.setItem('auth_token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+
+      // Set cookie for middleware
+      document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 days
+
+      // Show success message briefly before redirect
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Redirect to dashboard
+      router.push('/dashboard')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -104,6 +139,18 @@ function LoginPageContent() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Error Message */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm"
+              >
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{error}</span>
+              </motion.div>
+            )}
+
             {/* Email Input */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
@@ -200,6 +247,7 @@ function LoginPageContent() {
             <div className="grid gap-4">
               <button
                 type="button"
+                onClick={() => window.location.href = '/api/auth/google'}
                 className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 <FaGoogle className="w-5 h-5 text-[#4285F4]" />
