@@ -263,7 +263,8 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Return the streaming response
+    // Return the text stream response
+    // This works with TextStreamChatTransport on the client
     return result.toTextStreamResponse()
 
 

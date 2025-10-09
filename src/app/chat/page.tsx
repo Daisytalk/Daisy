@@ -1,7 +1,6 @@
 "use client"
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
-import { DefaultChatTransport } from "ai"
 import { useEffect, useRef, useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Send, User, Loader2, ArrowLeft, Sparkles, MoreVertical, Smile } from "lucide-react"
@@ -15,13 +14,15 @@ function ChatPageContent() {
   const router = useRouter()
   const [inputValue, setInputValue] = useState("")
 
-  // Create transport with auth headers
+  // Create custom transport with auth headers
   const transport = useMemo(() => {
-    return new DefaultChatTransport({
+    const { TextStreamChatTransport } = require('ai')
+    return new TextStreamChatTransport({
       headers: () => {
         const token = localStorage.getItem('auth_token')
         return {
           'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
         }
       },
     })
@@ -30,7 +31,10 @@ function ChatPageContent() {
   const { messages, sendMessage, status, error } = useChat({
     transport,
     onError: (error) => {
-      console.error('Chat error:', error)
+      console.error('❌ Chat error:', error)
+    },
+    onFinish: (message) => {
+      console.log('✅ Message finished:', message)
     },
   })
 
@@ -38,9 +42,12 @@ function ChatPageContent() {
 
   // Debug logging
   useEffect(() => {
-    console.log('Messages updated:', messages)
+    console.log('=== Chat State Update ===')
+    console.log('Messages count:', messages.length)
+    console.log('Messages:', messages)
     console.log('Status:', status)
     console.log('Error:', error)
+    console.log('========================')
   }, [messages, status, error])
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -49,7 +56,15 @@ function ChatPageContent() {
   }, [messages])
 
   // Extract text content from message
-  const textFrom = (m: UIMessage) => m.parts.map((p) => (p.type === "text" ? p.text : "")).join("")
+  const textFrom = (m: UIMessage) => {
+    if (!m.parts || m.parts.length === 0) {
+      console.warn('Message has no parts:', m)
+      return ''
+    }
+    const text = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("")
+    console.log('Extracted text from message:', text.substring(0, 50) + '...')
+    return text
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

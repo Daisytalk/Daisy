@@ -20,10 +20,10 @@ export const env = {
 // Validate critical environment variables on server-side
 if (typeof window === 'undefined') {
     const missingVars: string[] = []
-    
+
     if (!env.DATABASE_URL) missingVars.push('DATABASE_URL')
     if (!env.API_KEY && !env.GEMINI_API_KEY) missingVars.push('API_KEY or GEMINI_API_KEY')
-    
+
     if (missingVars.length > 0) {
         console.warn('⚠️  Missing environment variables:', missingVars.join(', '))
     }
