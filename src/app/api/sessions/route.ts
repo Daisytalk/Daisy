@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 
+// Type for Gemini message format
+interface GeminiMessage {
+  role: 'user' | 'model'
+  parts: Array<{ text: string }>
+}
+
 export async function GET(request: NextRequest) {
   try {
     // Authentication
@@ -38,15 +44,16 @@ export async function GET(request: NextRequest) {
 
     // Format sessions for response
     const formattedSessions = sessions.map(session => {
-      const messages = Array.isArray(session.messages) ? session.messages : []
+      // Type assertion for messages array - convert through unknown for safety
+      const messages = (Array.isArray(session.messages) ? session.messages : []) as unknown as GeminiMessage[]
       const messageCount = messages.length
-      
+
       // Get first user message as title
       let title = 'New Conversation'
       if (messageCount > 0) {
-        const firstUserMessage = messages.find((msg: any) => msg.role === 'user')
-        if (firstUserMessage && firstUserMessage.parts && firstUserMessage.parts[0]) {
-          const text = firstUserMessage.parts[0].text || ''
+        const firstUserMessage = messages.find(msg => msg.role === 'user')
+        if (firstUserMessage?.parts?.[0]?.text) {
+          const text = firstUserMessage.parts[0].text
           title = text.substring(0, 50) + (text.length > 50 ? '...' : '')
         }
       }
