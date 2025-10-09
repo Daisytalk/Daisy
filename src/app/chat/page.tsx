@@ -1,20 +1,32 @@
 "use client"
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
-import { useEffect, useRef, useState, useMemo } from "react"
+import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Send, User, Loader2, ArrowLeft, Sparkles, MoreVertical, Smile } from "lucide-react"
+import { Send, User, Loader2, ArrowLeft, Sparkles, Smile, X } from "lucide-react"
 import { useAuth } from "@/shared/hooks/useAuth"
 import { useRouter } from "next/navigation"
 import { ClientOnly } from "@/shared/components/ClientOnly"
 import { ProtectedRoute } from "@/shared/components/ProtectedRoute"
 
+// Simple emoji picker data
+const EMOJI_CATEGORIES = {
+  'Smileys': ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋'],
+  'Gestures': ['👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '✋', '🤚', '🖐️', '🖖', '👋', '🤝', '🙏'],
+  'Emotions': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️'],
+  'Symbols': ['✨', '⭐', '🌟', '💫', '✅', '❌', '⚠️', '🔥', '💯', '🎯', '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️']
+}
+
 function ChatPageContent() {
   const { user } = useAuth()
   const router = useRouter()
   const [inputValue, setInputValue] = useState("")
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const emojiPickerRef = useRef<HTMLDivElement>(null)
 
-  // Create custom transport with auth headers
+  // Create custom transport with auth headers and session ID
   const transport = useMemo(() => {
     const { TextStreamChatTransport } = require('ai')
     return new TextStreamChatTransport({
@@ -25,10 +37,65 @@ function ChatPageContent() {
           'Content-Type': 'application/json',
         }
       },
+      body: () => ({
+        sessionId: sessionId,
+      }),
     })
+  }, [sessionId])
+
+  // Initialize or restore session
+  useEffect(() => {
+    const storedSessionId = localStorage.getItem('active_chat_session')
+    if (storedSessionId && !storedSessionId.startsWith('temp_')) {
+      setSessionId(storedSessionId)
+      console.log('Restored session:', storedSessionId)
+      // Fetch session messages from backend
+      fetchSessionMessages(storedSessionId)
+    } else {
+      // For new sessions, we'll let the backend create it on first message
+      const tempId = `temp_${Date.now()}`
+      setSessionId(tempId)
+      localStorage.setItem('active_chat_session', tempId)
+      console.log('Created temporary session ID:', tempId)
+    }
   }, [])
 
-  const { messages, sendMessage, status, error } = useChat({
+  const fetchSessionMessages = async (sessionId: string) => {
+    try {
+      const token = localStorage.getItem('auth_token')
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.messages && Array.isArray(data.messages)) {
+          // Convert Gemini format to UIMessage format
+          const uiMessages = data.messages.map((msg: any, index: number) => ({
+            id: `${sessionId}_${index}`,
+            role: msg.role === 'model' ? 'assistant' : 'user',
+            parts: [{ type: 'text', text: msg.parts?.[0]?.text || '' }],
+          }))
+          setMessages(uiMessages)
+          console.log('Loaded', uiMessages.length, 'messages from backend')
+        }
+      } else if (response.status === 404) {
+        // Session not found, clear it and start fresh
+        console.log('Session not found, starting new session')
+        localStorage.removeItem('active_chat_session')
+        const tempId = `temp_${Date.now()}`
+        setSessionId(tempId)
+        localStorage.setItem('active_chat_session', tempId)
+      }
+    } catch (error) {
+      console.error('Failed to fetch session messages:', error)
+    }
+  }
+
+  const { messages, sendMessage, status, error, setMessages } = useChat({
+    id: sessionId || undefined,
     transport,
     onError: (error) => {
       console.error('❌ Chat error:', error)
@@ -40,15 +107,28 @@ function ChatPageContent() {
 
   const isLoading = status === 'streaming'
 
-  // Debug logging
+  // Start new chat session
+  const startNewChat = () => {
+    const tempId = `temp_${Date.now()}`
+    setSessionId(tempId)
+    setMessages([])
+    localStorage.setItem('active_chat_session', tempId)
+    console.log('Started new chat session:', tempId)
+  }
+
+  // Close emoji picker when clicking outside
   useEffect(() => {
-    console.log('=== Chat State Update ===')
-    console.log('Messages count:', messages.length)
-    console.log('Messages:', messages)
-    console.log('Status:', status)
-    console.log('Error:', error)
-    console.log('========================')
-  }, [messages, status, error])
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false)
+      }
+    }
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showEmojiPicker])
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -70,11 +150,61 @@ function ChatPageContent() {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
+    const currentSessionId = sessionId
+
     // Send message (auth header is handled by transport)
     await sendMessage({ text: inputValue })
 
+    // If we had a temp session, fetch the real session ID after first message
+    if (currentSessionId?.startsWith('temp_')) {
+      setTimeout(async () => {
+        try {
+          const token = localStorage.getItem('auth_token')
+          const response = await fetch('/api/sessions', {
+            headers: {
+              'Authorization': token ? `Bearer ${token}` : '',
+            },
+          })
+          if (response.ok) {
+            const data = await response.json()
+            if (data.sessions && data.sessions.length > 0) {
+              const latestSession = data.sessions[0]
+              if (latestSession.id !== currentSessionId) {
+                console.log('Updating to real session ID:', latestSession.id)
+                setSessionId(latestSession.id)
+                localStorage.setItem('active_chat_session', latestSession.id)
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch updated session:', error)
+        }
+      }, 1000)
+    }
+
     setInputValue("")
   }
+
+  const handleEmojiSelect = useCallback((emoji: string) => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const text = inputValue
+    const before = text.substring(0, start)
+    const after = text.substring(end)
+
+    setInputValue(before + emoji + after)
+    setShowEmojiPicker(false)
+
+    // Set cursor position after emoji
+    setTimeout(() => {
+      textarea.focus()
+      const newPosition = start + emoji.length
+      textarea.setSelectionRange(newPosition, newPosition)
+    }, 0)
+  }, [inputValue])
 
   const quickReplies = [
     "I'm feeling anxious today",
@@ -84,13 +214,14 @@ function ChatPageContent() {
   ]
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-[#D1E2D3]/20 via-white to-[#FFDC61]/10">
+    <div className="flex-col items-center justify-center h-screen mx-auto bg-gradient-to-br from-[#D1E2D3]/20 via-white to-[#FFDC61]/10">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-100 p-4 flex items-center justify-between z-10 sticky top-0">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/dashboard")}
             className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+            aria-label="Back to dashboard"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -110,13 +241,26 @@ function ChatPageContent() {
             </div>
           </div>
         </div>
-        <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
-          <MoreVertical className="w-5 h-5" />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => router.push('/history')}
+            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+            aria-label="View history"
+          >
+            History
+          </button>
+          <button
+            onClick={startNewChat}
+            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+            aria-label="Start new chat"
+          >
+            New Chat
+          </button>
+        </div>
       </header>
 
       {/* Messages Area */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+      <main className="flex-1 mx-auto max-w-7xl items-center justify-center overflow-y-auto p-4 sm:p-6 space-y-6">
         {messages.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -214,7 +358,7 @@ function ChatPageContent() {
       </main>
 
       {/* Input Area */}
-      <footer className="bg-white/80 backdrop-blur-xl border-t border-gray-100 p-4 sm:p-6">
+      <footer className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-xl border-t border-gray-100 p-4 sm:p-6">
         {error && (
           <div className="max-w-4xl mx-auto mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
             An error occurred: {error.message}
@@ -226,6 +370,7 @@ function ChatPageContent() {
         >
           <div className="flex-1 relative">
             <textarea
+              ref={textareaRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
@@ -239,12 +384,54 @@ function ChatPageContent() {
               rows={1}
               style={{ minHeight: '56px', maxHeight: '120px' }}
             />
-            <button
-              type="button"
-              className="absolute right-3 bottom-3 p-2 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <Smile className="w-5 h-5" />
-            </button>
+            <div className="absolute right-3 bottom-3">
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Add emoji"
+              >
+                <Smile className="w-5 h-5" />
+              </button>
+
+              {/* Emoji Picker */}
+              {showEmojiPicker && (
+                <div
+                  ref={emojiPickerRef}
+                  className="absolute bottom-full right-0 mb-2 bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-96 overflow-y-auto z-50"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-900">Pick an emoji</h3>
+                    <button
+                      onClick={() => setShowEmojiPicker(false)}
+                      className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                      aria-label="Close emoji picker"
+                    >
+                      <X className="w-4 h-4 text-gray-500" />
+                    </button>
+                  </div>
+
+                  {Object.entries(EMOJI_CATEGORIES).map(([category, emojis]) => (
+                    <div key={category} className="mb-4">
+                      <h4 className="text-xs font-medium text-gray-500 mb-2">{category}</h4>
+                      <div className="grid grid-cols-10 gap-1">
+                        {emojis.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => handleEmojiSelect(emoji)}
+                            className="text-2xl hover:bg-gray-100 rounded-lg p-1 transition-colors"
+                            title={emoji}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <button
             type="submit"

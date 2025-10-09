@@ -163,12 +163,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Get or create AI session
-    let session = await prisma.aiSession.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-    })
+    // Get session ID from request body
+    const sessionId = body.sessionId || body.id
 
+    // Get or create AI session based on sessionId
+    let session
+    if (sessionId && !sessionId.startsWith('temp_')) {
+      // Try to find existing session
+      session = await prisma.aiSession.findFirst({
+        where: {
+          id: sessionId,
+          userId: user.id
+        }
+      })
+    }
+
+    // Create new session if not found or no sessionId provided
     if (!session) {
       session = await prisma.aiSession.create({
         data: {
@@ -177,6 +187,9 @@ export async function POST(request: NextRequest) {
           context: { persona: 'intake_specialist' }
         }
       })
+      console.log('Created new session:', session.id)
+    } else {
+      console.log('Using existing session:', session.id)
     }
 
     // Get current persona from session context
@@ -263,9 +276,11 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Return the text stream response
+    // Return the text stream response with session ID in headers
     // This works with TextStreamChatTransport on the client
-    return result.toTextStreamResponse()
+    const response = result.toTextStreamResponse()
+    response.headers.set('X-Session-Id', session.id)
+    return response
 
 
   } catch (error: any) {
