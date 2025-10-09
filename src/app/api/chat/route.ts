@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import { streamText, convertToCoreMessages } from 'ai'
-import { google } from '@ai-sdk/google'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import prisma from '@/shared/lib/database'
 import { RAGService, Persona } from '@/shared/services/rag'
 import { User } from '@/shared/types/auth'
+import { env } from '@/shared/config/env'
 
 const ragService = new RAGService();
+
+// Initialize Google AI with API key from environment
+// Supports both GEMINI_API_KEY and API_KEY (for AWS)
+const apiKey = env.GEMINI_API_KEY || env.API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+if (!apiKey) {
+  console.error('CRITICAL: No Gemini API key found in environment variables!');
+  console.error('Checked: GEMINI_API_KEY, API_KEY, GOOGLE_GENERATIVE_AI_API_KEY');
+} else {
+  console.log('Gemini API key loaded successfully (length:', apiKey.length, ')');
+}
+
+const google = createGoogleGenerativeAI({
+  apiKey: apiKey
+});
 
 // Type definitions for message conversion
 interface GeminiContent {
@@ -68,7 +83,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json()
-    
+
     console.log('Raw request body keys:', Object.keys(body))
     console.log('Messages array length:', body.messages?.length)
     if (body.messages?.length > 0) {
@@ -83,8 +98,8 @@ export async function POST(request: NextRequest) {
         const coreMessages = convertToCoreMessages(body.messages)
         clientMessages = coreMessages.map(msg => ({
           role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant',
-          content: typeof msg.content === 'string' ? msg.content : 
-                   Array.isArray(msg.content) ? msg.content.map((p: any) => p.type === 'text' ? p.text : '').join('') : ''
+          content: typeof msg.content === 'string' ? msg.content :
+            Array.isArray(msg.content) ? msg.content.map((p: any) => p.type === 'text' ? p.text : '').join('') : ''
         })).filter((msg): msg is AISdkMessage => msg.content.length > 0)
       } catch (error) {
         console.error('Error converting messages:', error)
@@ -97,15 +112,15 @@ export async function POST(request: NextRequest) {
                 .filter((part: any) => part.type === 'text')
                 .map((part: any) => part.text)
                 .join('')
-              return { 
-                role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant', 
-                content: textContent 
+              return {
+                role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant',
+                content: textContent
               }
             }
             if (msg.content) {
-              return { 
-                role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant', 
-                content: msg.content 
+              return {
+                role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant',
+                content: msg.content
               }
             }
             return null
@@ -215,7 +230,7 @@ export async function POST(request: NextRequest) {
       async onFinish({ text, finishReason, usage }) {
         try {
           console.log('Stream finished:', { finishReason, usage, textLength: text.length });
-          
+
           // Ensure we have valid client messages to save
           if (!Array.isArray(clientMessages) || clientMessages.length === 0) {
             console.error('No client messages to save')
