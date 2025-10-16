@@ -1,9 +1,42 @@
-// FIX: Replaced placeholder content with a full implementation for the AI service using @google/genai.
-import { GoogleGenAI, Content } from '@google/genai'
-import { RAGService } from './rag'
-import { env } from '@/shared/config/env'
-import type { User } from '@/shared/types/auth'
+/**
+ * AI Service - DEPRECATED
+ * 
+ * This service previously used Gemini API for AI responses.
+ * It has been replaced by the AI API integration (src/shared/lib/ai-api.ts)
+ * 
+ * The AI API handles ALL intelligence:
+ * - Persona selection
+ * - Protocol selection
+ * - Therapeutic decision-making
+ * 
+ * This file is kept for reference but is no longer used.
+ * All chat functionality now uses the AI API directly.
+ */
 
+// DEPRECATED: Gemini API integration (no longer used)
+// import { GoogleGenAI, Content } from '@google/genai'
+// import { RAGService } from './rag'
+// import { env } from '@/shared/config/env'
+// import type { User } from '@/shared/types/auth'
+
+/**
+ * @deprecated Use AI API service instead (src/shared/lib/ai-api.ts)
+ */
+export class AIService {
+  constructor() {
+    console.warn('AIService is deprecated. Use AI API service instead (src/shared/lib/ai-api.ts)');
+  }
+
+  /**
+   * @deprecated Use sendChatMessage from ai-api.ts instead
+   */
+  async generateResponseStream(): Promise<ReadableStream> {
+    throw new Error('AIService is deprecated. Use AI API service instead (src/shared/lib/ai-api.ts)');
+  }
+}
+
+// DEPRECATED CODE (kept for reference):
+/*
 export class AIService {
   private readonly genAI: GoogleGenAI
   private readonly ragService: RAGService
@@ -60,3 +93,4 @@ export class AIService {
     return stream;
   }
 }
+*/
