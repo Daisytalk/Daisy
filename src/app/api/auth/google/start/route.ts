@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 import { env } from '@/shared/config/env'
 
 export async function GET() {
-  const clientId = process.env.GOOGLE_CLIENT_ID || env.GOOGLE_CLOUD_PROJECT_ID
-  const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT || 'http://localhost:3000/(auth)/oauth/success'
+  const clientId = process.env.GOOGLE_CLIENT_ID
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/(auth)/oauth/success'
   const scope = encodeURIComponent('openid email profile')
   const state = 'daisy' // TODO: implement CSRF/state in production
 
