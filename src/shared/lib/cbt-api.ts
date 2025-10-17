@@ -35,48 +35,54 @@ export class CBTApiClient {
   }
 
   async chat(request: CBTChatRequest): Promise<CBTChatResponse> {
-    try {
-      // SageMaker API expects "message" field, not "text"
-      const payload = {
-        message: request.text,
-        user_id: request.user_id,
-        session_id: request.session_id,
-      };
+    // SageMaker API expects "message" field, not "text"
+    const payload = {
+      message: request.text,
+      user_id: request.user_id,
+      session_id: request.session_id,
+    };
 
-      console.log('Sending to SageMaker:', { url: this.baseUrl, payload });
+    console.log('🚀 Sending to SageMaker:', { 
+      url: this.baseUrl, 
+      hasApiKey: !!this.apiKey,
+      apiKeyLength: this.apiKey?.length,
+      payload 
+    });
 
-      const response = await fetch(this.baseUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': this.apiKey,
-        },
-        body: JSON.stringify(payload),
+    const response = await fetch(this.baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': this.apiKey,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log('📥 SageMaker response status:', response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ SageMaker API error:', { 
+        status: response.status, 
+        statusText: response.statusText,
+        body: errorText 
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('SageMaker API error:', { status: response.status, body: errorText });
-        throw new Error(`CBT API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('SageMaker response:', data);
-
-      // Map SageMaker response format to expected format
-      return {
-        response: data.response,
-        protocol_used: data.protocol || 'general_cbt',
-        persona_used: data.tone || 'empathetic',
-        diagnosis: [],
-        tone: data.tone,
-        protocol: data.protocol,
-        status: data.status,
-      };
-    } catch (error) {
-      console.error('CBT API chat error:', error);
-      throw new Error('Failed to get therapy response');
+      throw new Error(`SageMaker API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
+
+    const data = await response.json();
+    console.log('✅ SageMaker response data:', data);
+
+    // Map SageMaker response format to expected format
+    return {
+      response: data.response,
+      protocol_used: data.protocol || 'general_cbt',
+      persona_used: data.tone || 'empathetic',
+      diagnosis: [],
+      tone: data.tone,
+      protocol: data.protocol,
+      status: data.status,
+    };
   }
 
   async setTone(request: CBTToneRequest): Promise<void> {
