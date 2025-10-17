@@ -25,7 +25,7 @@ export class CBTApiClient {
   constructor() {
     this.baseUrl = process.env.CBT_API_URL || 'http://localhost:8000';
     this.apiKey = process.env.CBT_API_KEY || '';
-    
+
     if (!this.apiKey) {
       console.warn('CBT_API_KEY not set in environment variables');
     }
