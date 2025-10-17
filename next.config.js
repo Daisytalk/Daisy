@@ -19,6 +19,9 @@ const nextConfig = {
     GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID,
     GOOGLE_CLOUD_LOCATION: process.env.GOOGLE_CLOUD_LOCATION,
     VERTEX_AI_ENDPOINT: process.env.VERTEX_AI_ENDPOINT,
+    // SageMaker API Gateway
+    CBT_API_URL: process.env.CBT_API_URL,
+    CBT_API_KEY: process.env.CBT_API_KEY,
   },
   experimental: {
     forceSwcTransforms: true,
