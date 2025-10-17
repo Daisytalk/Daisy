@@ -33,12 +33,8 @@ export class CBTApiClient {
     });
 
     // Use API Gateway URL instead of localhost
-    this.apiGatewayUrl = process.env.CBT_API_URL || process.env.NEXT_PUBLIC_CBT_API_URL || '';
+    this.apiGatewayUrl = process.env.CBT_API_URL || process.env.NEXT_PUBLIC_CBT_API_URL || 'http://localhost:8000';
     this.apiKey = process.env.CBT_API_KEY || process.env.NEXT_PUBLIC_CBT_API_KEY || '';
-
-    if (!this.apiGatewayUrl) {
-      throw new Error('⚠️ CBT_API_URL not set in environment variables');
-    }
 
     // Remove trailing slash if present
     this.apiGatewayUrl = this.apiGatewayUrl.replace(/\/$/, '');
@@ -113,11 +109,11 @@ export class CBTApiClient {
         message: error.message,
         stack: error.stack
       });
-      
+
       if (error.message.includes('fetch failed')) {
         throw new Error(`Unable to reach API Gateway. Check if the URL is correct: ${this.apiGatewayUrl}`);
       }
-      
+
       throw error;
     }
   }
@@ -157,11 +153,11 @@ export class CBTApiClient {
       const response = await fetch(`${this.apiGatewayUrl}/personas`, {
         headers
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch personas');
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error('API Gateway get personas error:', error);
