@@ -105,22 +105,44 @@ function ChatPageContent() {
     onError: (error) => {
       console.error('❌ Chat error:', error)
     },
-    onFinish: (message, response) => {
+    onFinish: (message) => {
       console.log('✅ Message finished:', message)
-
-      // Update session ID from response headers if we had a temp session
-      if (sessionId?.startsWith('temp_') && response?.headers) {
-        const realSessionId = response.headers.get('X-Session-Id')
-        if (realSessionId && realSessionId !== sessionId) {
-          console.log('Updating to real session ID from header:', realSessionId)
-          setSessionId(realSessionId)
-          localStorage.setItem('active_chat_session', realSessionId)
-        }
-      }
     },
   })
 
   const isLoading = status === 'streaming'
+
+  // Update session ID after first message if we had a temp session
+  useEffect(() => {
+    if (sessionId?.startsWith('temp_') && messages.length > 0) {
+      const updateSessionId = async () => {
+        try {
+          const token = localStorage.getItem('auth_token')
+          const response = await fetch('/api/cbt/conversations', {
+            headers: {
+              'Authorization': token ? `Bearer ${token}` : '',
+            },
+          })
+          if (response.ok) {
+            const data = await response.json()
+            if (data.conversations && data.conversations.length > 0) {
+              const latestConversation = data.conversations[0]
+              if (latestConversation.id !== sessionId) {
+                console.log('Updating to real session ID:', latestConversation.id)
+                setSessionId(latestConversation.id)
+                localStorage.setItem('active_chat_session', latestConversation.id)
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to update session ID:', error)
+        }
+      }
+
+      const timer = setTimeout(updateSessionId, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [messages.length, sessionId])
 
   // Start new chat session
   const startNewChat = () => {
