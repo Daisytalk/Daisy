@@ -63,7 +63,7 @@ function ChatPageContent() {
   const fetchSessionMessages = async (sessionId: string) => {
     try {
       const token = localStorage.getItem('auth_token')
-      const response = await fetch(`/api/sessions/${sessionId}`, {
+      const response = await fetch(`/api/cbt/conversations/${sessionId}`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
         },
@@ -72,11 +72,11 @@ function ChatPageContent() {
       if (response.ok) {
         const data = await response.json()
         if (data.messages && Array.isArray(data.messages)) {
-          // Convert Gemini format to UIMessage format
+          // Convert CBT message format to UIMessage format
           const uiMessages = data.messages.map((msg: any, index: number) => ({
             id: `${sessionId}_${index}`,
-            role: msg.role === 'model' ? 'assistant' : 'user',
-            parts: [{ type: 'text', text: msg.parts?.[0]?.text || '' }],
+            role: msg.role === 'assistant' ? 'assistant' : 'user',
+            parts: [{ type: 'text', text: msg.content || '' }],
           }))
           setMessages(uiMessages)
           console.log('Loaded', uiMessages.length, 'messages from backend')
@@ -91,6 +91,11 @@ function ChatPageContent() {
       }
     } catch (error) {
       console.error('Failed to fetch session messages:', error)
+      // On error, start fresh
+      localStorage.removeItem('active_chat_session')
+      const tempId = `temp_${Date.now()}`
+      setSessionId(tempId)
+      localStorage.setItem('active_chat_session', tempId)
     }
   }
 
@@ -100,8 +105,18 @@ function ChatPageContent() {
     onError: (error) => {
       console.error('❌ Chat error:', error)
     },
-    onFinish: (message) => {
+    onFinish: (message, response) => {
       console.log('✅ Message finished:', message)
+
+      // Update session ID from response headers if we had a temp session
+      if (sessionId?.startsWith('temp_') && response?.headers) {
+        const realSessionId = response.headers.get('X-Session-Id')
+        if (realSessionId && realSessionId !== sessionId) {
+          console.log('Updating to real session ID from header:', realSessionId)
+          setSessionId(realSessionId)
+          localStorage.setItem('active_chat_session', realSessionId)
+        }
+      }
     },
   })
 
@@ -150,37 +165,9 @@ function ChatPageContent() {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
-    const currentSessionId = sessionId
-
     // Send message (auth header is handled by transport)
+    // Session ID will be updated in onFinish callback from response headers
     await sendMessage({ text: inputValue })
-
-    // If we had a temp session, fetch the real session ID after first message
-    if (currentSessionId?.startsWith('temp_')) {
-      setTimeout(async () => {
-        try {
-          const token = localStorage.getItem('auth_token')
-          const response = await fetch('/api/sessions', {
-            headers: {
-              'Authorization': token ? `Bearer ${token}` : '',
-            },
-          })
-          if (response.ok) {
-            const data = await response.json()
-            if (data.sessions && data.sessions.length > 0) {
-              const latestSession = data.sessions[0]
-              if (latestSession.id !== currentSessionId) {
-                console.log('Updating to real session ID:', latestSession.id)
-                setSessionId(latestSession.id)
-                localStorage.setItem('active_chat_session', latestSession.id)
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch updated session:', error)
-        }
-      }, 1000)
-    }
 
     setInputValue("")
   }
