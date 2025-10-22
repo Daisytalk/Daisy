@@ -7,6 +7,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const conversationId = params.id
+
     // Authentication
     let token = request.cookies.get('auth_token')?.value
 
@@ -29,8 +31,8 @@ export async function GET(
     // Fetch conversation with messages
     const conversation = await prisma.cbtConversation.findFirst({
       where: {
-        id: params.id,
-        userId: decoded.userId
+        id: conversationId,
+        userId: decoded.userId // Ensure user owns this conversation
       },
       include: {
         messages: {
@@ -53,13 +55,13 @@ export async function GET(
         role: msg.role,
         content: msg.content,
         protocol: msg.protocol,
-        diagnosis: msg.diagnosis,
         persona: msg.persona,
+        diagnosis: msg.diagnosis,
         createdAt: msg.createdAt
       }))
     })
   } catch (error: any) {
-    console.error('Conversation fetch error:', error)
+    console.error('Conversation detail API error:', error)
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }

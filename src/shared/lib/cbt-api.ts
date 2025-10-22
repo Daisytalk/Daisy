@@ -88,13 +88,34 @@ export class CBTApiClient {
         throw new Error(`API Gateway error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
-      const data = await response.json();
+      // Get raw response text first for debugging
+      const responseText = await response.text();
+      console.log('📄 Raw response text:', responseText.substring(0, 500));
+
+      if (!responseText || responseText.trim() === '' || responseText === 'null') {
+        throw new Error('API Gateway returned empty or null response');
+      }
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('❌ JSON parse error:', parseError);
+        throw new Error(`Invalid JSON from API Gateway: ${responseText.substring(0, 100)}`);
+      }
+
       console.log('✅ API Gateway response data:', data);
 
+      // Check if we got a valid response
+      const responseContent = data?.response || data?.body?.response || data?.message;
+      if (!responseContent) {
+        console.error('❌ No response content found in:', data);
+        throw new Error('API Gateway returned response without content. Check your SageMaker endpoint.');
+      }
+
       // Map response format to expected format
-      // Adjust this based on your actual API Gateway response structure
       return {
-        response: data.response || data.body?.response || data.message || '',
+        response: responseContent,
         protocol_used: data.protocol || data.body?.protocol || 'general_cbt',
         persona_used: data.tone || data.body?.tone || data.persona || 'empathetic',
         diagnosis: data.diagnosis || data.body?.diagnosis || [],

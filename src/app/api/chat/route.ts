@@ -3,16 +3,6 @@ import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
 
-// CBT API Integration - Using local AI model at localhost:8000
-// The CBT API automatically determines the appropriate persona based on conversation context
-// No need for manual persona selection or API key configuration
-
-// Type definitions for message handling
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-}
-
 export async function POST(request: NextRequest) {
   try {
     // Debug: Log environment variables

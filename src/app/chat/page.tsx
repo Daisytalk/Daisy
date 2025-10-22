@@ -304,7 +304,7 @@ function ChatPageContent() {
         )}
 
         <AnimatePresence>
-          {messages.map((m, index) => (
+          {messages.map((m) => (
             <motion.div
               key={m.id}
               layout
