@@ -15,6 +15,13 @@ interface Message {
 
 export async function POST(request: NextRequest) {
   try {
+    // Debug: Log environment variables
+    console.log('🔍 Environment variables check:', {
+      CBT_API_URL: process.env.CBT_API_URL || 'NOT SET',
+      CBT_API_KEY: process.env.CBT_API_KEY ? '***SET***' : 'NOT SET',
+      NODE_ENV: process.env.NODE_ENV
+    })
+
     // Parse request body
     const body = await request.json()
 
@@ -25,13 +32,13 @@ export async function POST(request: NextRequest) {
     let userMessage = ''
     if (Array.isArray(body.messages) && body.messages.length > 0) {
       const lastMessage = body.messages[body.messages.length - 1]
-      
+
       // Handle different message formats
       if (typeof lastMessage === 'string') {
         userMessage = lastMessage
       } else if (lastMessage.content) {
-        userMessage = typeof lastMessage.content === 'string' 
-          ? lastMessage.content 
+        userMessage = typeof lastMessage.content === 'string'
+          ? lastMessage.content
           : JSON.stringify(lastMessage.content)
       } else if (lastMessage.parts && Array.isArray(lastMessage.parts)) {
         userMessage = lastMessage.parts

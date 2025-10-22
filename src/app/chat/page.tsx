@@ -46,11 +46,13 @@ function ChatPageContent() {
   // Initialize or restore session
   useEffect(() => {
     const storedSessionId = localStorage.getItem('active_chat_session')
-    if (storedSessionId && !storedSessionId.startsWith('temp_')) {
+    if (storedSessionId) {
       setSessionId(storedSessionId)
       console.log('Restored session:', storedSessionId)
-      // Fetch session messages from backend
-      fetchSessionMessages(storedSessionId)
+      // Only fetch if it's a real session ID (not temp)
+      if (!storedSessionId.startsWith('temp_')) {
+        fetchSessionMessages(storedSessionId)
+      }
     } else {
       // For new sessions, we'll let the backend create it on first message
       const tempId = `temp_${Date.now()}`
@@ -73,8 +75,8 @@ function ChatPageContent() {
         const data = await response.json()
         if (data.messages && Array.isArray(data.messages)) {
           // Convert CBT message format to UIMessage format
-          const uiMessages = data.messages.map((msg: any, index: number) => ({
-            id: `${sessionId}_${index}`,
+          const uiMessages = data.messages.map((msg: any, idx: number) => ({
+            id: `${sessionId}_${idx}`,
             role: msg.role === 'assistant' ? 'assistant' : 'user',
             parts: [{ type: 'text', text: msg.content || '' }],
           }))
@@ -82,20 +84,12 @@ function ChatPageContent() {
           console.log('Loaded', uiMessages.length, 'messages from backend')
         }
       } else if (response.status === 404) {
-        // Session not found, clear it and start fresh
-        console.log('Session not found, starting new session')
-        localStorage.removeItem('active_chat_session')
-        const tempId = `temp_${Date.now()}`
-        setSessionId(tempId)
-        localStorage.setItem('active_chat_session', tempId)
+        // Session not found, just log it - don't reset
+        console.log('Session not found in backend, will be created on first message')
       }
     } catch (error) {
       console.error('Failed to fetch session messages:', error)
-      // On error, start fresh
-      localStorage.removeItem('active_chat_session')
-      const tempId = `temp_${Date.now()}`
-      setSessionId(tempId)
-      localStorage.setItem('active_chat_session', tempId)
+      // On error, just log - don't reset the session
     }
   }
 
@@ -114,7 +108,8 @@ function ChatPageContent() {
 
   // Update session ID after first message if we had a temp session
   useEffect(() => {
-    if (sessionId?.startsWith('temp_') && messages.length > 0) {
+    if (sessionId?.startsWith('temp_') && messages.length >= 2) {
+      // Wait for at least 2 messages (user + assistant) before updating
       const updateSessionId = async () => {
         try {
           const token = localStorage.getItem('auth_token')
@@ -139,7 +134,7 @@ function ChatPageContent() {
         }
       }
 
-      const timer = setTimeout(updateSessionId, 500)
+      const timer = setTimeout(updateSessionId, 1000)
       return () => clearTimeout(timer)
     }
   }, [messages.length, sessionId])
