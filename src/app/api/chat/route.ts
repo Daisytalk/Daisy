@@ -3,15 +3,96 @@ import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
 
-export async function POST(request: NextRequest) {
+/**
+ * Process chat request asynchronously
+ * This runs in the background without blocking the response
+ */
+async function processAsyncChat(
+  messageId: string,
+  conversationId: string,
+  userMessage: string,
+  userId: string
+) {
   try {
-    // Debug: Log environment variables
-    console.log('🔍 Environment variables check:', {
-      CBT_API_URL: process.env.CBT_API_URL || 'NOT SET',
-      CBT_API_KEY: process.env.CBT_API_KEY ? '***SET***' : 'NOT SET',
-      NODE_ENV: process.env.NODE_ENV
+    console.log('🚀 Starting async chat processing:', {
+      messageId,
+      conversationId,
+      userId,
+      messagePreview: userMessage.substring(0, 50)
     })
 
+    // Call CBT Therapy API
+    console.log('📞 Calling CBT API...')
+    const cbtResponse = await cbtApi.chat({
+      text: userMessage,
+      user_id: userId,
+      session_id: conversationId,
+    })
+
+    console.log('✅ CBT API response received:', {
+      protocol: cbtResponse.protocol_used,
+      persona: cbtResponse.persona_used,
+      responseLength: cbtResponse.response?.length || 0,
+      hasResponse: !!cbtResponse.response
+    })
+
+    if (!cbtResponse.response) {
+      throw new Error('No response content from CBT API')
+    }
+
+    // Save assistant response to database
+    console.log('💾 Saving assistant response to database...')
+    await prisma.cbtMessage.create({
+      data: {
+        conversationId: conversationId,
+        role: 'assistant',
+        content: cbtResponse.response,
+        protocol: cbtResponse.protocol_used,
+        diagnosis: cbtResponse.diagnosis || [],
+        persona: cbtResponse.persona_used,
+      },
+    })
+
+    // Update conversation with the persona used
+    if (cbtResponse.persona_used) {
+      await prisma.cbtConversation.update({
+        where: { id: conversationId },
+        data: {
+          persona: cbtResponse.persona_used,
+          updatedAt: new Date()
+        }
+      })
+    }
+
+    console.log('✅ Successfully saved assistant response for message:', messageId)
+
+  } catch (error: any) {
+    console.error('❌ Async processing error:', {
+      messageId,
+      error: error.message,
+      stack: error.stack,
+      name: error.name
+    })
+    
+    // Save error message to database
+    try {
+      await prisma.cbtMessage.create({
+        data: {
+          conversationId: conversationId,
+          role: 'assistant',
+          content: 'I apologize, but I encountered an error processing your message. Please try again.',
+          diagnosis: [],
+        },
+      })
+      console.log('💾 Saved error message to database')
+    } catch (dbError) {
+      console.error('❌ Failed to save error message:', dbError)
+    }
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
     // Parse request body
     const body = await request.json()
 
@@ -110,7 +191,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save user message to database
-    await prisma.cbtMessage.create({
+    const userMessageRecord = await prisma.cbtMessage.create({
       data: {
         conversationId: conversation.id,
         role: 'user',
@@ -119,55 +200,26 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Call CBT Therapy API
-    // The CBT API will automatically determine the appropriate persona
-    console.log('Calling CBT API for user:', user.id)
-    const cbtResponse = await cbtApi.chat({
-      text: userMessage,
-      user_id: user.id,
-      session_id: conversation.id,
-      // Note: No persona specified - CBT API determines it automatically
-    })
+    console.log('💾 Saved user message:', userMessageRecord.id)
 
-    console.log('CBT API response received:', {
-      protocol: cbtResponse.protocol_used,
-      persona: cbtResponse.persona_used,
-      diagnosis: cbtResponse.diagnosis,
-      responseLength: cbtResponse.response.length
-    })
-
-    // Save assistant response to database
-    await prisma.cbtMessage.create({
-      data: {
-        conversationId: conversation.id,
-        role: 'assistant',
-        content: cbtResponse.response,
-        protocol: cbtResponse.protocol_used,
-        diagnosis: cbtResponse.diagnosis || [],
-        persona: cbtResponse.persona_used,
-      },
-    })
-
-    // Update conversation with the persona used by CBT API
-    if (cbtResponse.persona_used) {
-      await prisma.cbtConversation.update({
-        where: { id: conversation.id },
-        data: {
-          persona: cbtResponse.persona_used,
-          updatedAt: new Date()
-        }
+    // Start async processing in background
+    // Don't await - let it process asynchronously
+    processAsyncChat(userMessageRecord.id, conversation.id, userMessage, user.id)
+      .catch(error => {
+        console.error('❌ Async chat processing failed:', error)
       })
-    }
 
-    // Return response in the format expected by the frontend
-    // Return as plain text for streaming compatibility
-    return new NextResponse(cbtResponse.response, {
-      status: 200,
+    // Return immediately with request ID for polling
+    return NextResponse.json({
+      status: 'processing',
+      requestId: userMessageRecord.id,
+      conversationId: conversation.id,
+      message: 'Your message is being processed...'
+    }, {
+      status: 202, // Accepted
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
         'X-Session-Id': conversation.id,
-        'X-Persona': cbtResponse.persona_used || 'active_listener',
-        'X-Protocol': cbtResponse.protocol_used || 'general',
+        'X-Request-Id': userMessageRecord.id,
       }
     })
 

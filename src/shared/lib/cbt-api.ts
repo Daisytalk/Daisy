@@ -33,8 +33,8 @@ export class CBTApiClient {
     });
 
     // Use API Gateway URL instead of localhost
-    this.apiGatewayUrl = process.env.CBT_API_URL || process.env.NEXT_PUBLIC_CBT_API_URL || 'http://localhost:8000';
-    this.apiKey = process.env.CBT_API_KEY || process.env.NEXT_PUBLIC_CBT_API_KEY || '';
+    this.apiGatewayUrl = 'https://8yzq53bpme.execute-api.us-east-1.amazonaws.com';
+    this.apiKey = process.env.CBT_API_KEY || '';
 
     // Remove trailing slash if present
     this.apiGatewayUrl = this.apiGatewayUrl.replace(/\/$/, '');
@@ -46,9 +46,9 @@ export class CBTApiClient {
   }
 
   async chat(request: CBTChatRequest): Promise<CBTChatResponse> {
-    // Prepare payload for your API Gateway/SageMaker
+    // Prepare payload - API expects "text" not "message"
     const payload = {
-      message: request.text,
+      text: request.text,
       user_id: request.user_id,
       session_id: request.session_id,
       persona: request.persona
@@ -70,7 +70,8 @@ export class CBTApiClient {
         headers['x-api-key'] = this.apiKey;
       }
 
-      const response = await fetch(this.apiGatewayUrl, {
+      // Don't add /chat - the base URL is the endpoint
+      const response = await fetch(`${this.apiGatewayUrl}/chat`, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
