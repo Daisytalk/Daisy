@@ -1,15 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone', // For Docker/Azure Container Apps
+  
   images: {
     domains: ['images.unsplash.com'],
   },
+
   env: {
     JWT_SECRET: process.env.JWT_SECRET,
     API_KEY: process.env.API_KEY,
-    // Google OAuth - support both naming conventions
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
-    GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI || process.env.NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT,
+    // Google OAuth – support both naming conventions
+    GOOGLE_CLIENT_ID:
+      process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET:
+      process.env.GOOGLE_CLIENT_SECRET || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI:
+      process.env.GOOGLE_REDIRECT_URI || process.env.NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT,
     DATABASE_URL: process.env.DATABASE_URL,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
@@ -19,23 +25,35 @@ const nextConfig = {
     GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID,
     GOOGLE_CLOUD_LOCATION: process.env.GOOGLE_CLOUD_LOCATION,
     VERTEX_AI_ENDPOINT: process.env.VERTEX_AI_ENDPOINT,
-    // SageMaker API Gateway
+    // SageMaker → Azure ML (you’ll replace these later)
     CBT_API_URL: process.env.CBT_API_URL,
     CBT_API_KEY: process.env.CBT_API_KEY,
   },
+
   experimental: {
     forceSwcTransforms: true,
   },
-  // Disable static optimization completely
+
   generateBuildId: async () => {
-    return 'build-' + Date.now()
+    return 'build-' + Date.now();
   },
+
   trailingSlash: false,
+
   async redirects() {
-    return [
-
-    ]
+    return [];
   },
-}
 
-module.exports = nextConfig
+  async rewrites() {
+    return [
+      {
+        source: '/((?!\\.swa).*)',
+        destination: '/$1',
+      },
+    ];
+  },
+
+  middleware: ['middleware'],
+};
+
+module.exports = nextConfig;
