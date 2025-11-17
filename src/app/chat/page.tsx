@@ -23,25 +23,21 @@ function ChatPageContent() {
   const [inputValue, setInputValue] = useState("")
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [thinkingStartTime, setThinkingStartTime] = useState<number | null>(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const [encouragingMessageIndex, setEncouragingMessageIndex] = useState(0)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const emojiPickerRef = useRef<HTMLDivElement>(null)
 
-  // Create custom transport with auth headers and session ID
-  const transport = useMemo(() => {
-    const { TextStreamChatTransport } = require('ai')
-    return new TextStreamChatTransport({
-      headers: () => {
-        const token = localStorage.getItem('auth_token')
-        return {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
-        }
-      },
-      body: () => ({
-        sessionId: sessionId,
-      }),
-    })
-  }, [sessionId])
+  const encouragingMessages = [
+    "Your therapist is carefully considering your message...",
+    "Analyzing your concerns with care...",
+    "Preparing a thoughtful response...",
+    "Taking time to understand your feelings...",
+    "Almost ready with a personalized response...",
+  ]
+
+
 
   // Initialize or restore session
   useEffect(() => {
@@ -49,10 +45,9 @@ function ChatPageContent() {
     if (storedSessionId && !storedSessionId.startsWith('temp_')) {
       setSessionId(storedSessionId)
       console.log('Restored session:', storedSessionId)
-      // Fetch session messages from backend
       fetchSessionMessages(storedSessionId)
     } else {
-      // For new sessions, we'll let the backend create it on first message
+      // Create new temp session
       const tempId = `temp_${Date.now()}`
       setSessionId(tempId)
       localStorage.setItem('active_chat_session', tempId)
@@ -62,8 +57,9 @@ function ChatPageContent() {
 
   const fetchSessionMessages = async (sessionId: string) => {
     try {
+      console.log('📥 Fetching messages for session:', sessionId)
       const token = localStorage.getItem('auth_token')
-      const response = await fetch(`/api/sessions/${sessionId}`, {
+      const response = await fetch(`/api/cbt/conversations/${sessionId}`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
         },
@@ -72,40 +68,59 @@ function ChatPageContent() {
       if (response.ok) {
         const data = await response.json()
         if (data.messages && Array.isArray(data.messages)) {
-          // Convert Gemini format to UIMessage format
-          const uiMessages = data.messages.map((msg: any, index: number) => ({
-            id: `${sessionId}_${index}`,
-            role: msg.role === 'model' ? 'assistant' : 'user',
-            parts: [{ type: 'text', text: msg.parts?.[0]?.text || '' }],
+          // Convert CBT message format to UIMessage format
+          const uiMessages = data.messages.map((msg: any, idx: number) => ({
+            id: msg.id || `${sessionId}_${idx}`,
+            role: msg.role === 'assistant' ? 'assistant' : 'user',
+            parts: [{ type: 'text', text: msg.content || '' }],
           }))
           setMessages(uiMessages)
-          console.log('Loaded', uiMessages.length, 'messages from backend')
+          console.log('✅ Loaded', uiMessages.length, 'messages from backend')
         }
       } else if (response.status === 404) {
-        // Session not found, clear it and start fresh
-        console.log('Session not found, starting new session')
-        localStorage.removeItem('active_chat_session')
-        const tempId = `temp_${Date.now()}`
-        setSessionId(tempId)
-        localStorage.setItem('active_chat_session', tempId)
+        console.log('⚠️ Session not found in backend, starting fresh')
+        setMessages([])
       }
     } catch (error) {
-      console.error('Failed to fetch session messages:', error)
+      console.error('❌ Failed to fetch session messages:', error)
     }
   }
 
-  const { messages, sendMessage, status, error, setMessages } = useChat({
-    id: sessionId || undefined,
-    transport,
-    onError: (error) => {
-      console.error('❌ Chat error:', error)
-    },
-    onFinish: (message) => {
-      console.log('✅ Message finished:', message)
-    },
-  })
+  const [messages, setMessages] = useState<UIMessage[]>([])
+  const [isPolling, setIsPolling] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+  const isLoading = isPolling
 
-  const isLoading = status === 'streaming'
+  // Track thinking time
+  useEffect(() => {
+    if (isLoading && !thinkingStartTime) {
+      setThinkingStartTime(Date.now())
+      setElapsedSeconds(0)
+      setEncouragingMessageIndex(0)
+    } else if (!isLoading && thinkingStartTime) {
+      setThinkingStartTime(null)
+      setElapsedSeconds(0)
+    }
+  }, [isLoading, thinkingStartTime])
+
+  // Update elapsed time every second
+  useEffect(() => {
+    if (!thinkingStartTime) return
+
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - thinkingStartTime) / 1000)
+      setElapsedSeconds(elapsed)
+
+      // Rotate encouraging message every 10 seconds
+      if (elapsed > 0 && elapsed % 10 === 0) {
+        setEncouragingMessageIndex((prev) => (prev + 1) % encouragingMessages.length)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [thinkingStartTime, encouragingMessages.length])
+
+  // No longer needed - session ID is updated in onFinish callback
 
   // Start new chat session
   const startNewChat = () => {
@@ -150,39 +165,126 @@ function ChatPageContent() {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
-    const currentSessionId = sessionId
+    const messageText = inputValue
+    setInputValue("")
 
-    // Send message (auth header is handled by transport)
-    await sendMessage({ text: inputValue })
+    try {
+      const token = localStorage.getItem('auth_token')
+      
+      // Add user message immediately to UI
+      const tempUserMessage: UIMessage = {
+        id: `temp_user_${Date.now()}`,
+        role: 'user',
+        parts: [{ type: 'text', text: messageText }],
+      }
+      setMessages([...messages, tempUserMessage])
 
-    // If we had a temp session, fetch the real session ID after first message
-    if (currentSessionId?.startsWith('temp_')) {
-      setTimeout(async () => {
-        try {
-          const token = localStorage.getItem('auth_token')
-          const response = await fetch('/api/sessions', {
-            headers: {
-              'Authorization': token ? `Bearer ${token}` : '',
-            },
-          })
-          if (response.ok) {
-            const data = await response.json()
-            if (data.sessions && data.sessions.length > 0) {
-              const latestSession = data.sessions[0]
-              if (latestSession.id !== currentSessionId) {
-                console.log('Updating to real session ID:', latestSession.id)
-                setSessionId(latestSession.id)
-                localStorage.setItem('active_chat_session', latestSession.id)
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch updated session:', error)
+      // Send message to backend
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: messageText }],
+          sessionId: sessionId,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      // Update session ID if needed
+      const newSessionId = response.headers.get('X-Session-Id') || data.conversationId
+      if (newSessionId && newSessionId !== sessionId) {
+        console.log('✅ Updated session ID:', newSessionId)
+        setSessionId(newSessionId)
+        localStorage.setItem('active_chat_session', newSessionId)
+      }
+
+      // Start polling for response
+      if (data.requestId) {
+        await pollForResponse(data.requestId, token)
+      }
+
+    } catch (error) {
+      console.error('Failed to send message:', error)
+      setInputValue(messageText)
+      // Remove temp user message on error
+      setMessages(messages)
+    }
+  }
+
+  // Poll for async response
+  const pollForResponse = async (requestId: string, token: string | null) => {
+    setIsPolling(true)
+    const maxAttempts = 60 // 5 minutes (5s intervals)
+    let attempts = 0
+
+    const poll = async (): Promise<void> => {
+      if (attempts >= maxAttempts) {
+        console.error('❌ Polling timeout')
+        const errorMessage: UIMessage = {
+          id: `error_${Date.now()}`,
+          role: 'assistant',
+          parts: [{ 
+            type: 'text', 
+            text: 'I apologize, but the response is taking longer than expected. Please try sending your message again.' 
+          }],
         }
-      }, 1000)
+        setMessages(prev => [...prev, errorMessage])
+        setIsPolling(false)
+        return
+      }
+
+      attempts++
+
+      try {
+        console.log(`🔄 Polling attempt ${attempts}/${maxAttempts} for request:`, requestId)
+        
+        const response = await fetch(`/api/chat/status/${requestId}`, {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+          },
+        })
+
+        if (!response.ok) {
+          console.error(`❌ Status check failed: ${response.status}`)
+          throw new Error(`Status check failed: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log('📊 Poll response:', data)
+
+        if (data.status === 'completed') {
+          // Add assistant response to UI
+          const assistantMessage: UIMessage = {
+            id: `assistant_${Date.now()}`,
+            role: 'assistant',
+            parts: [{ type: 'text', text: data.response }],
+          }
+          setMessages(prev => [...prev, assistantMessage])
+          setIsPolling(false)
+          console.log('✅ Response received and displayed')
+          return
+        }
+
+        // Still processing, poll again after 5 seconds
+        console.log('⏳ Still processing, will poll again in 5s...')
+        setTimeout(poll, 5000)
+
+      } catch (error) {
+        console.error('❌ Polling error:', error)
+        setTimeout(poll, 5000) // Retry on error
+      }
     }
 
-    setInputValue("")
+    // Start polling
+    await poll()
   }
 
   const handleEmojiSelect = useCallback((emoji: string) => {
@@ -285,9 +387,9 @@ function ChatPageContent() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index }}
-                  onClick={async () => {
-                    // Send message directly (auth header is handled by transport)
-                    await sendMessage({ text: reply })
+                  onClick={() => {
+                    setInputValue(reply)
+                    textareaRef.current?.focus()
                   }}
                   disabled={isLoading}
                   className="p-4 bg-white hover:bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-[#FFDC61] transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
@@ -300,7 +402,7 @@ function ChatPageContent() {
         )}
 
         <AnimatePresence>
-          {messages.map((m, index) => (
+          {messages.map((m) => (
             <motion.div
               key={m.id}
               layout
@@ -345,11 +447,56 @@ function ChatPageContent() {
                 <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-gray-900" />
               </div>
               <div className="max-w-xl p-4 sm:p-5 rounded-2xl shadow-lg bg-white text-gray-800 rounded-bl-none border border-gray-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                {/* Animated typing indicator */}
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 bg-[#FFDC61] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-[#FFDC61] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-[#FFDC61] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                 </div>
+
+                {/* Encouraging message with fade transition */}
+                <motion.p
+                  key={encouragingMessageIndex}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-sm text-gray-600 mb-2"
+                >
+                  {encouragingMessages[encouragingMessageIndex]}
+                </motion.p>
+
+                {/* Elapsed time counter */}
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                  <p className="text-xs text-gray-400">
+                    Thinking... ({elapsedSeconds}s)
+                  </p>
+                </div>
+
+                {/* Progress bar */}
+                <div className="mt-3 h-1 bg-gray-100 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-[#FFDC61] to-[#D1E2D3]"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{
+                      duration: 100,
+                      ease: "linear",
+                    }}
+                  />
+                </div>
+
+                {/* Timeout warning */}
+                {elapsedSeconds > 60 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-xs text-amber-600 mt-2"
+                  >
+                    This is taking longer than usual. Please wait...
+                  </motion.p>
+                )}
               </div>
             </motion.div>
           )}
@@ -360,9 +507,23 @@ function ChatPageContent() {
       {/* Input Area */}
       <footer className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-xl border-t border-gray-100 p-4 sm:p-6">
         {error && (
-          <div className="max-w-4xl mx-auto mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-            An error occurred: {error.message}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-4xl mx-auto mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-3"
+          >
+            <div className="flex-shrink-0 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">!</div>
+            <div className="flex-1">
+              <p className="font-medium mb-1">Error</p>
+              <p>{error.message}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-400 hover:text-red-600 transition-colors"
+            >
+              ×
+            </button>
+          </motion.div>
         )}
         <form
           onSubmit={handleSubmit}
@@ -379,8 +540,9 @@ function ChatPageContent() {
                   handleSubmit(e)
                 }
               }}
-              className="w-full pl-4 pr-12 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#FFDC61] focus:border-transparent transition resize-none bg-white"
-              placeholder="Type your message… (Press Enter to send)"
+              disabled={isLoading}
+              className="w-full pl-4 pr-12 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#FFDC61] focus:border-transparent transition resize-none bg-white disabled:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-500"
+              placeholder={isLoading ? "Please wait for response..." : "Type your message… (Press Enter to send)"}
               rows={1}
               style={{ minHeight: '56px', maxHeight: '120px' }}
             />

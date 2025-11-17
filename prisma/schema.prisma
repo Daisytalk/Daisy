@@ -22,8 +22,9 @@ model User {
   subscriptionStatus String   @default("trial")
 
   // Relations
-  onboarding OnboardingData?
-  aiSessions AiSession[]
+  onboarding     OnboardingData?
+  aiSessions     AiSession[]
+  cbtConversations CbtConversation[]
 
   @@map("users")
 }
@@ -75,4 +76,37 @@ model TokenBlacklist {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model CbtConversation {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  CbtMessage[]
+  sessionId String?
+  persona   String      @default("active_listener")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+  @@map("cbt_conversations")
+}
+
+model CbtMessage {
+  id             String          @id @default(cuid())
+  conversationId String
+  conversation   CbtConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String          // "user" or "assistant"
+  content        String          @db.Text
+  
+  // CBT-specific metadata
+  protocol       String?
+  diagnosis      String[]
+  persona        String?
+  
+  createdAt      DateTime        @default(now())
+
+  @@index([conversationId])
+  @@map("cbt_messages")
 }
