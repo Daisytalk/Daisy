@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Next.js
+.next
+out
+
+# Testing
+coverage
+.nyc_output
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.kiro
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CI/CD
+.github
+
+# Misc
+README.md
+.prettierrc
+.eslintrc.json
+
+AZURE_DOCKER_SETUP.md

@@ -38,8 +38,6 @@
     "react-icons": "^5.5.0",
     "stripe": "^14.15.0",
     "tailwind-merge": "^2.2.0",
-
-    "---AZURE-SPECIFIC---": "",
     "@azure/arm-machinelearning": "^2.0.0",
     "@azure/identity": "^4.0.0",
     "@azure/storage-blob": "^12.16.0"
