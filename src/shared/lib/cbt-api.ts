@@ -1,4 +1,4 @@
-// CBT Therapy API Client via API Gateway
+// CBT Therapy API Client via Azure
 interface CBTChatRequest {
   text: string;
   user_id: string;
@@ -22,7 +22,7 @@ interface CBTToneRequest {
 }
 
 export class CBTApiClient {
-  private apiGatewayUrl: string;
+  private apiUrl: string;
   private apiKey: string;
 
   constructor() {
@@ -32,15 +32,15 @@ export class CBTApiClient {
       NODE_ENV: process.env.NODE_ENV,
     });
 
-    // Use API Gateway URL instead of localhost
-    this.apiGatewayUrl = 'https://8yzq53bpme.execute-api.us-east-1.amazonaws.com';
+    // Use Azure-hosted CBT API URL from environment
+    this.apiUrl = process.env.CBT_API_URL || 'http://cbt-therapy-api-daisy-ergpf5fecjeheub5.centralus-01.azurewebsites.net';
     this.apiKey = process.env.CBT_API_KEY || '';
 
     // Remove trailing slash if present
-    this.apiGatewayUrl = this.apiGatewayUrl.replace(/\/$/, '');
+    this.apiUrl = this.apiUrl.replace(/\/$/, '');
 
     console.log('✅ CBTApiClient initialized:', {
-      apiGatewayUrl: this.apiGatewayUrl,
+      apiUrl: this.apiUrl,
       hasApiKey: !!this.apiKey
     });
   }
@@ -54,8 +54,8 @@ export class CBTApiClient {
       persona: request.persona
     };
 
-    console.log('🚀 Sending to API Gateway:', {
-      url: this.apiGatewayUrl,
+    console.log('🚀 Sending to Azure CBT API:', {
+      url: this.apiUrl,
       hasApiKey: !!this.apiKey,
       payload
     });
@@ -71,22 +71,22 @@ export class CBTApiClient {
       }
 
       // Don't add /chat - the base URL is the endpoint
-      const response = await fetch(`${this.apiGatewayUrl}/chat`, {
+      const response = await fetch(`${this.apiUrl}/chat`, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
       });
 
-      console.log('📥 API Gateway response status:', response.status, response.statusText);
+      console.log('📥 Azure CBT API response status:', response.status, response.statusText);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ API Gateway error:', {
+        console.error('❌ Azure CBT API error:', {
           status: response.status,
           statusText: response.statusText,
           body: errorText
         });
-        throw new Error(`API Gateway error: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(`Azure CBT API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       // Get raw response text first for debugging
@@ -94,7 +94,7 @@ export class CBTApiClient {
       console.log('📄 Raw response text:', responseText.substring(0, 500));
 
       if (!responseText || responseText.trim() === '' || responseText === 'null') {
-        throw new Error('API Gateway returned empty or null response');
+        throw new Error('Azure CBT API returned empty or null response');
       }
 
       let data;
@@ -102,16 +102,16 @@ export class CBTApiClient {
         data = JSON.parse(responseText);
       } catch (parseError) {
         console.error('❌ JSON parse error:', parseError);
-        throw new Error(`Invalid JSON from API Gateway: ${responseText.substring(0, 100)}`);
+        throw new Error(`Invalid JSON from Azure CBT API: ${responseText.substring(0, 100)}`);
       }
 
-      console.log('✅ API Gateway response data:', data);
+      console.log('✅ Azure CBT API response data:', data);
 
       // Check if we got a valid response
       const responseContent = data?.response || data?.body?.response || data?.message;
       if (!responseContent) {
         console.error('❌ No response content found in:', data);
-        throw new Error('API Gateway returned response without content. Check your SageMaker endpoint.');
+        throw new Error('Azure CBT API returned response without content.');
       }
 
       // Map response format to expected format
@@ -126,14 +126,14 @@ export class CBTApiClient {
       };
 
     } catch (error: any) {
-      console.error('❌ API Gateway invocation error:', {
+      console.error('❌ Azure CBT API invocation error:', {
         name: error.name,
         message: error.message,
         stack: error.stack
       });
 
       if (error.message.includes('fetch failed')) {
-        throw new Error(`Unable to reach API Gateway. Check if the URL is correct: ${this.apiGatewayUrl}`);
+        throw new Error(`Unable to reach Azure CBT API. Check if the URL is correct: ${this.apiUrl}`);
       }
 
       throw error;
@@ -150,7 +150,7 @@ export class CBTApiClient {
         headers['x-api-key'] = this.apiKey;
       }
 
-      const response = await fetch(`${this.apiGatewayUrl}/tone/set`, {
+      const response = await fetch(`${this.apiUrl}/tone/set`, {
         method: 'POST',
         headers,
         body: JSON.stringify(request),
@@ -160,7 +160,7 @@ export class CBTApiClient {
         throw new Error(`Failed to set tone: ${response.statusText}`);
       }
     } catch (error) {
-      console.error('API Gateway set tone error:', error);
+      console.error('Azure CBT API set tone error:', error);
       throw error;
     }
   }
@@ -172,7 +172,7 @@ export class CBTApiClient {
         headers['x-api-key'] = this.apiKey;
       }
 
-      const response = await fetch(`${this.apiGatewayUrl}/personas`, {
+      const response = await fetch(`${this.apiUrl}/personas`, {
         headers
       });
 
@@ -182,7 +182,7 @@ export class CBTApiClient {
 
       return await response.json();
     } catch (error) {
-      console.error('API Gateway get personas error:', error);
+      console.error('Azure CBT API get personas error:', error);
       return {
         personas: ['empathetic', 'professional', 'friendly', 'active_listener'],
         default: 'empathetic',
@@ -197,7 +197,7 @@ export class CBTApiClient {
         headers['x-api-key'] = this.apiKey;
       }
 
-      const response = await fetch(`${this.apiGatewayUrl}/health`, {
+      const response = await fetch(`${this.apiUrl}/health`, {
         headers
       });
       return response.ok;
