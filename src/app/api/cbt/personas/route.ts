@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { cbtApi } from '@/shared/lib/cbt-api';
 
+// Prevent static generation during build
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const personas = await cbtApi.getPersonas();

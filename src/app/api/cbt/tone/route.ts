@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/shared/lib/auth';
 import { cbtApi } from '@/shared/lib/cbt-api';
 
+// Prevent static generation during build
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     let token = req.cookies.get('auth_token')?.value;
-    
+
     if (!token) {
       const authHeader = req.headers.get('authorization');
       if (authHeader && authHeader.startsWith('Bearer ')) {
