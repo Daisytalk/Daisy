@@ -24,7 +24,7 @@ RUN npm install -g pnpm
 # Generate Prisma Client
 RUN pnpm prisma generate
 
-ENV DATABASE_URL="postgresql://daisyadmin:database%21@daisy.postgres.database.azure.com:5432/postgres?sslmode=require"
+ENV DATABASE_URL="postgresql://daisyadmin:database1%21@daisy.postgres.database.azure.com:5432/postgres?sslmode=require"
 
 
 # Build Next.js
