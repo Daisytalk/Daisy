@@ -25,6 +25,9 @@ const nextConfig = {
     GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID,
     GOOGLE_CLOUD_LOCATION: process.env.GOOGLE_CLOUD_LOCATION,
     VERTEX_AI_ENDPOINT: process.env.VERTEX_AI_ENDPOINT,
+    // Azure ML API (Primary AI endpoint)
+    NEXT_PUBLIC_AI_API_URL: process.env.NEXT_PUBLIC_AI_API_URL,
+    NEXT_PUBLIC_AI_API_KEY: process.env.NEXT_PUBLIC_AI_API_KEY,
     // SageMaker → Azure ML (you’ll replace these later)
     CBT_API_URL: process.env.CBT_API_URL,
     CBT_API_KEY: process.env.CBT_API_KEY,

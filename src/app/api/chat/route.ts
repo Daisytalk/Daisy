@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
-import { cbtApi } from '@/shared/lib/cbt-api'
+import { sendChatMessage } from '@/shared/lib/ai-api'
 
 /**
  * Process chat request asynchronously
@@ -21,23 +21,19 @@ async function processAsyncChat(
       messagePreview: userMessage.substring(0, 50)
     })
 
-    // Call CBT Therapy API
-    console.log('📞 Calling CBT API...')
-    const cbtResponse = await cbtApi.chat({
-      text: userMessage,
-      user_id: userId,
-      session_id: conversationId,
+    // Call Azure ML API
+    console.log('📞 Calling Azure ML API...')
+    const aiResponse = await sendChatMessage(userMessage, userId, conversationId)
+
+    console.log('✅ Azure ML API response received:', {
+      protocol: aiResponse.protocol_used,
+      persona: aiResponse.persona_used,
+      responseLength: aiResponse.response?.length || 0,
+      hasResponse: !!aiResponse.response
     })
 
-    console.log('✅ CBT API response received:', {
-      protocol: cbtResponse.protocol_used,
-      persona: cbtResponse.persona_used,
-      responseLength: cbtResponse.response?.length || 0,
-      hasResponse: !!cbtResponse.response
-    })
-
-    if (!cbtResponse.response) {
-      throw new Error('No response content from CBT API')
+    if (!aiResponse.response) {
+      throw new Error('No response content from Azure ML API')
     }
 
     // Save assistant response to database
@@ -46,19 +42,19 @@ async function processAsyncChat(
       data: {
         conversationId: conversationId,
         role: 'assistant',
-        content: cbtResponse.response,
-        protocol: cbtResponse.protocol_used,
-        diagnosis: cbtResponse.diagnosis || [],
-        persona: cbtResponse.persona_used,
+        content: aiResponse.response,
+        protocol: aiResponse.protocol_used,
+        diagnosis: aiResponse.diagnosis || [],
+        persona: aiResponse.persona_used,
       },
     })
 
     // Update conversation with the persona used
-    if (cbtResponse.persona_used) {
+    if (aiResponse.persona_used) {
       await prisma.cbtConversation.update({
         where: { id: conversationId },
         data: {
-          persona: cbtResponse.persona_used,
+          persona: aiResponse.persona_used,
           updatedAt: new Date()
         }
       })

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/shared/lib/auth';
 import prisma from '@/shared/lib/database';
-import { cbtApi } from '@/shared/lib/cbt-api';
+import { sendChatMessage } from '@/shared/lib/ai-api';
 
 export async function POST(req: NextRequest) {
   try {
@@ -73,34 +73,33 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 5. Call CBT Therapy API
-    const cbtResponse = await cbtApi.chat({
-      text: message,
-      user_id: user.id,
-      persona,
-      session_id: sessionId,
-    });
+    // 5. Call Azure ML API
+    const aiResponse = await sendChatMessage(
+      message,
+      user.id,
+      sessionId || conversation.id
+    );
 
     // 6. Save assistant response to database
     const assistantMessage = await prisma.cbtMessage.create({
       data: {
         conversationId: conversation.id,
         role: 'assistant',
-        content: cbtResponse.response,
-        protocol: cbtResponse.protocol_used,
-        diagnosis: cbtResponse.diagnosis || [],
-        persona: cbtResponse.persona_used,
+        content: aiResponse.response,
+        protocol: aiResponse.protocol_used,
+        diagnosis: aiResponse.diagnosis || [],
+        persona: aiResponse.persona_used,
       },
     });
 
     // 7. Return response
     return NextResponse.json({
-      message: cbtResponse.response,
+      message: aiResponse.response,
       conversationId: conversation.id,
       messageId: assistantMessage.id,
-      protocol: cbtResponse.protocol_used,
-      diagnosis: cbtResponse.diagnosis,
-      persona: cbtResponse.persona_used,
+      protocol: aiResponse.protocol_used,
+      diagnosis: aiResponse.diagnosis,
+      persona: aiResponse.persona_used,
     });
   } catch (error) {
     console.error('CBT Chat API error:', error);
