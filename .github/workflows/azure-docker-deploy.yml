@@ -37,6 +37,9 @@ jobs:
           tags: |
             ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            NEXT_PUBLIC_AI_API_URL=${{ secrets.NEXT_PUBLIC_AI_API_URL }}
+            NEXT_PUBLIC_AI_API_KEY=${{ secrets.NEXT_PUBLIC_AI_API_KEY }}
           cache-from: type=registry,ref=${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
