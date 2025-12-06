@@ -2,6 +2,7 @@
 
 import { Mail, MapPin } from 'lucide-react'
 import { FaTiktok, FaInstagram } from 'react-icons/fa'
+import { useTranslations } from 'next-intl'
 import { NewsletterForm } from '@/features/newsletter-signup'
 
 interface FooterSectionProps {
@@ -9,6 +10,7 @@ interface FooterSectionProps {
 }
 
 export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
+  const t = useTranslations('footer')
   return (
     <footer className="bg-white border-t border-gray-200">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
@@ -19,8 +21,7 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
               <img src="/images/logo-dark.svg" className="h-10 sm:h-12 lg:h-16 w-auto" alt="Daisy logo" />
             </div>
             <p className="text-gray-600 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
-              Your trusted partner in mental health and wellness.
-              Connecting you with licensed professionals for quality care.
+              {t('tagline')}
             </p>
             <div className="flex space-x-3 sm:space-x-4">
               <a href="https://www.tiktok.com/@talk.to.daisy2?_t=ZN-90KL5339oGc&_r=1" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-[#7E9EC4] hover:text-white transition-colors">
@@ -47,37 +48,33 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
 
           {/* Resources */}
           <div className="sm:col-span-1">
-            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 lg:mb-6">Resources</h3>
+            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 lg:mb-6">{t('resources')}</h3>
             <ul className="space-y-2 sm:space-y-3">
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Crisis Resources</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">FAQ</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">Support Center</a></li>
+              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('crisisResources')}</a></li>
+              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('faq')}</a></li>
+              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('supportCenter')}</a></li>
             </ul>
           </div>
 
           {/* Contact & Newsletter */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 lg:mb-6">Stay Connected</h3>
+            <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 lg:mb-6">{t('stayConnected')}</h3>
 
             <div className="space-y-2 sm:space-y-3 lg:space-y-4 mb-4 sm:mb-6">
               <div className="flex items-center text-gray-600">
                 <Mail className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="text-xs sm:text-sm lg:text-base break-all">support@daisy.com</span>
+                <span className="text-xs sm:text-sm lg:text-base break-all">{t('email')}</span>
               </div>
               <div className="flex items-center text-gray-600">
                 <MapPin className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="text-xs sm:text-sm lg:text-base">London, UK</span>
+                <span className="text-xs sm:text-sm lg:text-base">{t('location')}</span>
               </div>
-              {/* <div className="flex items-center text-gray-600">
-                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="text-xs sm:text-sm lg:text-base">London, UK</span>
-              </div> */}
             </div>
 
             <div>
-              <h4 className="font-semibold mb-2 sm:mb-3 text-gray-900 text-xs sm:text-sm lg:text-base">Newsletter</h4>
+              <h4 className="font-semibold mb-2 sm:mb-3 text-gray-900 text-xs sm:text-sm lg:text-base">{t('newsletter')}</h4>
               <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
-                Get mental health tips and updates delivered to your inbox.
+                {t('newsletterDesc')}
               </p>
               <NewsletterForm onSubmit={onNewsletterSubmit} />
             </div>
@@ -89,18 +86,18 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
           <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:justify-between lg:items-center">
             <div className="flex flex-col items-center lg:items-start space-y-2 sm:space-y-3 text-center lg:text-left">
               <p className="text-gray-600 text-xs sm:text-sm">
-                © 2025 Daisy. All rights reserved.
+                {t('copyright')}
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 lg:gap-6">
-                <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">Privacy Policy</a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">Terms of Service</a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">HIPAA Notice</a>
+                <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('privacyPolicy')}</a>
+                <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('termsOfService')}</a>
+                <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('hipaaNotice')}</a>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-end space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-3 text-xs sm:text-sm text-gray-600 text-center">
-              <span className="flex items-center whitespace-nowrap">🔒 HIPAA Compliant</span>
-              <span className="flex items-center whitespace-nowrap">🛡️ Secure Platform</span>
+              <span className="flex items-center whitespace-nowrap">{t('hipaaCompliant')}</span>
+              <span className="flex items-center whitespace-nowrap">{t('securePlatform')}</span>
             </div>
           </div>
         </div>

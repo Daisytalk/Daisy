@@ -1,17 +1,20 @@
 'use client'
 
 import { motion } from 'framer-motion'
-
-const messages = [
-  { from: 'user', text: "Hi! Lately I've been feeling down. I can't focus on work and constantly feel anxious..." },
-  { from: 'bot', text: "Hello! I understand how difficult it can be to deal with anxiety. Let's figure this out together. How long have you noticed these symptoms? Have you tried any relaxation techniques before?" },
-  { from: 'user', text: "It started about a month ago. I tried breathing exercises, but I'm not sure if I'm doing them correctly. Can you suggest something simple to start with?" },
-  { from: 'bot', text: "Of course! Let's start with a simple meditation. I suggest trying the '5-5-5' technique: inhale for 5 seconds, hold for 5 seconds, exhale for 5 seconds. Practice this exercise for 5 minutes. Would you like to try it now?" },
-  { from: 'user', text: "Yes, let's try! Honestly, I already feel better just being able to discuss this with someone." },
-  { from: 'bot', text: "That's wonderful! Remember that you're not alone on this journey. Let's start the meditation, and afterward, I'll teach you some more useful techniques that will help you deal with stress in everyday life." },
-]
+import { useTranslations } from 'next-intl'
 
 export function ChatDemoSection() {
+  const t = useTranslations('chatDemo')
+  
+  const messages = [
+    { from: 'user', text: t('message1User') },
+    { from: 'bot', text: t('message2Bot') },
+    { from: 'user', text: t('message3User') },
+    { from: 'bot', text: t('message4Bot') },
+    { from: 'user', text: t('message5User') },
+    { from: 'bot', text: t('message6Bot') },
+  ]
+
   return (
     <div className="bg-white pt-12 pb-16 sm:pt-16 sm:pb-20">
       <div className="mx-auto max-w-3xl px-6 lg:px-8">
@@ -23,10 +26,10 @@ export function ChatDemoSection() {
           className="text-center mb-12"
         >
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            See How Daisy Supports You
+            {t('title')}
           </h2>
           <p className="text-lg text-gray-600">
-            Experience a real conversation with our AI-powered mental health assistant
+            {t('subtitle')}
           </p>
         </motion.div>
 
@@ -69,7 +72,7 @@ export function ChatDemoSection() {
           className="text-center mt-12"
         >
           <button className="rounded-full bg-[#7E9EC4] px-8 py-4 text-lg font-semibold text-white shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7E9EC4]">
-            Get Help
+            {t('getHelp')}
           </button>
         </motion.div>
       </div>

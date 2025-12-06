@@ -2,38 +2,40 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Button } from '@/shared/ui'
-import { LanguageSwitcher } from '@/shared/ui/language-switcher'
 import { Menu, X, Brain, Bot, Heart } from 'lucide-react'
+import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 
 interface HeroSectionProps {
   onGetStarted?: () => void
   onLearnMore?: () => void
 }
 
-export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
+export function HeroSection({ onGetStarted }: HeroSectionProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
+  const t = useTranslations('hero')
+  const locale = useLocale()
 
   const navigation = [
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Why Daisy', href: '#about' },
-    // { name: 'Reviews', href: '#testimonials' },
-    { name: 'Pricing', href: '#pricing' },
+    { name: t('howItWorks'), href: '#how-it-works' },
+    { name: t('whyDaisy'), href: '#about' },
+    { name: t('pricing'), href: '#pricing' },
   ]
 
   const features = [
     {
-      name: 'Adaptive AI with 12 Therapeutic Styles',
+      name: t('feature1'),
       icon: Bot,
     },
     {
-      name: 'Powered by Evidence-Based Psychology',
+      name: t('feature2'),
       icon: Brain,
     },
     {
-      name: 'Smart Onboarding & Wellness Tracking',
+      name: t('feature3'),
       icon: Heart,
     },
   ]
@@ -70,18 +72,21 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
               ))}
             </div>
             <div className="hidden lg:flex lg:justify-end lg:gap-x-2 xl:gap-x-3 lg:items-center">
+              <div className="mr-2">
+                <LanguageSwitcher />
+              </div>
               <Button
                 variant="outline"
                 className="text-white border-white bg-transparent rounded-full px-3 xl:px-4 py-1.5 xl:py-2 text-xs xl:text-sm"
-                onClick={() => router.push('/login')}
+                onClick={() => router.push(`/${locale}/login`)}
               >
-                Login
+                {t('login')}
               </Button>
               <Button
                 onClick={onGetStarted}
                 className="bg-[#FFDC61] text-black hover:bg-gray-200 rounded-full px-3 xl:px-4 py-1.5 xl:py-2 text-xs xl:text-sm whitespace-nowrap"
               >
-                Talk To Daisy
+                {t('talkToDaisy')}
               </Button>
             </div>
             <div className="flex lg:hidden">
@@ -90,7 +95,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
                 className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-300 hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(true)}
               >
-                <span className="sr-only">Open main menu</span>
+                <span className="sr-only">{t('openMenu')}</span>
                 <Menu className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               </button>
             </div>
@@ -112,7 +117,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
                   className="-m-2.5 rounded-md p-2.5 text-gray-400 hover:text-white transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <span className="sr-only">Close menu</span>
+                  <span className="sr-only">{t('closeMenu')}</span>
                   <X className="h-6 w-6" />
                 </button>
               </div>
@@ -131,18 +136,21 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
                     ))}
                   </div>
                   <div className="py-6 space-y-4">
+                    <div className="mb-4">
+                      <LanguageSwitcher />
+                    </div>
                     <Button
                       variant="outline"
                       className="w-full text-black border-white hover:bg-gray-800 py-3 text-base"
-                      onClick={() => router.push('/login')}
+                      onClick={() => router.push(`/${locale}/login`)}
                     >
-                      Login
+                      {t('login')}
                     </Button>
                     <Button
                       onClick={onGetStarted}
                       className="w-full bg-white text-black hover:bg-gray-200 py-3 text-base"
                     >
-                      Talk To Daisy
+                      {t('talkToDaisy')}
                     </Button>
                   </div>
                 </div>
@@ -161,8 +169,7 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
           className="text-center mb-8 sm:mb-12 lg:mb-16 pt-16 sm:pt-20 lg:pt-0 px-2"
         >
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium tracking-tight text-white leading-tight">
-            Daisy - Your 24/7 <br className="hidden sm:block" />
-            <span className="sm:hidden"> </span>Mental Health Assistant
+            {t('title')}
           </h1>
         </motion.div>
 
@@ -175,13 +182,13 @@ export function HeroSection({ onGetStarted, onLearnMore }: HeroSectionProps) {
               className="w-full lg:max-w-md text-center lg:text-left"
             >
               <p className="text-sm sm:text-base lg:text-lg leading-5 sm:leading-6 lg:leading-7 text-white mb-4 sm:mb-6">
-                A smart, personalized tool to support your mental well-being anytime and anywhere
+                {t('subtitle')}
               </p>
               <Button
                 onClick={onGetStarted}
                 className="rounded-full bg-[#FFDC61] px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 text-sm sm:text-base lg:text-lg font-semibold text-black shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white w-full sm:w-auto"
               >
-                Talk to Daisy
+                {t('talkToDaisy')}
               </Button>
             </motion.div>
 

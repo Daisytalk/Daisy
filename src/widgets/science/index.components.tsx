@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { getAllResearchPapers, type ResearchPaper } from '@/shared/data/research-papers'
 
@@ -16,6 +17,8 @@ for (let i = 0; i < allPapers.length; i += 3) {
 }
 
 export function ScienceSection() {
+  const t = useTranslations('science')
+  const locale = useLocale()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -54,10 +57,10 @@ export function ScienceSection() {
             className="max-w-2xl"
           >
             <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              Explore The <em>Science</em> Behind Daisy
+              {t('title')}
             </h2>
             <p className="mt-4 text-lg leading-8 text-gray-600">
-              Read the latest scientific publications on the role of artificial intelligence and digital solutions in supporting mental health
+              {t('subtitle')}
             </p>
 
           </motion.div>
@@ -66,12 +69,19 @@ export function ScienceSection() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
+            className="flex gap-4"
           >
+            <Link
+              href={`/${locale}/science`}
+              className="rounded-full px-6 py-3 text-lg font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-900 hover:bg-gray-50 whitespace-nowrap self-start md:self-center transition-colors"
+            >
+              View All Articles
+            </Link>
             <a
               href="#"
               className="rounded-full px-6 py-3 text-lg font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-900 hover:bg-gray-50 whitespace-nowrap self-start md:self-center transition-colors"
             >
-              Talk to Daisy
+              {t('talkToDaisy')}
             </a>
 
           </motion.div>
@@ -111,7 +121,7 @@ export function ScienceSection() {
                         <span>{article.readTime}</span>
                       </div>
                       <h3 className="mt-2 text-xl font-semibold leading-6 text-gray-900">
-                        <Link href={`/science/${article.slug}`}>
+                        <Link href={`/${locale}/science/${article.slug}`}>
                           <span className="absolute inset-0" />
                           {article.title}
                         </Link>

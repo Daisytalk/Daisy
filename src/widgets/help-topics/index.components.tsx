@@ -3,41 +3,43 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
-
-const topics = [
-  {
-    number: "01",
-    title: "Stress & Anxiety",
-    description: "Find Calm In The Middle Of Chaos. Daisy Helps You Manage Overwhelming Thoughts, Reduce Tension, And Build Daily Habits That Bring Clarity And Balance."
-  },
-  {
-    number: "02",
-    title: "Burnout",
-    description: "When Exhaustion Takes Over, Recovery Feels Impossible. Daisy Guides You Through Small Steps To Restore Your Energy, Rebuild Focus, And Protect Your Well-Being."
-  },
-  {
-    number: "03",
-    title: "Relationship Problems",
-    description: "Communication Struggles And Conflicts Can Feel Isolating. Daisy Supports You In Understanding Emotions, Improving Connection, And Finding Healthier Ways To Relate."
-  },
-  {
-    number: "04",
-    title: "Relational Trauma",
-    description: "Communication struggles and conflicts can feel isolating. Daisy supports you in understanding emotions, improving connection, and finding healthier ways to relate."
-  },
-  {
-    number: "05",
-    title: "Depression & Mood",
-    description: "Navigate through difficult emotions and low periods. Daisy provides gentle guidance to help you understand your feelings and develop healthy coping strategies."
-  },
-  {
-    number: "06",
-    title: "Self-Esteem & Confidence",
-    description: "Build a stronger sense of self-worth and confidence. Daisy helps you challenge negative self-talk and develop a more positive relationship with yourself."
-  }
-]
+import { useTranslations } from 'next-intl'
 
 export function HelpTopicsSection() {
+  const t = useTranslations('helpTopics')
+  
+  const topics = [
+    {
+      number: "01",
+      title: t('topic1Title'),
+      description: t('topic1Desc')
+    },
+    {
+      number: "02",
+      title: t('topic2Title'),
+      description: t('topic2Desc')
+    },
+    {
+      number: "03",
+      title: t('topic3Title'),
+      description: t('topic3Desc')
+    },
+    {
+      number: "04",
+      title: t('topic4Title'),
+      description: t('topic4Desc')
+    },
+    {
+      number: "05",
+      title: t('topic5Title'),
+      description: t('topic5Desc')
+    },
+    {
+      number: "06",
+      title: t('topic6Title'),
+      description: t('topic6Desc')
+    }
+  ]
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
 
@@ -84,11 +86,11 @@ export function HelpTopicsSection() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
           <div className="flex items-center gap-x-2 text-lg font-medium text-white hover:text-gray-600 transition-colors">
             <Sparkles className="h-5 w-5" />
-            How It Works
+            {t('howItWorks')}
           </div>
           <div className="max-w-xl text-left lg:text-right">
             <h2 className="mt-2 text-4xl font-semibold tracking-tight text-white sm:text-6xl">
-              What Can Daisy Help You With?
+              {t('title')}
             </h2>
           </div>
         </div>
@@ -160,7 +162,7 @@ export function HelpTopicsSection() {
           className="mt-16 flex justify-center"
         >
           <a href="#" className="rounded-full bg-[#FFDC61] px-8 py-4 text-lg font-semibold text-black shadow-sm hover:bg-opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 transition-colors">
-             Talk to Daisy
+             {t('talkToDaisy')}
           </a>
         </motion.div>
       </div>

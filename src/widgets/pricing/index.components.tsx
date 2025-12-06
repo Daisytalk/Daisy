@@ -2,64 +2,67 @@
 
 import { motion } from 'framer-motion'
 import { Check, Star } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/shared/ui'
-
-const plans = [
-  {
-    name: '1 Month',
-    price: 15,
-    period: 'per month',
-    description: 'Perfect for getting started with mental health support',
-    features: [
-      'Unlimited messaging with your therapist',
-      'Weekly 30-minute live sessions',
-      'Secure & private platform'
-    ],
-    popular: false,
-    cta: 'Start 1 Month Plan',
-    savings: null
-  },
-  {
-    name: '3 Months',
-    price: 40,
-    period: 'for 3 months',
-    originalPrice: 45,
-    description: 'Most popular plan',
-    features: [
-      'Everything in 1 Month',
-      'Bi-weekly 45-minute live sessions',
-      'Progress tracking & insights',
-    ],
-    popular: true,
-    cta: 'Start 3 Month Plan',
-    savings: 'Save $5'
-  },
-  {
-    name: '6 Months',
-    price: 75,
-    period: 'for 6 months',
-    originalPrice: 90,
-    description: 'Comprehensive support with maximum value',
-    features: [
-      'Everything in 3 Months',
-      'Weekly 60-minute live sessions',
-      'Same-day session availability',
-      '24/7 crisis intervention',
-      'Psychiatric consultation',
-      'Family therapy sessions',
-      'Personalized treatment plans'
-    ],
-    popular: false,
-    cta: 'Start 6 Month Plan',
-    savings: '1 month for free'
-  }
-]
 
 interface PricingSectionProps {
   onSelectPlan?: (planName: string) => void
 }
 
 export function PricingSection({ onSelectPlan }: PricingSectionProps) {
+  const t = useTranslations('pricing')
+  
+  const plans = [
+    {
+      name: t('plan1Name'),
+      price: 15,
+      period: t('perMonth'),
+      description: t('plan1Desc'),
+      features: [
+        t('feature1'),
+        t('feature2'),
+        t('feature3')
+      ],
+      popular: false,
+      cta: t('plan1Cta'),
+      savings: null
+    },
+    {
+      name: t('plan2Name'),
+      price: 40,
+      period: t('for3Months'),
+      originalPrice: 45,
+      description: t('plan2Desc'),
+      features: [
+        t('feature4'),
+        t('feature5'),
+        t('feature6'),
+      ],
+      popular: true,
+      cta: t('plan2Cta'),
+      savings: `${t('save')} $5`
+    },
+    {
+      name: t('plan3Name'),
+      price: 75,
+      period: t('for6Months'),
+      originalPrice: 90,
+      description: t('plan3Desc'),
+      features: [
+        t('feature7'),
+        t('feature8'),
+        t('feature9'),
+        t('feature10'),
+        t('feature11'),
+        t('feature12'),
+        t('feature13')
+      ],
+      popular: false,
+      cta: t('plan3Cta'),
+      savings: '1 month for free'
+    }
+  ]
+
   return (
     <section id="pricing" className="py-16 sm:py-20 lg:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,18 +74,18 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
           className="text-center mb-12 sm:mb-16"
         >
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
-            Choose Your Plan
+            {t('title')}
           </h2>
           <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
-            Affordable, transparent pricing for quality mental health care
+            {t('subtitle')}
           </p>
           
           <div className="inline-flex items-center bg-emerald-50 rounded-full p-1 mb-6 sm:mb-8">
             <div className="bg-emerald-600 text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium">
-              Weekly Plans
+              {t('weeklyPlans')}
             </div>
             <div className="px-3 sm:px-4 py-2 text-gray-600 text-xs sm:text-sm font-medium">
-              Monthly Plans (Save 15%)
+              {t('monthlyPlans')}
             </div>
           </div>
         </motion.div>
@@ -103,7 +106,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
                 <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2">
                   <div className="bg-emerald-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium flex items-center">
                     <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    Most Popular
+                    {t('mostPopular')}
                   </div>
                 </div>
               )}

@@ -2,26 +2,29 @@
 
 import { motion } from 'framer-motion'
 import { CirclePlus } from 'lucide-react'
-
-const benefits = [
-  {
-    name: 'Instant support, anytime',
-    description: 'Just one tap to connect, even in moments of crisis.',
-    imageUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=210&h=126&fit=crop&crop=center',
-  },
-  {
-    name: 'Scientifically grounded',
-    description: 'Powered by CBT and DBT – the most validated therapeutic approaches.',
-    imageUrl: 'https://images.unsplash.com/photo-1758691462667-f2fb90a067ff?w=210&h=126&fit=crop&crop=center',
-  },
-  {
-    name: 'Consistent care',
-    description: 'Your conversations are remembered, so you never have to start over.',
-    imageUrl: 'https://plus.unsplash.com/premium_photo-1661344296685-35460b960e35?w=210&h=126&fit=crop&crop=center',
-  },
-]
+import { useTranslations } from 'next-intl'
 
 export function BenefitsSection() {
+  const t = useTranslations('benefits')
+  
+  const benefits = [
+    {
+      name: t('benefit1Title'),
+      description: t('benefit1Desc'),
+      imageUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=210&h=126&fit=crop&crop=center',
+    },
+    {
+      name: t('benefit2Title'),
+      description: t('benefit2Desc'),
+      imageUrl: 'https://images.unsplash.com/photo-1758691462667-f2fb90a067ff?w=210&h=126&fit=crop&crop=center',
+    },
+    {
+      name: t('benefit3Title'),
+      description: t('benefit3Desc'),
+      imageUrl: 'https://plus.unsplash.com/premium_photo-1661344296685-35460b960e35?w=210&h=126&fit=crop&crop=center',
+    },
+  ]
+
   return (
     <div className="bg-white py-16 sm:py-24 lg:py-32">
       <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
@@ -34,17 +37,17 @@ export function BenefitsSection() {
             className="lg:pr-4"
           >
             <div className="text-xl sm:text-2xl lg:text-3xl tracking-tight text-gray-900 space-y-4 sm:space-y-6">
-              <p className="leading-tight font-semibold">Feeling overwhelmed and in need of support? Struggling to manage stress and emotions?</p>
-              <p className="leading-tight font-base text-xl sm:text-2xl lg:text-3xl">Daisy offers a safe space without judgment, guiding you with evidence-based steps for everyday well-being.</p>
-              <p className="leading-tight font-normal">Smart mental health tracking: <span className="font-semibold">private, fast, and grounded in science</span></p>
+              <p className="leading-tight font-semibold">{t('title1')}</p>
+              <p className="leading-tight font-base text-xl sm:text-2xl lg:text-3xl">{t('title2')}</p>
+              <p className="leading-tight font-normal">{t('title3')} <span className="font-semibold">{t('title3Bold')}</span></p>
             </div>
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
               <a href="#how-it-works" className="rounded-full px-6 py-3 text-base sm:text-lg font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-900 hover:bg-gray-50 transition-colors text-center">
-                How Daisy Works
+                {t('howItWorks')}
               </a>
               <a href="#about" className="flex items-center gap-x-2 text-base sm:text-lg font-medium text-gray-900 hover:text-gray-600 transition-colors">
                 <CirclePlus className="h-5 w-5 sm:h-6 sm:w-6" />
-                Privacy & Ethics
+                {t('privacyEthics')}
               </a>
             </div>
           </motion.div>

@@ -1,8 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 export function NeuroplasticitySection() {
+  const t = useTranslations('neuroplasticity')
+  
   return (
     <div className="bg-white py-16 sm:py-24">
       <div className="mx-auto max-w-8xl px-6 lg:px-8">
@@ -23,21 +26,21 @@ export function NeuroplasticitySection() {
             className="relative z-10 max-w-2xl h-full flex flex-col justify-between text-left"
           >
             <p className="text-base font-semibold uppercase tracking-wider text-gray-300">
-              TRAIN YOUR BRAIN FOR A CALMER, HAPPIER LIFE
+              {t('subtitle')}
             </p>
             <div>
               <h2 className="mt-6 text-2xl font-semibold tracking-tight text-white sm:text-4xl">
-                Neuroplasticity means your brain <i>can</i> change.
+                {t('title')}
               </h2>
               <h4 className="mt-6 text-base leading-8 text-gray-300">
-                With daily chats, Daisy helps you practice responding to stress with calm and clarity, turning small steps into lasting habits for a more balanced life.
+                {t('description')}
               </h4>
               <div className="mt-10">
                 <a
                   href="#"
                   className="rounded-full bg-[#FFDC61] px-6 py-3 text-base font-semibold text-black shadow-sm hover:bg-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
                 >
-                  Talk to Daisy
+                  {t('talkToDaisy')}
                 </a>
               </div>
             </div>

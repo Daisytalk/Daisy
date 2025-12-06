@@ -1,10 +1,23 @@
+const withNextIntl = require('next-intl/plugin')('./src/i18n/request.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone', // For Docker/Azure Container Apps
+  // Standalone output for Docker/Azure deployment (disabled on Windows for local builds)
+  output: process.platform === 'win32' && !process.env.DOCKER_BUILD ? undefined : 'standalone',
   
   images: {
-    domains: ['images.unsplash.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
+    formats: ['image/webp', 'image/avif'],
   },
+
+  // i18n configuration (for metadata and SEO)
+  // Note: With App Router, we handle routing via [locale] folder structure
+  // This config is mainly for metadata and alternate links
 
   env: {
     JWT_SECRET: process.env.JWT_SECRET,
@@ -33,30 +46,20 @@ const nextConfig = {
     CBT_API_KEY: process.env.CBT_API_KEY,
   },
 
-  experimental: {
-    forceSwcTransforms: true,
-  },
+  // Compression for production
+  compress: true,
+  
+  // Powered by header
+  poweredByHeader: false,
+  
+  // React strict mode
+  reactStrictMode: true,
 
   generateBuildId: async () => {
     return 'build-' + Date.now();
   },
 
   trailingSlash: false,
-
-  async redirects() {
-    return [];
-  },
-
-  async rewrites() {
-    return [
-      {
-        source: '/((?!\\.swa).*)',
-        destination: '/$1',
-      },
-    ];
-  },
-
-  middleware: ['middleware'],
 };
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);

@@ -3,39 +3,41 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Minus } from 'lucide-react'
-
-const faqs = [
-  {
-    question: "How does Daisy work?",
-    answer: "Daisy is an innovative chatbot designed to provide psychological support. It uses advanced artificial intelligence technology to conduct therapeutic conversations, helping users cope with stress, anxiety, and other emotional issues."
-  },
-  {
-    question: "Can the bot replace a real therapist?",
-    answer: "No, our bot does not replace a professional therapist. It is created as a supplementary support tool and can help when you need someone to talk to or get basic recommendations. For serious psychological issues, we always recommend consulting a qualified specialist."
-  },
-  {
-    question: "Can Daisy diagnose mental disorders?",
-    answer: "No, Daisy cannot diagnose mental disorders. She provides recommendations, support, and general advice based on your responses, but does not replace professional medical or psychological help. For diagnosis and treatment, we recommend consulting a qualified psychologist or psychiatrist."
-  },
-  {
-    question: "How does Daisy personalize recommendations?",
-    answer: "Daisy uses artificial intelligence to analyze your responses and track emotional patterns. She remembers key details, takes into account your goals and experience, offering personalized advice and support. The more you interact with Daisy, the more accurate and helpful her recommendations become, adapted to your individual needs."
-  },
-  {
-    question: "How confidential are my conversations with the bot?",
-    answer: "We ensure complete confidentiality of all conversations. All data is encrypted, and personal information is not shared with third parties. You can be confident that your conversations with the bot will remain private."
-  },
-  {
-    question: "When is the bot available?",
-    answer: "The bot is available 24/7, allowing you to get support at any time of day or night. This is especially important when traditional psychological help is unavailable, such as late at night or on weekends."
-  },
-  {
-    question: "How do I start using the bot?",
-    answer: "Starting to use the bot is very simple: Purchase a subscription, follow the link to Daisy's Telegram chat, and start a dialogue right away."
-  }
-]
+import { useTranslations } from 'next-intl'
 
 export function FAQSection() {
+  const t = useTranslations('faq')
+  
+  const faqs = [
+    {
+      question: t('question1'),
+      answer: t('answer1')
+    },
+    {
+      question: t('question2'),
+      answer: t('answer2')
+    },
+    {
+      question: t('question3'),
+      answer: t('answer3')
+    },
+    {
+      question: t('question4'),
+      answer: t('answer4')
+    },
+    {
+      question: t('question5'),
+      answer: t('answer5')
+    },
+    {
+      question: t('question6'),
+      answer: t('answer6')
+    },
+    {
+      question: t('question7'),
+      answer: t('answer7')
+    }
+  ]
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   const toggleFAQ = (index: number) => {
@@ -52,7 +54,7 @@ export function FAQSection() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <h2 className="text-4xl font-bold leading-10 tracking-tight text-gray-900">FAQ</h2>
+          <h2 className="text-4xl font-bold leading-10 tracking-tight text-gray-900">{t('title')}</h2>
         </motion.div>
 
         <div className="space-y-0">

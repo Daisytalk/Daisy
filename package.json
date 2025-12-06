@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "cross-env NODE_ENV=production next build",
     "build:standalone": "cross-env NODE_ENV=production next build && npm run copy-standalone",
     "copy-standalone": "cp -r .next/standalone ./ && cp -r public ./standalone/ && cp -r .next/static ./standalone/.next/static/",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -18,6 +18,9 @@
   "dependencies": {
     "@ai-sdk/google": "^2.0.15",
     "@ai-sdk/react": "^2.0.49",
+    "@azure/arm-machinelearning": "^2.0.0",
+    "@azure/identity": "^4.0.0",
+    "@azure/storage-blob": "^12.16.0",
     "@google/genai": "^1.20.0",
     "@preact-icons/fa": "npm:@jsr/preact-icons__fa@^1.0.13",
     "@prisma/extension-accelerate": "^2.0.2",
@@ -31,28 +34,25 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
     "mailgun.js": "^10.2.0",
-    "next": "^14.2.0",
+    "next": "16.0.7",
     "next-intl": "^4.3.9",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
     "react-icons": "^5.5.0",
     "stripe": "^14.15.0",
-    "tailwind-merge": "^2.2.0",
-    "@azure/arm-machinelearning": "^2.0.0",
-    "@azure/identity": "^4.0.0",
-    "@azure/storage-blob": "^12.16.0"
+    "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
-    "@prisma/client": "^6.16.2",
+    "@prisma/client": "6.16.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "autoprefixer": "^10.4.0",
     "cross-env": "^10.0.0",
-    "eslint": "^8.56.0",
-    "eslint-config-next": "^14.2.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.7",
     "postcss": "^8.4.0",
     "prisma": "^6.16.2",
     "tailwindcss": "^3.4.0",
@@ -61,5 +61,11 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.7",
+      "@types/react-dom": "19.2.3"
+    }
   }
 }
