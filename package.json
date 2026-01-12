@@ -25,6 +25,7 @@
     "@preact-icons/fa": "npm:@jsr/preact-icons__fa@^1.0.13",
     "@prisma/extension-accelerate": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
+    "@tanstack/react-query": "^5.90.16",
     "ai": "^5.0.49",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
@@ -38,9 +39,13 @@
     "next-intl": "^4.3.9",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "react-hook-form": "^7.71.0",
     "react-icons": "^5.5.0",
+    "sonner": "^2.0.7",
     "stripe": "^14.15.0",
-    "tailwind-merge": "^2.2.0"
+    "tailwind-merge": "^2.2.0",
+    "zod": "^4.3.5",
+    "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@prisma/client": "6.16.2",

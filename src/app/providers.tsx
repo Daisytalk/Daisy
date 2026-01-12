@@ -1,31 +1,30 @@
 'use client'
 
-// FIX: Import ReactNode to correctly type children props.
-import type { ReactNode } from 'react'
-import { container, TOKENS } from '@/shared/lib/di'
-import { GoogleAnalyticsService } from '@/shared/services/analytics'
-import { StripePaymentService } from '@/shared/services/payment'
-import { MailgunEmailService, MockEmailService } from '@/shared/services/email'
-import { AIService } from '@/shared/services/ai'
-import { AuthProvider } from '@/shared/hooks/useAuth'
-import { env } from '@/shared/config/env'
-
-// Initialize DI container with services.
-// This runs once when the module is imported on the client,
-// preventing re-initialization on every render.
-if (typeof window !== 'undefined' && !container.has(TOKENS.AI_SERVICE)) {
-  const aiService = new AIService()
-  const EmailService = env.NODE_ENV === 'development' && !env.MAILGUN_API_KEY
-    ? MockEmailService
-    : MailgunEmailService
-
-  container
-    .bindSingleton(TOKENS.ANALYTICS_SERVICE, GoogleAnalyticsService)
-    .bindSingleton(TOKENS.PAYMENT_SERVICE, StripePaymentService)
-    .bindSingleton(TOKENS.EMAIL_SERVICE, EmailService)
-    .bindSingleton(TOKENS.AI_SERVICE, aiService)
-}
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState, type ReactNode } from 'react'
+import { Toaster } from 'sonner'
 
 export function Providers({ children }: { children: ReactNode }) {
-  return <>{children}</>
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 0,
+            gcTime: 0,
+            refetchOnWindowFocus: true,
+            refetchOnMount: true,
+            retry: 1,
+          },
+          mutations: { retry: 1 },
+        },
+      })
+  )
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <Toaster position="top-right" richColors />
+    </QueryClientProvider>
+  )
 }
