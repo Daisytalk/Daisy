@@ -155,7 +155,7 @@ function OnboardingPageContent() {
 
   useEffect(() => {
     if (!isAuthLoading && user?.isOnboarded) {
-      router.push(`/${locale}/dashboard`);
+      router.push(`/${locale}/chat`);
     }
   }, [user, isAuthLoading, router, locale]);
 
@@ -230,7 +230,7 @@ function OnboardingPageContent() {
         await onboardingService.submitAnswers(finalAnswers);
         setSubmitSuccess(true);
         setTimeout(() => {
-          router.push(`/${locale}/dashboard`);
+          router.push(`/${locale}/chat`);
         }, 1500);
       } else {
         // Unauthenticated: save to guest endpoint and localStorage

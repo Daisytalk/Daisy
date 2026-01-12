@@ -23,7 +23,7 @@ export function LoginForm() {
     try {
       const authService = new AuthApiService()
       await authService.login({ email, password })
-      router.push(`/${locale}/dashboard`)
+      router.push(`/${locale}/chat`)
     } catch (err: any) {
       setError(err.message || 'Login failed')
     } finally {

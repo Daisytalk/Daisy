@@ -38,8 +38,8 @@ export default function LoginPage() {
       // Show success message briefly before redirect
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Redirect to dashboard
-      router.push(`/${locale}/dashboard`)
+      // Redirect to chat
+      router.push(`/${locale}/chat`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
     } finally {

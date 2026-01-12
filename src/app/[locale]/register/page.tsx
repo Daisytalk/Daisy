@@ -65,7 +65,7 @@ export default function RegisterPage() {
       localStorage.removeItem('onboarding_session_id')
 
       await new Promise(resolve => setTimeout(resolve, 500))
-      router.push(`/${locale}/dashboard`)
+      router.push(`/${locale}/chat`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
     } finally {
