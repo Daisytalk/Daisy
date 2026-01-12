@@ -40,12 +40,12 @@ export default function RegisterPage() {
     setError(null)
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+      setError(t('passwordsDoNotMatch'))
       return
     }
 
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long')
+      setError(t('passwordTooShort'))
       return
     }
 
@@ -64,12 +64,11 @@ export default function RegisterPage() {
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
 
       localStorage.removeItem('pending_onboarding')
-      localStorage.removeItem('onboarding_session_id')
 
       await new Promise(resolve => setTimeout(resolve, 500))
       router.push(`/${locale}/chat`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
+      setError(err instanceof Error ? err.message : t('registrationFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -94,12 +93,6 @@ export default function RegisterPage() {
     return 100
   }
 
-  const getPasswordStrengthColor = () => {
-    if (passwordStrength === 'weak') return 'bg-red-500'
-    if (passwordStrength === 'medium') return 'bg-yellow-500'
-    return 'bg-green-500'
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -107,14 +100,14 @@ export default function RegisterPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 mb-4">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create account</h1>
-          <p className="text-gray-600">Start your journey with Daisy</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('createAccount')}</h1>
+          <p className="text-gray-600">{t('startJourneyDesc')}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sign up</CardTitle>
-            <CardDescription>Create your account to get started</CardDescription>
+            <CardTitle>{t('signUp')}</CardTitle>
+            <CardDescription>{t('createAccountDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -129,41 +122,41 @@ export default function RegisterPage() {
                 <Alert>
                   <Check className="h-4 w-4" />
                   <AlertDescription>
-                    Your onboarding responses are saved and will be linked to your account
+                    {t('onboardingDataSaved')}
                   </AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
+                <Label htmlFor="name">{t('name')}</Label>
                 <Input
                   id="name"
                   name="name"
                   type="text"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="John Doe"
+                  placeholder={t('namePlaceholder')}
                   required
                   disabled={isLoading}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="you@example.com"
+                  placeholder={t('emailPlaceholder')}
                   required
                   disabled={isLoading}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -171,7 +164,7 @@ export default function RegisterPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="••••••••"
+                    placeholder={t('createPasswordPlaceholder')}
                     required
                     disabled={isLoading}
                     className="pr-10"
@@ -188,14 +181,14 @@ export default function RegisterPage() {
                   <div className="space-y-1">
                     <Progress value={getPasswordStrengthValue()} className="h-1" />
                     <p className="text-xs text-gray-600">
-                      Password strength: <span className="font-medium capitalize">{passwordStrength}</span>
+                      {t('passwordStrength')}: <span className="font-medium capitalize">{t(`passwordStrength${passwordStrength.charAt(0).toUpperCase() + passwordStrength.slice(1)}`)}</span>
                     </p>
                   </div>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
@@ -203,7 +196,7 @@ export default function RegisterPage() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    placeholder="••••••••"
+                    placeholder={t('confirmPasswordPlaceholder')}
                     required
                     disabled={isLoading}
                     className="pr-10"
@@ -219,7 +212,7 @@ export default function RegisterPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Creating account...' : 'Create account'}
+                {isLoading ? t('creatingAccount') : t('createAccount')}
               </Button>
 
               <div className="relative">
@@ -227,7 +220,7 @@ export default function RegisterPage() {
                   <div className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  <span className="px-2 bg-white text-gray-500">{t('orSignUpWith')}</span>
                 </div>
               </div>
 
@@ -238,23 +231,23 @@ export default function RegisterPage() {
                 onClick={() => window.location.href = '/api/auth/google'}
               >
                 <FaGoogle className="w-4 h-4 mr-2 text-[#4285F4]" />
-                Google
+                {t('google')}
               </Button>
 
               <p className="text-xs text-gray-500 text-center">
-                By signing up, you agree to our{' '}
-                <Link href="/terms" className="underline hover:text-gray-700">Terms</Link>
-                {' '}and{' '}
-                <Link href="/privacy" className="underline hover:text-gray-700">Privacy Policy</Link>
+                {t('agreeToTerms')}{' '}
+                <Link href="/terms" className="underline hover:text-gray-700">{t('termsOfService')}</Link>
+                {' '}{t('and')}{' '}
+                <Link href="/privacy" className="underline hover:text-gray-700">{t('privacyPolicy')}</Link>
               </p>
             </form>
           </CardContent>
         </Card>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{' '}
+          {t('hasAccount')}{' '}
           <Link href={`/${locale}/login`} className="font-semibold text-blue-600 hover:text-blue-700">
-            Sign in
+            {t('signIn')}
           </Link>
         </p>
       </div>

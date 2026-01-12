@@ -2,13 +2,13 @@
 
 import { useState, useEffect, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
-import { OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion, OnboardingSection } from '@/shared/types/auth'
+import { OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
 import { Button } from '@/shared/ui/ui/button'
 import { Input } from '@/shared/ui/ui/input'
 import { Label } from '@/shared/ui/ui/label'
@@ -21,17 +21,19 @@ const QuestionComponent = ({
   question,
   answer,
   onChange,
+  t,
 }: {
   question: OnboardingQuestion
   answer: OnboardingAnswerValue
   onChange: (value: OnboardingAnswerValue) => void
+  t: (key: string) => string
 }) => {
   if (question.id === 'gender' || /gender|sex/i.test(question.id)) {
     const options = [
-      { id: 'male', label: 'Male', icon: '♂' },
-      { id: 'female', label: 'Female', icon: '♀' },
-      { id: 'prefer_not_to_say', label: 'Prefer not to say', icon: '✕' },
-      { id: 'other', label: 'Other', icon: '…' },
+      { id: 'male', label: t('male'), icon: '♂' },
+      { id: 'female', label: t('female'), icon: '♀' },
+      { id: 'prefer_not_to_say', label: t('preferNotToSay'), icon: '✕' },
+      { id: 'other', label: t('other'), icon: '…' },
     ]
 
     return (
@@ -100,19 +102,9 @@ const QuestionComponent = ({
         <Textarea
           value={(answer as string) || ''}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={question.placeholder || 'Type your answer...'}
+          placeholder={t('typeYourAnswer')}
           required={question.required}
           rows={4}
-        />
-      )
-    case 'number':
-      return (
-        <Input
-          type="number"
-          value={(answer as string) || ''}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={question.placeholder}
-          required={question.required}
         />
       )
     default:
@@ -121,7 +113,7 @@ const QuestionComponent = ({
           type="text"
           value={(answer as string) || ''}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={question.placeholder}
+          placeholder={t('typeYourAnswer')}
           required={question.required}
         />
       )
@@ -131,8 +123,8 @@ const QuestionComponent = ({
 function OnboardingPageContent() {
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations('onboarding')
   const { user, isLoading: isAuthLoading } = useAuth()
-  const [sections, setSections] = useState<OnboardingSection[]>([])
   const [flatQuestions, setFlatQuestions] = useState<OnboardingQuestion[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, OnboardingAnswerValue>>({})
@@ -152,7 +144,6 @@ function OnboardingPageContent() {
     const fetchQuestions = async () => {
       try {
         const data = await onboardingService.getQuestions()
-        setSections(data)
         const flat = data.flatMap((s) => s.questions.map((q) => ({ ...q })))
         setFlatQuestions(flat)
       } catch (error) {
@@ -174,7 +165,7 @@ function OnboardingPageContent() {
     const currentQuestion = flatQuestions[currentQuestionIndex]
     
     if (currentQuestion.required && !answers[currentQuestion.id]) {
-      setError('This question is required')
+      setError(t('required'))
       return
     }
     
@@ -199,7 +190,7 @@ function OnboardingPageContent() {
     )
     
     if (unansweredRequired.length > 0) {
-      setError('Please answer all required questions')
+      setError(t('answerAllRequired'))
       return
     }
     
@@ -219,18 +210,7 @@ function OnboardingPageContent() {
           router.push(`/${locale}/chat`)
         }, 1500)
       } else {
-        const response = await fetch('/api/onboarding/guest', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ answers: finalAnswers }),
-        })
-
-        if (!response.ok) throw new Error('Failed to save onboarding data')
-
-        const data = await response.json()
         localStorage.setItem('pending_onboarding', JSON.stringify(finalAnswers))
-        localStorage.setItem('onboarding_session_id', data.sessionId)
-
         router.push(`/${locale}/register`)
       }
     } catch (error) {
@@ -248,7 +228,7 @@ function OnboardingPageContent() {
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <p className="text-gray-600">Loading questions...</p>
+          <p className="text-gray-600">{t('loading')}</p>
         </div>
       </div>
     )
@@ -265,8 +245,8 @@ function OnboardingPageContent() {
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">All set!</h2>
-          <p className="text-gray-600">Redirecting you to chat...</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('allSet')}</h2>
+          <p className="text-gray-600">{t('redirecting')}</p>
         </motion.div>
       </div>
     )
@@ -285,9 +265,9 @@ function OnboardingPageContent() {
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Welcome to Daisy</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('welcome')}</h1>
                 <p className="text-sm text-gray-600">
-                  Question {currentQuestionIndex + 1} of {flatQuestions.length}
+                  {t('questionOf', { current: currentQuestionIndex + 1, total: flatQuestions.length })}
                 </p>
               </div>
             </div>
@@ -312,15 +292,13 @@ function OnboardingPageContent() {
                       {currentQuestion.question}
                       {currentQuestion.required && <span className="text-red-500 ml-1">*</span>}
                     </h2>
-                    {currentQuestion.description && (
-                      <p className="text-sm text-gray-600">{currentQuestion.description}</p>
-                    )}
                   </div>
 
                   <QuestionComponent
                     question={currentQuestion}
                     answer={answers[currentQuestion.id]}
                     onChange={(value) => handleAnswerChange(currentQuestion.id, value)}
+                    t={t}
                   />
 
                   {error && (
@@ -337,17 +315,17 @@ function OnboardingPageContent() {
                       disabled={currentQuestionIndex === 0}
                     >
                       <ArrowLeft className="w-4 h-4 mr-2" />
-                      Previous
+                      {t('previous')}
                     </Button>
 
                     {currentQuestionIndex < flatQuestions.length - 1 ? (
                       <Button type="button" onClick={nextQuestion}>
-                        Next
+                        {t('next')}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     ) : (
                       <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Submitting...' : 'Complete'}
+                        {isSubmitting ? t('submitting') : t('complete')}
                         <CheckCircle className="w-4 h-4 ml-2" />
                       </Button>
                     )}

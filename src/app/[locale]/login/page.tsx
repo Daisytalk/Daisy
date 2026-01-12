@@ -39,7 +39,7 @@ export default function LoginPage() {
       await new Promise(resolve => setTimeout(resolve, 500))
       router.push(`/${locale}/chat`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
+      setError(err instanceof Error ? err.message : t('loginFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -52,14 +52,14 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 mb-4">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
-          <p className="text-gray-600">Sign in to continue to Daisy</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('welcomeBack')} Daisy</h1>
+          <p className="text-gray-600">{t('continueJourney')}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sign in</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardTitle>{t('signIn')}</CardTitle>
+            <CardDescription>{t('enterCredentials')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -71,27 +71,27 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={t('emailPlaceholder')}
                   required
                   disabled={isLoading}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder={t('passwordPlaceholder')}
                     required
                     disabled={isLoading}
                     className="pr-10"
@@ -109,15 +109,15 @@ export default function LoginPage() {
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" className="rounded border-gray-300" />
-                  <span className="text-gray-600">Remember me</span>
+                  <span className="text-gray-600">{t('rememberMe')}</span>
                 </label>
                 <Link href={`/${locale}/forgot-password`} className="text-blue-600 hover:text-blue-700">
-                  Forgot password?
+                  {t('forgotPassword')}
                 </Link>
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                {isLoading ? t('signingIn') : t('signIn')}
               </Button>
 
               <div className="relative">
@@ -125,7 +125,7 @@ export default function LoginPage() {
                   <div className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  <span className="px-2 bg-white text-gray-500">{t('orContinueWith')}</span>
                 </div>
               </div>
 
@@ -136,16 +136,16 @@ export default function LoginPage() {
                 onClick={() => window.location.href = '/api/auth/google'}
               >
                 <FaGoogle className="w-4 h-4 mr-2 text-[#4285F4]" />
-                Google
+                {t('google')}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
-          <Link href={`/${locale}/register`} className="font-semibold text-blue-600 hover:text-blue-700">
-            Sign up
+          {t('noAccount')}{' '}
+          <Link href={`/${locale}/onboarding`} className="font-semibold text-blue-600 hover:text-blue-700">
+            {t('signUp')}
           </Link>
         </p>
       </div>

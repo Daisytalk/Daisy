@@ -29,6 +29,13 @@ const sections: OnboardingSection[] = [
         question: 'Current physical health conditions: For example: asthma, migraines, digestive disorders, hormonal imbalances, etc.',
         required: false,
       },
+      {
+        id: 'addictions',
+        order: 4,
+        type: 'text',
+        question: 'Do you have any addictions or dependencies? For example: alcohol, smoking, drugs, gambling, internet/gaming, etc.',
+        required: false,
+      },
     ],
   },
   {

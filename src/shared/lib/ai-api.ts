@@ -36,57 +36,104 @@ console.log('✅ AI API configured:', {
 
 /**
  * AI API Response Interface
+ * Based on Azure ML scoring script output
  */
 export interface AIApiResponse {
   response: string;
-  persona_used: string;
-  protocol_used: string;
-  diagnosis: string[];
+  persona_used?: string;
+  protocol_used?: string;
+  diagnosis?: string[];
+  prompt?: string;
+  parameters?: {
+    max_tokens: number;
+    temperature: number;
+    top_p: number;
+  };
+  metrics?: any;
+  error?: string;
 }
 
 /**
  * Send chat message to AI API
  * 
- * CRITICAL RULES:
- * ✅ MUST send: text, user_id, session_id
- * ❌ MUST NOT send: persona, onboarding_data, history, protocol
- * ✅ MUST include X-API-Key header
- * 
  * @param text - User message text
  * @param userId - User identifier
  * @param sessionId - Session identifier
+ * @param conversationHistory - Previous messages for context
  * @returns AI API response
  */
 export async function sendChatMessage(
   text: string,
   userId: string,
-  sessionId: string
+  sessionId: string,
+  conversationHistory?: Array<{ role: string; content: string }>
 ): Promise<AIApiResponse> {
-  const endpoint = `${API_BASE_URL}/chat`;
+  // Azure ML endpoints use the base URL directly (already includes /score)
+  const endpoint = API_BASE_URL;
+
+  // Build conversation context with history
+  let promptWithHistory = '';
+  
+  if (conversationHistory && conversationHistory.length > 0) {
+    // Take last 5 messages for context (to keep prompt short)
+    const recentHistory = conversationHistory.slice(-5);
+    
+    promptWithHistory = `Previous conversation:\n`;
+    recentHistory.forEach(msg => {
+      const role = msg.role === 'user' ? 'Client' : 'Daisy';
+      promptWithHistory += `${role}: ${msg.content}\n`;
+    });
+    promptWithHistory += `\nClient: ${text}\nDaisy:`;
+  } else {
+    // First message - add system context
+    promptWithHistory = `You are Daisy, a compassionate CBT therapist. A client is reaching out to you.\n\nClient: ${text}\nDaisy:`;
+  }
 
   console.log('📤 Sending to AI API:', {
     url: endpoint,
     userId,
     sessionId,
     messageLength: text.length,
+    hasHistory: !!conversationHistory && conversationHistory.length > 0,
+    historyLength: conversationHistory?.length || 0,
     timestamp: new Date().toISOString()
   });
 
+  // Azure ML scoring script expects "prompt" field
+  const requestBody = {
+    prompt: promptWithHistory,
+    max_tokens: 200,
+    temperature: 0.7,
+    top_p: 0.9,
+    top_k: 50
+  };
+
+  console.log('📦 Request body (prompt preview):', promptWithHistory.substring(0, 200) + '...');
+
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
+    const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minutes for model inference
+
+    // Azure ML scoring script expects "prompt" field
+    // Send user message directly - the model has its own system prompt
+    const requestBody = {
+      prompt: text,
+      max_tokens: 200,
+      temperature: 0.7,
+      top_p: 0.9,
+      top_k: 50
+    };
+
+    console.log('📦 Request body:', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': AI_API_KEY!
+        'Authorization': `Bearer ${AI_API_KEY!}`,
+        'azureml-model-deployment': 'cbt-model-with-token'
       },
-      body: JSON.stringify({
-        text,
-        user_id: userId,
-        session_id: sessionId
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal
     });
 
@@ -119,22 +166,58 @@ export async function sendChatMessage(
       }
     }
 
-    const data: AIApiResponse = await response.json();
+    let data: any;
+    let rawResponse: string;
+    
+    try {
+      // Get response as JSON
+      const jsonData = await response.json();
+      
+      // Check if it's a string (double-encoded JSON)
+      if (typeof jsonData === 'string') {
+        console.log('📦 Response is double-encoded JSON string, parsing again...');
+        rawResponse = jsonData;
+        data = JSON.parse(jsonData);
+      } else {
+        // Already an object
+        data = jsonData;
+        rawResponse = JSON.stringify(data);
+      }
+      
+      console.log('📦 Parsed response from Azure ML (first 500 chars):', rawResponse.substring(0, 500));
+    } catch (error) {
+      console.error('❌ Failed to parse response:', error);
+      throw new Error(`Failed to parse AI API response: ${error}`);
+    }
 
     console.log('✅ AI API Response:', {
       responseLength: data.response?.length || 0,
+      hasError: !!data.error,
       persona: data.persona_used,
       protocol: data.protocol_used,
       diagnosis: data.diagnosis,
+      responseType: typeof data.response,
+      dataType: typeof data,
+      hasResponseField: 'response' in data,
       timestamp: new Date().toISOString()
     });
+
+    if (data.error) {
+      throw new Error(`AI API returned error: ${data.error}`);
+    }
 
     if (!data.response || typeof data.response !== 'string') {
       console.error('❌ Invalid response format:', data);
       throw new Error('Invalid AI API response format: missing or invalid "response" field');
     }
 
-    return data;
+    // Add default values for missing fields (for backward compatibility)
+    return {
+      response: data.response,
+      persona_used: data.persona_used || 'active_listener',
+      protocol_used: data.protocol_used || 'cbt',
+      diagnosis: data.diagnosis || []
+    };
 
   } catch (error) {
     console.error('❌ AI API Request Failed:', {
@@ -160,13 +243,21 @@ export async function sendChatMessage(
  */
 export async function checkAIApiHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`, {
-      method: 'GET',
+    // Azure ML endpoints don't have a /health endpoint, use the scoring endpoint
+    const response = await fetch(API_BASE_URL, {
+      method: 'POST',
       headers: {
-        'X-API-Key': AI_API_KEY!
-      }
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${AI_API_KEY!}`,
+        'azureml-model-deployment': 'cbt-model-with-token'
+      },
+      body: JSON.stringify({
+        text: 'health check',
+        user_id: 'system',
+        session_id: 'health-check'
+      })
     });
-    return response.ok;
+    return response.ok || response.status === 200;
   } catch (error) {
     console.error('AI API health check failed:', error);
     return false;

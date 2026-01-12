@@ -22,7 +22,24 @@ async function processAsyncChat(
     })
 
     console.log('📞 Calling Azure ML API...')
-    const aiResponse = await sendChatMessage(userMessage, userId, conversationId)
+    
+    // Get conversation history from database
+    const conversation = await prisma.cbtConversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          take: 10 // Last 10 messages for context
+        }
+      }
+    })
+    
+    const history = conversation?.messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    })) || []
+    
+    const aiResponse = await sendChatMessage(userMessage, userId, conversationId, history)
 
     console.log('✅ Azure ML API response received:', {
       protocol: aiResponse.protocol_used,
