@@ -22,13 +22,17 @@ function HomeContent() {
   const locale = useLocale()
   
   const handleGetStarted = () => {
-    // Track analytics event
-    const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
-    analytics.track({
-      action: 'click',
-      category: 'cta',
-      label: 'get_started',
-    })
+    try {
+      // Track analytics event
+      const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
+      analytics.track({
+        action: 'click',
+        category: 'cta',
+        label: 'get_started',
+      })
+    } catch (error) {
+      console.error('Analytics tracking failed:', error)
+    }
 
     // Navigate to onboarding with locale
     router.push(`/${locale}/onboarding`)
@@ -96,5 +100,9 @@ function HomeContent() {
 }
 
 export default function HomePage() {
-  return <HomeContent />
+  return (
+    <ClientOnly>
+      <HomeContent />
+    </ClientOnly>
+  )
 }
