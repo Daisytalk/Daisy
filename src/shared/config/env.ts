@@ -1,34 +1,23 @@
 export const env = {
-    DATABASE_URL: process.env.DATABASE_URL || '',
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
-    STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
-    MAILGUN_API_KEY: process.env.MAILGUN_API_KEY || '',
-    MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN || '',
-    GOOGLE_ANALYTICS_ID: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || '',
-
-    // Gemini AI / Vertex AI (Commented out - using AI API instead)
-    // API_KEY: process.env.API_KEY || process.env.GEMINI_API_KEY || '',
-    // GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID || '',
-    // GOOGLE_CLOUD_LOCATION: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
-    // GEMINI_API_KEY: process.env.GEMINI_API_KEY || process.env.API_KEY || '',
-    // VERTEX_AI_ENDPOINT: process.env.VERTEX_AI_ENDPOINT || '',
-
-    // AI API Configuration (CRITICAL - REQUIRED)
-    AI_API_URL: process.env.NEXT_PUBLIC_AI_API_URL || '',
-    AI_API_KEY: process.env.NEXT_PUBLIC_AI_API_KEY || '',
-
-    NODE_ENV: process.env.NODE_ENV || 'development',
+  DATABASE_URL: process.env.DATABASE_URL || '',
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
+  STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
+  MAILGUN_API_KEY: process.env.MAILGUN_API_KEY || '',
+  MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN || '',
+  GOOGLE_ANALYTICS_ID: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || '',
+  AI_API_URL: process.env.NEXT_PUBLIC_AI_API_URL || '',
+  AI_API_KEY: process.env.NEXT_PUBLIC_AI_API_KEY || '',
+  NODE_ENV: process.env.NODE_ENV || 'development',
 } as const
 
-// Validate critical environment variables on server-side
 if (typeof window === 'undefined') {
-    const missingVars: string[] = []
+  const missingVars: string[] = []
 
-    if (!env.DATABASE_URL) missingVars.push('DATABASE_URL')
-    if (!env.AI_API_URL) missingVars.push('NEXT_PUBLIC_AI_API_URL')
-    if (!env.AI_API_KEY) missingVars.push('NEXT_PUBLIC_AI_API_KEY')
+  if (!env.DATABASE_URL) missingVars.push('DATABASE_URL')
+  if (!env.AI_API_URL) missingVars.push('NEXT_PUBLIC_AI_API_URL')
+  if (!env.AI_API_KEY) missingVars.push('NEXT_PUBLIC_AI_API_KEY')
 
-    if (missingVars.length > 0) {
-        console.warn('⚠️  Missing environment variables:', missingVars.join(', '))
-    }
+  if (missingVars.length > 0) {
+    console.warn('⚠️  Missing environment variables:', missingVars.join(', '))
+  }
 }
