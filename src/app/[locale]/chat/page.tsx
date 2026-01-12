@@ -2,12 +2,16 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles, Plus, Settings, Share2, Paperclip, Mic } from 'lucide-react'
+import { Send, Sparkles, Paperclip, Mic } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
-import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
+import { AppLayout } from '@/shared/components/AppLayout'
+import { Button } from '@/shared/ui/ui/button'
+import { Textarea } from '@/shared/ui/ui/textarea'
+import { Card } from '@/shared/ui/ui/card'
+import { Avatar, AvatarFallback } from '@/shared/ui/ui/avatar'
 
 interface Message {
   id: string
@@ -18,7 +22,6 @@ interface Message {
 
 function ChatPageContent() {
   const { user } = useAuth()
-  const router = useRouter()
   const locale = useLocale()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -168,71 +171,24 @@ function ChatPageContent() {
     await poll()
   }
 
-  const startNewChat = () => {
-    const tempId = `temp_${Date.now()}`
-    setSessionId(tempId)
-    setMessages([])
-    localStorage.setItem('active_chat_session', tempId)
-  }
-
   const suggestedPrompts = [
-    "What are the key benefits of Product 1 that I should highlight to potential clients?",
-    "Answer RFP documentation",
-    "Conduct a competitor analysis",
-    "Provide feedback on communication"
-  ]
-
-  const quickActions = [
-    { icon: '📅', label: 'Connect Calendar', color: 'bg-red-50 text-red-600' },
-    { icon: '✓', label: 'Demo Task', color: 'bg-blue-50 text-blue-600' },
-    { icon: '🔗', label: 'Browse Integrations', color: 'bg-orange-50 text-orange-600' },
-    { icon: '📝', label: 'Shared in Notes', color: 'bg-green-50 text-green-600' },
+    "I'm feeling anxious today",
+    "Can we talk about stress?",
+    "I need some motivation",
+    "Help me with my thoughts"
   ]
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <aside className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4 gap-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-white" />
-        </div>
-        <div className="flex-1" />
-        <button className="w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-600">
-          <Settings className="w-5 h-5" />
-        </button>
-      </aside>
-
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg font-semibold text-gray-900">Daisy</h1>
-            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">Plus</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Configuration
-            </button>
-            <button className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2">
-              <Share2 className="w-4 h-4" />
-              Share
-            </button>
-            <button
-              onClick={startNewChat}
-              className="px-4 py-1.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              New Chat
-            </button>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-3xl mx-auto px-4 py-8">
+    <AppLayout>
+      <div className="flex flex-col h-full">
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="max-w-3xl mx-auto space-y-6">
             {messages.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center space-y-8"
+                className="text-center space-y-8 py-12"
               >
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto">
                   <Sparkles className="w-8 h-8 text-white" />
@@ -240,93 +196,90 @@ function ChatPageContent() {
 
                 <div>
                   <h2 className="text-3xl font-semibold text-gray-900 mb-2">
-                    Hi, there 👋
+                    Hi {user?.name}! 👋
                   </h2>
                   <p className="text-gray-600">
-                    Tell us what you need, and we'll handle the rest.
+                    How are you feeling today?
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
                   {suggestedPrompts.map((prompt, index) => (
-                    <button
+                    <Card
                       key={index}
+                      className="p-4 cursor-pointer hover:border-gray-300 hover:shadow-sm transition-all"
                       onClick={() => setInputValue(prompt)}
-                      className="p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all text-left text-sm text-gray-700"
                     >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-center gap-3 flex-wrap">
-                  {quickActions.map((action, index) => (
-                    <button
-                      key={index}
-                      className={`px-4 py-2 ${action.color} rounded-lg text-sm font-medium hover:opacity-80 transition-opacity flex items-center gap-2`}
-                    >
-                      <span>{action.icon}</span>
-                      <span>{action.label}</span>
-                    </button>
+                      <p className="text-sm text-gray-700">{prompt}</p>
+                    </Card>
                   ))}
                 </div>
               </motion.div>
             ) : (
-              <div className="space-y-6">
-                <AnimatePresence>
-                  {messages.map((message) => (
-                    <motion.div
-                      key={message.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      {message.role === 'assistant' && (
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+              <AnimatePresence>
+                {messages.map((message) => (
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {message.role === 'assistant' && (
+                      <Avatar className="flex-shrink-0">
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600">
                           <Sparkles className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-                      <div className={`max-w-[70%] ${message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200'} rounded-2xl px-4 py-3`}>
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    <Card className={`max-w-[70%] ${message.role === 'user' ? 'bg-gray-900 text-white border-gray-900' : ''}`}>
+                      <div className="p-4">
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                       </div>
-                      {message.role === 'user' && (
-                        <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0 text-sm font-semibold text-gray-700">
+                    </Card>
+                    {message.role === 'user' && (
+                      <Avatar className="flex-shrink-0">
+                        <AvatarFallback className="bg-gray-200 text-gray-700">
                           {user?.name?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-
-                {isLoading && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex gap-4"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-4 h-4 text-white animate-pulse" />
-                    </div>
-                    <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                      </div>
-                    </div>
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                   </motion.div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
+                ))}
+              </AnimatePresence>
             )}
-          </div>
-        </main>
 
-        <footer className="border-t border-gray-200 bg-white p-4">
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex gap-4"
+              >
+                <Avatar className="flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600">
+                    <Sparkles className="w-4 h-4 text-white animate-pulse" />
+                  </AvatarFallback>
+                </Avatar>
+                <Card>
+                  <div className="p-4">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* Input Area */}
+        <div className="border-t border-gray-200 bg-white p-4">
           <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
             <div className="flex items-end gap-3">
               <div className="flex-1 relative">
-                <textarea
+                <Textarea
                   ref={textareaRef}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
@@ -336,44 +289,32 @@ function ChatPageContent() {
                       handleSubmit(e)
                     }
                   }}
-                  placeholder="Ask me anything..."
+                  placeholder="Type your message..."
                   disabled={isLoading}
-                  className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm disabled:bg-gray-50"
+                  className="resize-none min-h-[48px] max-h-[120px]"
                   rows={1}
-                  style={{ minHeight: '48px', maxHeight: '120px' }}
                 />
                 <div className="absolute right-2 bottom-2 flex items-center gap-1">
-                  <button
-                    type="button"
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
                     <Paperclip className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
+                  </Button>
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
                     <Mic className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
-              <button
+              <Button
                 type="submit"
                 disabled={isLoading || !inputValue.trim()}
-                className="px-4 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
+                className="h-12"
               >
                 <Send className="w-4 h-4" />
-                Send
-              </button>
+              </Button>
             </div>
-            <p className="text-center text-xs text-gray-500 mt-3">
-              Daisy may display inaccurate info, so please double check the response.{' '}
-              <button type="button" className="underline hover:text-gray-700">Your Privacy</button> & <button type="button" className="underline hover:text-gray-700">Daisy GPT</button>
-            </p>
           </form>
-        </footer>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }
 
