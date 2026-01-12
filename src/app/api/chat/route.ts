@@ -21,7 +21,6 @@ async function processAsyncChat(
       messagePreview: userMessage.substring(0, 50)
     })
 
-    // Call Azure ML API
     console.log('📞 Calling Azure ML API...')
     const aiResponse = await sendChatMessage(userMessage, userId, conversationId)
 
@@ -36,7 +35,6 @@ async function processAsyncChat(
       throw new Error('No response content from Azure ML API')
     }
 
-    // Save assistant response to database
     console.log('💾 Saving assistant response to database...')
     await prisma.cbtMessage.create({
       data: {
@@ -49,7 +47,6 @@ async function processAsyncChat(
       },
     })
 
-    // Update conversation with the persona used
     if (aiResponse.persona_used) {
       await prisma.cbtConversation.update({
         where: { id: conversationId },
@@ -70,7 +67,6 @@ async function processAsyncChat(
       name: error.name
     })
     
-    // Save error message to database
     try {
       await prisma.cbtMessage.create({
         data: {
@@ -78,6 +74,7 @@ async function processAsyncChat(
           role: 'assistant',
           content: 'I apologize, but I encountered an error processing your message. Please try again.',
           diagnosis: [],
+          protocol: 'error',
         },
       })
       console.log('💾 Saved error message to database')

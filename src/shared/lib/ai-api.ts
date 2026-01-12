@@ -64,7 +64,6 @@ export async function sendChatMessage(
 ): Promise<AIApiResponse> {
   const endpoint = `${API_BASE_URL}/chat`;
 
-  // Log request details (for debugging)
   console.log('📤 Sending to AI API:', {
     url: endpoint,
     userId,
@@ -74,6 +73,9 @@ export async function sendChatMessage(
   });
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -84,68 +86,66 @@ export async function sendChatMessage(
         text,
         user_id: userId,
         session_id: sessionId
-        // CRITICAL: Do NOT send persona, onboarding_data, history, or protocol
-        // The AI API handles these automatically
-      })
+      }),
+      signal: controller.signal
     });
 
-    // Log response status
+    clearTimeout(timeoutId);
+
     console.log('📥 AI API Response Status:', {
       status: response.status,
       statusText: response.statusText,
-      ok: response.ok
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries())
     });
 
-    // Handle non-OK responses
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ AI API Error Response:', {
         status: response.status,
         statusText: response.statusText,
-        body: errorText
+        body: errorText,
+        headers: Object.fromEntries(response.headers.entries())
       });
 
-      // Provide specific error messages
       if (response.status === 401) {
         throw new Error('Invalid API key - check NEXT_PUBLIC_AI_API_KEY');
       } else if (response.status === 404) {
         throw new Error('AI API endpoint not found - check NEXT_PUBLIC_AI_API_URL');
       } else if (response.status === 500) {
-        throw new Error('AI API server error - check AI API logs');
+        throw new Error(`AI API server error: ${errorText}`);
       } else {
-        throw new Error(`AI API error: ${response.status} ${response.statusText}`);
+        throw new Error(`AI API error (${response.status}): ${errorText}`);
       }
     }
 
-    // Parse response
     const data: AIApiResponse = await response.json();
 
-    // Log successful response
     console.log('✅ AI API Response:', {
-      responseLength: data.response.length,
+      responseLength: data.response?.length || 0,
       persona: data.persona_used,
       protocol: data.protocol_used,
       diagnosis: data.diagnosis,
       timestamp: new Date().toISOString()
     });
 
-    // Validate response format
     if (!data.response || typeof data.response !== 'string') {
+      console.error('❌ Invalid response format:', data);
       throw new Error('Invalid AI API response format: missing or invalid "response" field');
     }
 
     return data;
 
   } catch (error) {
-    // Enhanced error logging
     console.error('❌ AI API Request Failed:', {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
       endpoint,
       userId,
-      sessionId
+      sessionId,
+      timestamp: new Date().toISOString()
     });
 
-    // Re-throw with context
     if (error instanceof Error) {
       throw error;
     } else {
