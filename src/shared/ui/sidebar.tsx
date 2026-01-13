@@ -7,23 +7,23 @@ import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/shared/ui/hooks/use-mobile"
 import { cn } from "@/shared/ui/lib/utils"
-import { Button } from "@/shared/ui/ui/button"
-import { Input } from "@/shared/ui/ui/input"
-import { Separator } from "@/shared/ui/ui/separator"
+import { Button } from "@/shared/ui/button"
+import { Input } from "@/shared/ui/input"
+import { Separator } from "@/shared/ui/separator"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/shared/ui/ui/sheet"
-import { Skeleton } from "@/shared/ui/ui/skeleton"
+} from "@/shared/ui/sheet"
+import { Skeleton } from "@/shared/ui/skeleton"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/shared/ui/ui/tooltip"
+} from "@/shared/ui/tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -660,10 +660,7 @@ const SidebarMenuSkeleton = React.forwardRef<
     showIcon?: boolean
   }
 >(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
-  }, [])
+  const [width] = React.useState(() => `${Math.floor(Math.random() * 40) + 50}%`)
 
   return (
     <div

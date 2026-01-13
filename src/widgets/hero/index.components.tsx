@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { Button } from '@/shared/ui'
 import { Menu, X, Brain, Bot, Heart } from 'lucide-react'
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
@@ -59,9 +60,9 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
       <header className="absolute inset-x-0 top-0 z-50">
         <nav className="mx-auto flex max-w-8xl items-center justify-between p-4 sm:p-6 lg:px-8" aria-label="Global">
           <div className="flex lg:flex-1">
-            <a href="/" className="-m-1.5 p-1.5">
-              <img src="/images/logo.svg" className="h-8 sm:h-10 lg:h-12 w-auto" alt="Daisy logo" />
-            </a>
+          <Link href="/" className="-m-1.5 p-1.5">
+            <img src="/images/logo.svg" className="h-8 sm:h-10 lg:h-12 w-auto" alt="Daisy logo" />
+          </Link>
           </div>
           <div className="flex flex-1 justify-end items-center">
             <div className="hidden lg:flex lg:gap-x-6 xl:gap-x-8 mr-6 xl:mr-8">

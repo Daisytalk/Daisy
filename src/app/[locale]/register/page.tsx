@@ -7,12 +7,12 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Eye, EyeOff, Sparkles, AlertCircle, Check } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
 import { AuthApiService } from '@/shared/services/auth'
-import { Button } from '@/shared/ui/ui/button'
-import { Input } from '@/shared/ui/ui/input'
-import { Label } from '@/shared/ui/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/ui/card'
-import { Alert, AlertDescription } from '@/shared/ui/ui/alert'
-import { Progress } from '@/shared/ui/ui/progress'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Alert, AlertDescription } from '@/shared/ui/alert'
+import { Progress } from '@/shared/ui/progress'
 
 export default function RegisterPage() {
   const router = useRouter()

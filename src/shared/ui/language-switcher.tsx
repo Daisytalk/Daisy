@@ -14,28 +14,30 @@ const languages = {
 export function LanguageSwitcher() {
   const [locale, setLocale] = useState<Locale>('en')
   const [isOpen, setIsOpen] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    // Get locale from localStorage or default to 'en'
-    const savedLocale = (localStorage.getItem('locale') as Locale) || 'en'
-    setLocale(savedLocale)
+    if (typeof window !== 'undefined' && !isInitialized) {
+      const savedLocale = (localStorage.getItem('locale') as Locale) || 'en'
+      setLocale(savedLocale)
+      setIsInitialized(true)
 
-    // Listen for locale changes from other components
-    const handleLocaleChange = (event: CustomEvent) => {
-      setLocale(event.detail)
+      const handleLocaleChange = (event: CustomEvent) => {
+        setLocale(event.detail)
+      }
+
+      window.addEventListener('localeChange', handleLocaleChange as EventListener)
+      return () => window.removeEventListener('localeChange', handleLocaleChange as EventListener)
     }
-
-    window.addEventListener('localeChange', handleLocaleChange as EventListener)
-    return () => window.removeEventListener('localeChange', handleLocaleChange as EventListener)
-  }, [])
+  }, [isInitialized])
 
   const changeLocale = (newLocale: Locale) => {
     setLocale(newLocale)
-    localStorage.setItem('locale', newLocale)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('locale', newLocale)
+      window.dispatchEvent(new CustomEvent('localeChange', { detail: newLocale }))
+    }
     setIsOpen(false)
-    
-    // Dispatch custom event to notify other components
-    window.dispatchEvent(new CustomEvent('localeChange', { detail: newLocale }))
   }
 
   return (

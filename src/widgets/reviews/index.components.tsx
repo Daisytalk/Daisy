@@ -116,9 +116,9 @@ export function ReviewsSection() {
                 {/* Testimonial overlay */}
                 <div className="absolute bottom-3 sm:bottom-4 lg:bottom-6 left-3 sm:left-4 lg:left-6 right-3 sm:right-4 lg:right-6">
                   <div className="bg-white rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 shadow-lg">
-                    <p className="text-gray-800 text-xs sm:text-sm lg:text-base leading-relaxed mb-3 sm:mb-4 line-clamp-3 sm:line-clamp-none">
-                      "{currentTestimonial.quote}"
-                    </p>
+            <p className="text-gray-800 text-xs sm:text-sm lg:text-base leading-relaxed mb-3 sm:mb-4 line-clamp-3 sm:line-clamp-none">
+              &quot;{currentTestimonial.quote}&quot;
+            </p>
                     
                     <div className="flex items-center">
                       <img

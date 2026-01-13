@@ -20,11 +20,17 @@ interface Message {
 
 function ChatPageContent() {
   const { user } = useAuth()
-  const router = useRouter()
-  const locale = useLocale()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
-  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('active_chat_session')
+      if (stored && !stored.startsWith('temp_')) {
+        return stored
+      }
+    }
+    return `temp_${Date.now()}`
+  })
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -34,15 +40,10 @@ function ChatPageContent() {
   const { data: conversationData } = useConversation(sessionId)
 
   useEffect(() => {
-    const storedSessionId = localStorage.getItem('active_chat_session')
-    if (storedSessionId && !storedSessionId.startsWith('temp_')) {
-      setSessionId(storedSessionId)
-    } else {
-      const tempId = `temp_${Date.now()}`
-      setSessionId(tempId)
-      localStorage.setItem('active_chat_session', tempId)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('active_chat_session', sessionId)
     }
-  }, [])
+  }, [sessionId])
 
   useEffect(() => {
     if (conversationData?.messages) {
@@ -115,7 +116,9 @@ function ChatPageContent() {
     setSessionId(tempId)
     setMessages([])
     setCurrentRequestId(null)
-    localStorage.setItem('active_chat_session', tempId)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('active_chat_session', tempId)
+    }
   }
 
   const suggestedPrompts = [
@@ -188,7 +191,7 @@ function ChatPageContent() {
                     Hi, there 👋
                   </h2>
                   <p className="text-gray-600">
-                    Tell us what you need, and we'll handle the rest.
+                    Tell us what you need, and we&apos;ll handle the rest.
                   </p>
                 </div>
 
@@ -313,7 +316,7 @@ function ChatPageContent() {
             </div>
             <p className="text-center text-xs text-gray-500 mt-3">
               Daisy may display inaccurate info, so please double check the response.{' '}
-              <button type="button" className="underline hover:text-gray-700">Your Privacy</button> & <button type="button" className="underline hover:text-gray-700">Daisy GPT</button>
+              <button type="button" className="underline hover:text-gray-700">Your Privacy</button> &amp; <button type="button" className="underline hover:text-gray-700">Daisy GPT</button>
             </p>
           </form>
         </footer>

@@ -2,9 +2,9 @@
 
 import { useLocale } from 'next-intl'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { locales, type Locale } from '@/i18n'
 import { LOCALE_COOKIE } from '@/shared/lib/locale-detection'
-import { Globe } from 'lucide-react'
 
 export function LanguageSwitcher() {
   const locale = useLocale() as Locale
@@ -14,8 +14,6 @@ export function LanguageSwitcher() {
   const switchLocale = (newLocale: Locale) => {
     if (newLocale === locale) return
 
-    document.cookie = `${LOCALE_COOKIE}=${newLocale}; path=/; max-age=${60 * 60 * 24 * 365}`
-
     const segments = pathname.split('/')
     segments[1] = newLocale
     const newPath = segments.join('/')
@@ -23,6 +21,10 @@ export function LanguageSwitcher() {
     router.push(newPath)
     router.refresh()
   }
+
+  useEffect(() => {
+    document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${60 * 60 * 24 * 365}`
+  }, [locale])
 
   return (
     <div className="inline-flex items-center gap-1 bg-white/5 backdrop-blur-sm rounded-lg p-0.5 border border-white/10">

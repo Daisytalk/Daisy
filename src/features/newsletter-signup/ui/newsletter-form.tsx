@@ -40,7 +40,7 @@ export function NewsletterForm({ onSubmit, className }: NewsletterFormProps) {
           Thanks for subscribing!
         </h3>
         <p className="text-gray-600">
-          We'll keep you updated with our latest news and features.
+          We&apos;ll keep you updated with our latest news and features.
         </p>
       </div>
     )

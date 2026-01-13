@@ -15,8 +15,8 @@ import {
   X,
   Home
 } from 'lucide-react'
-import { Button } from '@/shared/ui/ui/button'
-import { Avatar, AvatarFallback } from '@/shared/ui/ui/avatar'
+import { Button } from '@/shared/ui/button'
+import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
 import { cn } from '@/shared/lib/utils'
 
 interface AppLayoutProps {

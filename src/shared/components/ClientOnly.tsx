@@ -15,8 +15,7 @@ export function ClientOnly({ children, fallback }: ClientOnlyProps) {
     setIsClient(true)
   }, [])
 
-  // Always return something to prevent hydration mismatches
-  if (typeof window === 'undefined' || !isClient) {
+  if (!isClient) {
     return fallback || (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />

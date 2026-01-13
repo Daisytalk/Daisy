@@ -8,10 +8,10 @@ import { useLocale } from 'next-intl'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 import { AppLayout } from '@/shared/components/AppLayout'
-import { Button } from '@/shared/ui/ui/button'
-import { Textarea } from '@/shared/ui/ui/textarea'
-import { Card } from '@/shared/ui/ui/card'
-import { Avatar, AvatarFallback } from '@/shared/ui/ui/avatar'
+import { Button } from '@/shared/ui/button'
+import { Textarea } from '@/shared/ui/textarea'
+import { Card } from '@/shared/ui/card'
+import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
 
 interface Message {
   id: string
@@ -22,7 +22,6 @@ interface Message {
 
 function ChatPageContent() {
   const { user } = useAuth()
-  const locale = useLocale()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -52,9 +51,9 @@ function ChatPageContent() {
       if (response.ok) {
         const data = await response.json()
         if (data.messages && Array.isArray(data.messages)) {
-          const loadedMessages = data.messages.map((msg: any) => ({
+          const loadedMessages = data.messages.map((msg: { id?: string; role: string; content?: string; createdAt?: string }) => ({
             id: msg.id || `${sessionId}_${Date.now()}`,
-            role: msg.role === 'assistant' ? 'assistant' : 'user',
+            role: msg.role === 'assistant' ? 'assistant' as const : 'user' as const,
             content: msg.content || '',
             timestamp: new Date(msg.createdAt || Date.now()),
           }))

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/shared/hooks/useAuth';
 
 interface Message {
@@ -97,9 +98,9 @@ export default function CBTChatPage() {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <p className="text-lg mb-4">Please sign in to use CBT Therapy Chat</p>
-          <a href="/login" className="text-blue-500 hover:underline">
+          <Link href="/login" className="text-blue-500 hover:underline">
             Go to Login
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -120,7 +121,7 @@ export default function CBTChatPage() {
         {messages.length === 0 && (
           <div className="text-center text-gray-500 mt-8">
             <p className="text-lg mb-2">Welcome to CBT Therapy</p>
-            <p className="text-sm">Share your thoughts and feelings. I'm here to help.</p>
+            <p className="text-sm">Share your thoughts and feelings. I&apos;m here to help.</p>
           </div>
         )}
 
@@ -138,15 +139,15 @@ export default function CBTChatPage() {
             >
               <p className="whitespace-pre-wrap">{msg.content}</p>
               {msg.protocol && msg.role === 'assistant' && (
-                <p className="text-xs mt-2 opacity-70">
-                  Protocol: {msg.protocol}
-                </p>
-              )}
-              {msg.role === 'assistant' && currentPersona && (
-                <p className="text-xs mt-1 opacity-60">
-                  Mode: {currentPersona.replace(/_/g, ' ')}
-                </p>
-              )}
+              <p className="text-xs mt-2 opacity-70">
+                Protocol: {msg.protocol}
+              </p>
+            )}
+            {msg.role === 'assistant' && currentPersona && (
+              <p className="text-xs mt-1 opacity-60">
+                Mode: {currentPersona.replace(/_/g, ' ')}
+              </p>
+            )}
             </div>
           </div>
         ))}
@@ -173,7 +174,7 @@ export default function CBTChatPage() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             placeholder="Share your thoughts..."
             className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={loading}

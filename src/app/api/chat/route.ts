@@ -76,12 +76,12 @@ async function processAsyncChat(
 
     console.log('✅ Successfully saved assistant response for message:', messageId)
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Async processing error:', {
       messageId,
-      error: error.message,
-      stack: error.stack,
-      name: error.name
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
     })
     
     try {
@@ -123,8 +123,8 @@ export async function POST(request: NextRequest) {
           : JSON.stringify(lastMessage.content)
       } else if (lastMessage.parts && Array.isArray(lastMessage.parts)) {
         userMessage = lastMessage.parts
-          .filter((part: any) => part.type === 'text' || part.text)
-          .map((part: any) => part.text || part.content || '')
+          .filter((part: { type?: string; text?: string }) => part.type === 'text' || part.text)
+          .map((part: { text?: string; content?: string }) => part.text || part.content || '')
           .join('')
       }
     }
@@ -234,10 +234,10 @@ export async function POST(request: NextRequest) {
     })
 
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Chat API error:', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     )
   }

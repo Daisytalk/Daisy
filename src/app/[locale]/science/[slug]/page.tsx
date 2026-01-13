@@ -113,7 +113,7 @@ export default async function ScienceArticlePage({ params }: PageProps) {
             Ready to Experience AI-Powered Mental Health Support?
           </h2>
           <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-            Join thousands who have found support with Daisy's evidence-based therapeutic conversations.
+            Join thousands who have found support with Daisy&apos;s evidence-based therapeutic conversations.
           </p>
           <Link
             href={`/${locale}/onboarding`}
