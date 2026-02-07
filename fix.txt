@@ -1,0 +1,107 @@
+I'll analyze pages 28-35 (the remaining pages of the document) and extract all the tasks that need to be done.
+
+---
+
+## PAGE 28 (continued)
+
+| Block | Issue | Fix |
+|-------|-------|-----|
+| Daisy - Ваш помощник по психическому здоровью 24/7 | — | Change to: "Daisy - твоя поддержка в любой момент" |
+| Subheadline | — | Change to: "Выговорись, разберись в чувствах, выдохни. Без осуждения, 24/7" |
+| Button | Not clickable | Make clickable |
+| Умный персонализированный инструмент... | — | Change to: "Поддержка, которая подстраивается под тебя" / "Daisy узнаёт тебя и помогает именно так, как нужно сейчас. В любое время, в любом месте" |
+| Адаптивный ИИ с 12 терапевтическими стилями | — | Change to: "12 адаптивных стилей поддержки — от эмпатии до конкретных решений" |
+| На основе научно обоснованной психологии | — | Keep as is |
+| Умная адаптация и отслеживание благополучия | — | Change to: "Понимает тебя с первых шагов и помогает отслеживать самочувствие" |
+| Чувствуете себя подавленным... | — | Change to: "Чувствуешь себя подавленно? Трудно справляться со стрессом и эмоциями?" |
+| Description text | — | Change to: "Daisy — безопасное пространство без осуждения, где ты получаешь поддержку и ясные шаги к внутреннему балансу. На основе научных подходов, адаптированных для жизни" |
+| Умное отслеживание психического здоровья... | — | Change to: "Бережное отслеживание твоего состояния: конфиденциально, быстро, с опорой на науку" |
+| Мгновенная поддержка в любое время | — | Change to: "Поддержка в любой момент" / "Одно касание — и Daisy рядом. 24/7" |
+| Научно обоснованный подход | — | Change to: "Научный подход, простой язык" / "Вдохновлено КПТ и ДПТ — методами с доказанной эффективностью" |
+| Последовательная забота | — | Change to: "Запоминает важное" / "Не нужно начинать сначала — Daisy помнит ваши разговоры" |
+| Кнопка "Как работает Daisy" | Not clickable | Keep as is (per note) |
+
+---
+
+## PAGE 31 (Image Analysis)
+
+| Screenshot | Action | New Content |
+|------------|--------|-------------|
+| 04 Травма в отношениях | **Remove entire block** | — |
+| 05 Депрессия и настроение | Replace text | **04 Сложные эмоции** / "Когда на душе тяжело — Daisy поможет разобраться в чувствах и найти способы справляться бережнее" |
+| 06 Самооценка и уверенность | Replace | **05 Самооценка и уверенность** / "Daisy помогает замечать жёсткую самокритику и постепенно строить более бережное отношение к себе" |
+| Neuroplasticity image block | Change image | New image from chat (landing tab), keep text |
+| Изучите науку, стоящую за Daisy | Replace text | **Наука за Daisy** / "Читайте последние научные публикации о роли искусственного интеллекта и цифровых решений в поддержке ментального здоровья" |
+
+---
+
+## PAGE 32
+
+| Element | Issue | Fix |
+|---------|-------|-----|
+| Article cards (2 items) | — | Translate articles to English and replace images |
+| Посмотрите, как Daisy поддерживает вас | Not clickable | Make clickable |
+| БЛОК QnA | Replace text | — |
+| Как работает Daisy? | — | "Daisy — это инновационный чат-бот, предназначенный для оказания эмоциональной поддержки. Он использует передовые технологии искусственного интеллекта для проведения бесед, помогая пользователям справляться со стрессом, тревогой и другими эмоциональными проблемами" |
+
+---
+
+## PAGE 33
+
+| Element | Issue | Fix |
+|---------|-------|-----|
+| Заменить текст: Как начать использовать бота? | — | "Начать использовать бота очень просто: приобретите подписку, перейдите в личный кабинет и сразу начните диалог с Daisy" (remove Telegram mention) |
+| Pricing: 1 месяц | Replace entire text | **1 месяц — Начать с малого — 15$** / "Персональная AI-поддержка и 12 стилей взаимодействия. Чтобы попробовать, почувствовать формат и начать заботиться о себе" |
+| Pricing: 3 месяца | Replace entire text | **3 месяца — Выбрать устойчивость — 40$** / "Глубже персонализация и отслеживание вашего состояния. Чтобы лучше понимать себя и почувствовать больше устойчивости" |
+
+---
+
+## PAGE 34
+
+| Element | Issue | Fix |
+|---------|-------|-----|
+| Pricing: 6 месяцев | Replace entire text | **6 месяцев — Остаться с поддержкой — 75$** / "Максимальная адаптация и долгосрочная поддержка. Чтобы рядом всегда была опора, которая знает и понимает вас" |
+| Footer: Daisy - Ваш помощник... | Replace text | "Daisy — AI-помощник для ментального благополучия 24/7" |
+| Description | Replace text | "Надёжная поддержка для твоего благополучия. AI-помощник, который помогает справляться со стрессом, тревогой и находить внутреннюю опору" |
+| Кризисные ресурсы | Empty, needs new page | Create new page |
+| Часто задаваемые вопросы | Not working | Make clickable, link to FAQ |
+| Центр поддержки | Remove this row | Remove for now, add psychologist partnership info later |
+
+---
+
+## PAGE 35
+
+| Element | Issue | Fix |
+|---------|-------|-----|
+| Рассылка | Replace text and make functional | "Получайте наши новости и советы по ментальному здоровью на вашу почту" |
+| Email | — | hello@talktodaisy.com |
+| Location | — | Can keep location |
+
+---
+
+## SUMMARY OF ALL TASKS (Pages 28-35)
+
+### Content & Copy
+- [ ] Rewrite all headlines to use informal "ты" instead of formal "вы"
+- [ ] Update feature descriptions to be warmer and more personal
+- [ ] Remove "Травма в отношениях" (Relational Trauma) block entirely
+- [ ] Renumber remaining blocks (04, 05)
+- [ ] Translate articles to English
+- [ ] Rewrite all pricing card descriptions with emotional benefits
+- [ ] Update footer text and description
+
+### Functionality
+- [ ] Make main CTA buttons clickable
+- [ ] Make "Посмотрите, как Daisy поддерживает вас" clickable
+- [ ] Fix FAQ link to be clickable
+- [ ] Make email newsletter functional
+
+### Visual/Images
+- [ ] Replace neuroplasticity block image (new image in chat)
+- [ ] Replace article card images
+- [ ] Create new page for "Кризисные ресурсы" (Crisis Resources)
+
+### Removals
+- [ ] Remove "Центр поддержки" (Support Center) row from footer
+- [ ] Remove Telegram mention from onboarding text
+- [ ] Remove "Травма в отношениях" block
