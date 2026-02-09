@@ -199,13 +199,47 @@ export async function sendChatMessage(
       }
     }
 
-    // Azure can return JSON string or parsed object; response format: { response, language?, model? }
+    // Azure ML can return: JSON object, JSON string (including BOM), or array with one item
     let data: any;
     try {
       const raw = await response.text();
-      const parsed = raw.startsWith('{') ? JSON.parse(raw) : raw;
-      data = typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
-      console.log('📦 Azure ML response keys:', Object.keys(data || {}));
+      const trimmed = raw.trim();
+      const toParse = trimmed.startsWith('\uFEFF') ? trimmed.slice(1) : trimmed; // strip BOM
+      let parsed: any;
+      try {
+        parsed = JSON.parse(toParse);
+      } catch {
+        throw new Error('Response body is not valid JSON');
+      }
+      // Unwrap array of one element (Azure sometimes returns [{ ... }])
+      if (Array.isArray(parsed) && parsed.length > 0) parsed = parsed[0];
+      // If still a string (e.g. double-encoded JSON), parse again
+      while (typeof parsed === 'string') {
+        try {
+          parsed = JSON.parse(parsed);
+        } catch {
+          data = { response: parsed };
+          break;
+        }
+      }
+      if (data === undefined && parsed != null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        data = parsed;
+      }
+      if (data === undefined) {
+        data = { response: typeof raw === 'string' ? raw.trim() : String(raw) };
+      }
+      // If data ended up as a string (e.g. from older code paths or BOM), parse it
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          data = { response: data };
+        }
+      }
+      if (!data || typeof data !== 'object') {
+        data = { response: String(raw || '').trim() };
+      }
+      console.log('📦 Azure ML response keys:', Object.keys(data).filter(k => !/^\d+$/.test(k)).slice(0, 10));
     } catch (error) {
       console.error('❌ Failed to parse Azure ML response:', error);
       throw new Error(`Failed to parse AI API response: ${error}`);
@@ -215,8 +249,9 @@ export async function sendChatMessage(
       throw new Error(`AI API returned error: ${data.error}`);
     }
 
-    const responseText = data?.response;
-    if (responseText == null || typeof responseText !== 'string') {
+    let responseText = data?.response;
+    if (responseText != null && typeof responseText !== 'string') responseText = String(responseText);
+    if (responseText == null || responseText === '') {
       console.error('❌ Invalid Azure ML response format:', data);
       throw new Error('Invalid AI API response format: missing "response" field');
     }

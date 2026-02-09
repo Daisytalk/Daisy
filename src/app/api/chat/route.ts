@@ -34,10 +34,12 @@ async function processAsyncChat(
       }
     })
     
-    const history = conversation?.messages.map(msg => ({
-      role: msg.role,
-      content: msg.content
-    })) || []
+    // History for Azure: previous messages only (drop the last if it's the current user message we just saved)
+    const allMessages = conversation?.messages ?? []
+    const last = allMessages[allMessages.length - 1]
+    const isLastCurrentUser = last?.role === 'user' && last?.content === userMessage
+    const forHistory = isLastCurrentUser ? allMessages.slice(0, -1) : allMessages
+    const history = forHistory.map(msg => ({ role: msg.role, content: msg.content }))
     
     const aiResponse = await sendChatMessage(userMessage, userId, conversationId, history)
 

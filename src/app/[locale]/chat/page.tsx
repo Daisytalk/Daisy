@@ -112,11 +112,25 @@ function ChatPageContent() {
 
       if (data.requestId) {
         await pollForResponse(data.requestId, token)
+      } else {
+        // No requestId (unexpected); show error in thread
+        setMessages(prev => [...prev, {
+          id: `error_${Date.now()}`,
+          role: 'assistant',
+          content: "Something went wrong on our side. Please try sending your message again.",
+          timestamp: new Date(),
+        }])
       }
     } catch (error) {
       console.error('Failed to send message:', error)
       setInputValue(messageText)
-      setMessages(prev => prev.filter(m => m.id !== tempUserMessage.id))
+      // Keep user message in thread; add error bubble so it doesn't look like the message "disappeared"
+      setMessages(prev => [...prev, {
+        id: `error_${Date.now()}`,
+        role: 'assistant',
+        content: "Something went wrong on our side. Please try sending your message again—if it keeps happening, we're likely fixing the service.",
+        timestamp: new Date(),
+      }])
     } finally {
       setIsLoading(false)
     }
@@ -148,9 +162,30 @@ function ChatPageContent() {
           credentials: 'include',
         })
 
-        if (!response.ok) throw new Error(`Status check failed: ${response.status}`)
+        if (!response.ok) {
+          const errText = await response.text()
+          console.error('Status check failed:', response.status, errText)
+          setMessages(prev => [...prev, {
+            id: `error_${Date.now()}`,
+            role: 'assistant',
+            content: "Something went wrong on our side. Please try sending your message again—if it keeps happening, we're likely fixing the service.",
+            timestamp: new Date(),
+          }])
+          return
+        }
 
-        const data = await response.json()
+        let data: { status?: string; response?: string; protocol?: string; errorMessage?: string }
+        try {
+          data = await response.json()
+        } catch {
+          setMessages(prev => [...prev, {
+            id: `error_${Date.now()}`,
+            role: 'assistant',
+            content: "Something went wrong on our side. Please try again.",
+            timestamp: new Date(),
+          }])
+          return
+        }
 
         if (data.status === 'completed') {
           let content = data.response ?? ''
@@ -183,7 +218,13 @@ function ChatPageContent() {
         setTimeout(poll, POLL_INTERVAL_MS)
       } catch (error) {
         console.error('Polling error:', error)
-        setTimeout(poll, POLL_INTERVAL_MS)
+        // Don't throw: add error to thread so user message stays visible
+        setMessages(prev => [...prev, {
+          id: `error_${Date.now()}`,
+          role: 'assistant',
+          content: "Something went wrong on our side. Please try sending your message again—if it keeps happening, we're likely fixing the service.",
+          timestamp: new Date(),
+        }])
       }
     }
 
