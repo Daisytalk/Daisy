@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { Eye, EyeOff, Sparkles, AlertCircle } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
@@ -14,7 +13,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Alert, AlertDescription } from '@/shared/ui/alert'
 
 export default function LoginPage() {
-  const router = useRouter()
   const t = useTranslations('auth')
   const locale = useLocale()
   const [showPassword, setShowPassword] = useState(false)
@@ -36,8 +34,8 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(data.user))
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
 
-      await new Promise(resolve => setTimeout(resolve, 500))
-      router.push(`/${locale}/chat`)
+      // Full page redirect so AuthProvider re-runs and sees the auth cookie; go to dashboard then to chat
+      window.location.href = `/${locale}/dashboard`
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loginFailed'))
     } finally {

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { AuthApiService } from '@/shared/services/auth'
@@ -9,7 +8,6 @@ import { AuthApiService } from '@/shared/services/auth'
 export function LoginForm() {
   const t = useTranslations('auth')
   const locale = useLocale()
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -22,8 +20,12 @@ export function LoginForm() {
 
     try {
       const authService = new AuthApiService()
-      await authService.login({ email, password })
-      router.push(`/${locale}/chat`)
+      const data = await authService.login({ email, password })
+      localStorage.setItem('auth_token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
+      // Full page redirect so AuthProvider re-runs and sees the auth cookie
+      window.location.href = `/${locale}/dashboard`
     } catch (err: any) {
       setError(err.message || 'Login failed')
     } finally {

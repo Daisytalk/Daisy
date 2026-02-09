@@ -122,8 +122,10 @@ function ChatPageContent() {
     }
   }
 
+  const POLL_INTERVAL_MS = 1500
+
   const pollForResponse = async (requestId: string, token: string | null) => {
-    const maxAttempts = 60
+    const maxAttempts = 80 // ~2 min at 1.5s
     let attempts = 0
 
     const poll = async (): Promise<void> => {
@@ -131,7 +133,7 @@ function ChatPageContent() {
         const errorMessage: Message = {
           id: `error_${Date.now()}`,
           role: 'assistant',
-          content: 'I apologize, but the response is taking longer than expected. Please try again.',
+          content: 'The response is taking longer than expected. Please try again in a moment.',
           timestamp: new Date(),
         }
         setMessages(prev => [...prev, errorMessage])
@@ -143,6 +145,7 @@ function ChatPageContent() {
       try {
         const response = await fetch(`/api/chat/status/${requestId}`, {
           headers: { 'Authorization': token ? `Bearer ${token}` : '' },
+          credentials: 'include',
         })
 
         if (!response.ok) throw new Error(`Status check failed: ${response.status}`)
@@ -150,20 +153,37 @@ function ChatPageContent() {
         const data = await response.json()
 
         if (data.status === 'completed') {
+          let content = data.response ?? ''
+          const isBackendError = data.protocol === 'error'
+          if (isBackendError) {
+            content = "Something went wrong on our side. Please try sending your message again—if it keeps happening, we're likely fixing the service."
+          }
           const assistantMessage: Message = {
             id: `assistant_${Date.now()}`,
             role: 'assistant',
-            content: data.response,
+            content,
             timestamp: new Date(),
           }
           setMessages(prev => [...prev, assistantMessage])
           return
         }
 
-        setTimeout(poll, 5000)
+        if (data.status === 'failed') {
+          const errorMessage: Message = {
+            id: `error_${Date.now()}`,
+            role: 'assistant',
+            content: data.errorMessage || 'Something went wrong. Please try again.',
+            timestamp: new Date(),
+          }
+          setMessages(prev => [...prev, errorMessage])
+          return
+        }
+
+        // Still processing; poll again after a short interval
+        setTimeout(poll, POLL_INTERVAL_MS)
       } catch (error) {
         console.error('Polling error:', error)
-        setTimeout(poll, 5000)
+        setTimeout(poll, POLL_INTERVAL_MS)
       }
     }
 

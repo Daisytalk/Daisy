@@ -8,23 +8,16 @@
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 const AI_API_KEY = process.env.NEXT_PUBLIC_AI_API_KEY;
 
-// Validate configuration on module load
-if (!AI_API_URL || !AI_API_KEY) {
-  console.error('❌ CRITICAL: AI API configuration missing!');
-  throw new Error('AI API configuration missing in environment variables');
+/** Validate and return base URL at request time so missing env does not crash server at startup */
+function getApiBaseUrl(): string {
+  if (!AI_API_URL || !AI_API_KEY) {
+    throw new Error('AI API configuration missing: set NEXT_PUBLIC_AI_API_URL and NEXT_PUBLIC_AI_API_KEY');
+  }
+  if (!AI_API_URL.startsWith('http://') && !AI_API_URL.startsWith('https://')) {
+    throw new Error('NEXT_PUBLIC_AI_API_URL must include protocol (http:// or https://)');
+  }
+  return AI_API_URL.endsWith('/') ? AI_API_URL.slice(0, -1) : AI_API_URL;
 }
-
-if (!AI_API_URL.startsWith('http://') && !AI_API_URL.startsWith('https://')) {
-  throw new Error('AI_API_URL must include protocol (http:// or https://)');
-}
-
-const API_BASE_URL = AI_API_URL.endsWith('/') ? AI_API_URL.slice(0, -1) : AI_API_URL;
-
-console.log('✅ AI API configured:', {
-  url: API_BASE_URL,
-  hasApiKey: !!AI_API_KEY,
-  apiKeyLength: AI_API_KEY.length
-});
 
 /**
  * CBT System Prompt - Forces therapeutic response format
@@ -148,32 +141,25 @@ export async function sendChatMessage(
   sessionId: string,
   conversationHistory?: Array<{ role: string; content: string }>
 ): Promise<AIApiResponse> {
-  const endpoint = API_BASE_URL;
+  const endpoint = getApiBaseUrl();
 
-  // Build structured prompt with system instructions
-  const structuredPrompt = buildConversationPrompt(text, conversationHistory);
+  // Azure ML endpoint expects: { message, user_id, max_tokens, temperature, history }
+  const requestBody = {
+    message: text,
+    user_id: userId || 'web_user',
+    max_tokens: 300,
+    temperature: 0.7,
+    history: conversationHistory || []
+  };
 
-  console.log('📤 Sending to AI API:', {
+  console.log('📤 Sending to Azure ML AI API:', {
     url: endpoint,
     userId,
     sessionId,
     messageLength: text.length,
-    hasHistory: !!conversationHistory && conversationHistory.length > 0,
-    historyLength: conversationHistory?.length || 0,
-    promptLength: structuredPrompt.length,
+    historyLength: requestBody.history.length,
     timestamp: new Date().toISOString()
   });
-
-  const requestBody = {
-    prompt: structuredPrompt,
-    max_tokens: 200,
-    temperature: 0.4,  // Lower for more consistent therapeutic responses
-    top_p: 0.9,
-    top_k: 40
-  };
-
-  console.log('📦 Request preview (first 300 chars):', 
-    structuredPrompt.substring(0, 300) + '...');
 
   try {
     const controller = new AbortController();
@@ -183,8 +169,7 @@ export async function sendChatMessage(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AI_API_KEY!}`,
-        'azureml-model-deployment': 'cbt-model-with-token'
+        'Authorization': `Bearer ${AI_API_KEY!}`
       },
       body: JSON.stringify(requestBody),
       signal: controller.signal
@@ -214,50 +199,45 @@ export async function sendChatMessage(
       }
     }
 
+    // Azure can return JSON string or parsed object; response format: { response, language?, model? }
     let data: any;
     try {
-      const jsonData = await response.json();
-      
-      if (typeof jsonData === 'string') {
-        data = JSON.parse(jsonData);
-      } else {
-        data = jsonData;
-      }
-      
-      console.log('📦 Raw response length:', data.response?.length || 0);
+      const raw = await response.text();
+      const parsed = raw.startsWith('{') ? JSON.parse(raw) : raw;
+      data = typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
+      console.log('📦 Azure ML response keys:', Object.keys(data || {}));
     } catch (error) {
-      console.error('❌ Failed to parse response:', error);
+      console.error('❌ Failed to parse Azure ML response:', error);
       throw new Error(`Failed to parse AI API response: ${error}`);
     }
 
-    if (data.error) {
+    if (data?.error) {
       throw new Error(`AI API returned error: ${data.error}`);
     }
 
-    if (!data.response || typeof data.response !== 'string') {
-      console.error('❌ Invalid response format:', data);
+    const responseText = data?.response;
+    if (responseText == null || typeof responseText !== 'string') {
+      console.error('❌ Invalid Azure ML response format:', data);
       throw new Error('Invalid AI API response format: missing "response" field');
     }
 
-    // ✨ NORMALIZE THE RESPONSE
-    const normalizedResponse = normalizeTherapyResponse(data.response);
+    const normalizedResponse = normalizeTherapyResponse(responseText);
 
-    console.log('✅ Response normalized:', {
-      originalLength: data.response.length,
-      normalizedLength: normalizedResponse.length,
-      preview: normalizedResponse.substring(0, 100) + '...'
+    console.log('✅ Azure ML response normalized:', {
+      originalLength: responseText.length,
+      normalizedLength: normalizedResponse.length
     });
 
     return {
-      response: normalizedResponse,  // ← Return cleaned response
-      persona_used: data.persona_used || 'active_listener',
-      protocol_used: data.protocol_used || 'cbt',
-      diagnosis: data.diagnosis || [],
+      response: normalizedResponse,
+      persona_used: data.persona_used ?? 'active_listener',
+      protocol_used: data.protocol_used ?? 'cbt',
+      diagnosis: Array.isArray(data.diagnosis) ? data.diagnosis : [],
       prompt: text,
       parameters: {
         max_tokens: requestBody.max_tokens,
         temperature: requestBody.temperature,
-        top_p: requestBody.top_p
+        top_p: 0.9
       },
       metrics: data.metrics
     };
@@ -284,17 +264,18 @@ export async function sendChatMessage(
  */
 export async function checkAIApiHealth(): Promise<boolean> {
   try {
-    const response = await fetch(API_BASE_URL, {
+    const response = await fetch(getApiBaseUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AI_API_KEY!}`,
-        'azureml-model-deployment': 'cbt-model-with-token'
+        'Authorization': `Bearer ${AI_API_KEY!}`
       },
       body: JSON.stringify({
-        prompt: 'health check',
+        message: 'health check',
+        user_id: 'health_check',
         max_tokens: 10,
-        temperature: 0.1
+        temperature: 0.1,
+        history: []
       })
     });
     return response.ok || response.status === 200;
@@ -309,7 +290,7 @@ export async function checkAIApiHealth(): Promise<boolean> {
  */
 export function getAIApiConfig() {
   return {
-    url: API_BASE_URL,
+    url: AI_API_URL ?? '(not set)',
     hasApiKey: !!AI_API_KEY,
     apiKeyLength: AI_API_KEY?.length || 0
   };
