@@ -22,7 +22,6 @@ COPY . .
 RUN npm install -g pnpm
 
 # Generate Prisma Client
-RUN npx prisma migrate deploy
 RUN pnpm prisma generate
 
 # Build-time environment variables
