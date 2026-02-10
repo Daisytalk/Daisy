@@ -5,6 +5,13 @@ const nextConfig = {
   // Standalone output for Docker/Azure deployment
   output: 'standalone',
   
+  // Include Prisma files in standalone build
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./node_modules/.prisma/**/*', './node_modules/@prisma/client/**/*'],
+    },
+  },
+  
   images: {
     remotePatterns: [
       {
