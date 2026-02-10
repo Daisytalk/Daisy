@@ -4,11 +4,12 @@
  * This service ensures consistent CBT therapy responses from the AI model
  * by using structured prompts and response normalization.
  * 
- * Updated: 2026-02-10 - Fixed Azure ML endpoint authentication
+ * Updated: 2026-02-10 - Fixed environment variables for server-side
  */
 
-const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
-const AI_API_KEY = process.env.NEXT_PUBLIC_AI_API_KEY;
+// Server-side: use regular env vars (not NEXT_PUBLIC_*)
+const AI_API_URL = process.env.AI_API_URL || process.env.NEXT_PUBLIC_AI_API_URL;
+const AI_API_KEY = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY;
 
 /** Validate and return base URL at request time so missing env does not crash server at startup */
 function getApiBaseUrl(): string {

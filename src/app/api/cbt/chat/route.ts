@@ -74,11 +74,25 @@ export async function POST(req: NextRequest) {
     });
 
     // 5. Call Azure ML API
+    console.log('🔵 Calling Azure ML API:', {
+      userId: user.id,
+      messageLength: message.length,
+      conversationId: conversation.id,
+      timestamp: new Date().toISOString()
+    });
+
     const aiResponse = await sendChatMessage(
       message,
       user.id,
       sessionId || conversation.id
     );
+
+    console.log('✅ Azure ML API response received:', {
+      hasResponse: !!aiResponse.response,
+      responseLength: aiResponse.response?.length,
+      protocol: aiResponse.protocol_used,
+      persona: aiResponse.persona_used
+    });
 
     // 6. Save assistant response to database
     const assistantMessage = await prisma.cbtMessage.create({
@@ -102,7 +116,11 @@ export async function POST(req: NextRequest) {
       persona: aiResponse.persona_used,
     });
   } catch (error) {
-    console.error('CBT Chat API error:', error);
+    console.error('❌ CBT Chat API error:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
     return NextResponse.json(
       {
         error: 'Failed to process message',
