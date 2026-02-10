@@ -30,6 +30,7 @@ ARG NEXT_PUBLIC_AI_API_KEY
 ENV DATABASE_URL="postgresql://daisyadmin:database1%21@daisy.postgres.database.azure.com:5432/postgres?sslmode=require"
 ENV NEXT_PUBLIC_AI_API_URL=$NEXT_PUBLIC_AI_API_URL
 ENV NEXT_PUBLIC_AI_API_KEY=$NEXT_PUBLIC_AI_API_KEY
+ENV DOCKER_BUILD=true
 
 # Build Next.js
 RUN pnpm build
@@ -48,6 +49,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 USER nextjs
 

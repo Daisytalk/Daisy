@@ -2,8 +2,8 @@ const withNextIntl = require('next-intl/plugin')('./src/i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Standalone output for Docker/Azure deployment (disabled on Windows for local builds)
-  output: process.platform === 'win32' && !process.env.DOCKER_BUILD ? undefined : 'standalone',
+  // Standalone output for Docker/Azure deployment
+  output: 'standalone',
   
   images: {
     remotePatterns: [
