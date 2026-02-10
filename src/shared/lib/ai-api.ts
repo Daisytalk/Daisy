@@ -73,6 +73,8 @@ export interface AIApiResponse {
   metrics?: unknown;
   error?: string;
   ai_profile?: AIProfile;
+  /** 1–3 short facts from this exchange; save to DB and pass back in user_context */
+  memory_update?: string[];
 }
 
 /**
@@ -137,13 +139,14 @@ function buildConversationPrompt(
  *
  * @param options.request_ai_profile - Ask API to generate/update ai_profile in the response
  * @param options.onboarding_summary - User onboarding context for personalization and ai_profile
+ * @param options.user_context - Accumulated context (ai_profile + conversation_memory) for model memory
  */
 export async function sendChatMessage(
   text: string,
   userId: string,
   sessionId: string,
   conversationHistory?: Array<{ role: string; content: string }>,
-  options?: { request_ai_profile?: boolean; onboarding_summary?: unknown }
+  options?: { request_ai_profile?: boolean; onboarding_summary?: unknown; user_context?: string }
 ): Promise<AIApiResponse> {
   const endpoint = getApiBaseUrl();
 
@@ -159,6 +162,9 @@ export async function sendChatMessage(
   }
   if (options?.onboarding_summary != null) {
     requestBody.onboarding_summary = options.onboarding_summary;
+  }
+  if (options?.user_context != null && options.user_context !== '') {
+    requestBody.user_context = options.user_context;
   }
 
   const historyArr = (requestBody.history as Array<{ role: string; content: string }>) || []
@@ -275,6 +281,9 @@ export async function sendChatMessage(
     });
 
     const aiProfile = data?.ai_profile && typeof data.ai_profile === 'object' ? data.ai_profile as AIProfile : undefined;
+    const memoryUpdate = Array.isArray(data?.memory_update)
+      ? (data.memory_update as unknown[]).filter((x): x is string => typeof x === 'string')
+      : undefined;
 
     return {
       response: normalizedResponse,
@@ -288,7 +297,8 @@ export async function sendChatMessage(
         top_p: 0.9
       },
       metrics: data.metrics,
-      ai_profile: aiProfile
+      ai_profile: aiProfile,
+      memory_update: memoryUpdate
     };
 
   } catch (error) {

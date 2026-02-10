@@ -21,6 +21,7 @@ model User {
   isOnboarded        Boolean  @default(false)
   subscriptionStatus String   @default("trial")
   aiProfile          Json?    // AI-generated user image (summary, goals, concerns)
+  conversationMemory Json?    @map("conversation_memory") // Accumulated memory_update[] from API, passed back in user_context
 
   // Relations
   onboarding     OnboardingData?
