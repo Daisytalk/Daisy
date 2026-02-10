@@ -20,7 +20,7 @@ model User {
   updatedAt          DateTime @updatedAt
   isOnboarded        Boolean  @default(false)
   subscriptionStatus String   @default("trial")
-  aiProfile          Json?    // AI-generated user image (summary, goals, concerns)
+  aiProfile          Json?    @map("ai_profile") // AI-generated user image (summary, goals, concerns)
   conversationMemory Json?    @map("conversation_memory") // Accumulated memory_update[] from API, passed back in user_context
 
   // Relations
