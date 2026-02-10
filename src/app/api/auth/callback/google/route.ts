@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { defaultLocale } from '@/shared/lib/i18n/config'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,36 +30,37 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error')
 
   // Check for OAuth errors
+  const baseUrl = request.nextUrl.origin
+  const localePrefix = `/${defaultLocale}`
+
   if (error) {
     console.error('OAuth error:', error)
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent('OAuth authentication failed')}`, request.url)
+      new URL(`${localePrefix}/login?error=${encodeURIComponent('OAuth authentication failed')}`, baseUrl)
     )
   }
 
   if (!code) {
-    return NextResponse.redirect(
-      new URL('/login?error=missing_code', request.url)
-    )
+    return NextResponse.redirect(new URL(`${localePrefix}/login?error=missing_code`, baseUrl))
   }
 
   // Verify state parameter
   const storedState = request.cookies.get('oauth_state')?.value
   if (state !== storedState) {
     console.error('State mismatch in OAuth callback')
-    return NextResponse.redirect(
-      new URL('/login?error=invalid_state', request.url)
-    )
+    return NextResponse.redirect(new URL(`${localePrefix}/login?error=invalid_state`, baseUrl))
   }
 
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-  const clientSecret = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/google`
+  const clientId = process.env.GOOGLE_CLIENT_ID
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+  const redirectUri =
+    process.env.GOOGLE_REDIRECT_URI ||
+    `${process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin}/api/auth/callback/google`
 
   if (!clientId || !clientSecret) {
-    console.error('Google OAuth credentials not configured')
+    console.error('Google OAuth: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set in .env')
     return NextResponse.redirect(
-      new URL('/login?error=oauth_config_error', request.url)
+      new URL(`${localePrefix}/login?error=oauth_config_error`, baseUrl)
     )
   }
 
@@ -82,7 +84,7 @@ export async function GET(request: NextRequest) {
       const errorData = await tokenResponse.text()
       console.error('Token exchange failed:', errorData)
       return NextResponse.redirect(
-        new URL('/login?error=token_exchange_failed', request.url)
+        new URL(`${localePrefix}/login?error=token_exchange_failed`, baseUrl)
       )
     }
 
@@ -98,7 +100,7 @@ export async function GET(request: NextRequest) {
     if (!userInfoResponse.ok) {
       console.error('Failed to fetch user info')
       return NextResponse.redirect(
-        new URL('/login?error=user_info_failed', request.url)
+        new URL(`${localePrefix}/login?error=user_info_failed`, baseUrl)
       )
     }
 
@@ -172,8 +174,8 @@ export async function GET(request: NextRequest) {
       trialEndsAt,
     })
 
-    // Redirect to dashboard with token in cookie
-    const redirectUrl = new URL('/dashboard', request.url)
+    // Redirect to dashboard with locale (app uses [locale]/dashboard)
+    const redirectUrl = new URL(`/${defaultLocale}/dashboard`, request.url)
     const response = NextResponse.redirect(redirectUrl)
 
     response.cookies.set('auth_token', token, {
@@ -191,7 +193,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('OAuth callback error:', error)
     return NextResponse.redirect(
-      new URL('/login?error=oauth_failed', request.url)
+      new URL(`${localePrefix}/login?error=oauth_failed`, baseUrl)
     )
   }
 }

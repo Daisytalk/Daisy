@@ -10,7 +10,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 262.1 83.3% 57.8%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222.2 84% 4.9%;
@@ -22,8 +22,18 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 262.1 83.3% 57.8%;
+    --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+    /* App shell (non-landing): warm, calm wellness aesthetic */
+    --app-bg: 220 14% 98%;
+    --app-surface: 0 0% 100%;
+    --app-surface-hover: 220 14% 97%;
+    --app-border: 220 13% 93%;
+    --app-radius: 1rem;
+    --app-radius-lg: 1.5rem;
+    --app-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+    --app-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --app-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;

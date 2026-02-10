@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/shared/lib/database'
 import { AuthService } from '@/shared/lib/auth'
+import type { User } from '@/shared/types/auth'
 
 export async function GET(req: NextRequest) {
   try {
@@ -8,9 +9,11 @@ export async function GET(req: NextRequest) {
     const code = searchParams.get('code')
     if (!code) return NextResponse.json({ message: 'Missing code' }, { status: 400 })
 
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-    const clientSecret = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET
-    const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT || 'http://localhost:3000/(auth)/oauth/success'
+    const clientId = process.env.GOOGLE_CLIENT_ID
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+    const redirectUri =
+      process.env.GOOGLE_REDIRECT_URI ||
+      `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/api/auth/callback/google`
 
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -30,7 +33,6 @@ export async function GET(req: NextRequest) {
     }
 
     const tokenJson = await tokenRes.json()
-    const idToken = tokenJson.id_token
     const accessToken = tokenJson.access_token
 
     // Fetch userinfo
@@ -54,7 +56,7 @@ export async function GET(req: NextRequest) {
       await prisma.aiSession.create({ data: { userId: user.id, messages: [], context: { persona: 'intake_specialist' } } })
     }
 
-    const token = AuthService.generateToken({
+    const tokenPayload: User = {
       id: user.id,
       email: user.email,
       name: user.name ?? undefined,
@@ -63,7 +65,8 @@ export async function GET(req: NextRequest) {
       updatedAt: user.updatedAt,
       subscriptionStatus: 'trial',
       trialEndsAt: null,
-    } as any)
+    }
+    const token = AuthService.generateToken(tokenPayload)
 
     // Return a tiny HTML that posts the token back to the client and redirects
     const safeToken = JSON.stringify(token)
@@ -72,7 +75,7 @@ export async function GET(req: NextRequest) {
       try {
         localStorage.setItem('auth_token', ${safeToken})
       } catch(e) { /* ignore */ }
-      window.location = '/dashboard'
+      window.location = '/en/dashboard'
     </script>
     </body></html>`
 

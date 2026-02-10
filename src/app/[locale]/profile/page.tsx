@@ -91,13 +91,13 @@ function ProfilePageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D1E2D3]/20 via-white to-[#FFDC61]/10">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-100 sticky top-0 z-50">
+      <header className="bg-app-surface/90 backdrop-blur-xl shadow-app border-b border-app-border sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push(`/${locale}/dashboard`)}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+                className="p-2 text-muted-foreground hover:text-foreground hover:bg-app-surface-hover rounded-app transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>

@@ -38,6 +38,12 @@ module.exports = {
   			ring: 'hsl(var(--ring))',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
+  			app: {
+  				bg: 'hsl(var(--app-bg))',
+  				surface: 'hsl(var(--app-surface))',
+  				'surface-hover': 'hsl(var(--app-surface-hover))',
+  				border: 'hsl(var(--app-border))',
+  			},
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
   				foreground: 'hsl(var(--primary-foreground))'
@@ -80,7 +86,14 @@ module.exports = {
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
+  			sm: 'calc(var(--radius) - 4px)',
+  			app: 'var(--app-radius)',
+  			'app-lg': 'var(--app-radius-lg)',
+  		},
+  		boxShadow: {
+  			app: 'var(--app-shadow)',
+  			'app-md': 'var(--app-shadow-md)',
+  			'app-lg': 'var(--app-shadow-lg)',
   		},
   		keyframes: {
   			'accordion-down': {

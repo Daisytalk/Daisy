@@ -86,11 +86,7 @@ function normalizeTherapyResponse(rawResponse: string): string {
   // Remove excessive newlines
   normalized = normalized.replace(/\n{3,}/g, '\n\n');
   
-  // Limit to 150 words (therapeutic best practice)
-  const words = normalized.split(/\s+/);
-  if (words.length > 150) {
-    normalized = words.slice(0, 150).join(' ') + '...';
-  }
+  // No truncation: show full model response (model/API controls length via max_tokens)
   
   // Ensure ends with proper punctuation
   if (!/[.!?]$/.test(normalized)) {

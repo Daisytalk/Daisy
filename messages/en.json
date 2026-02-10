@@ -148,7 +148,8 @@
     "placeholder": "Type your message...",
     "send": "Send",
     "thinking": "Daisy is thinking...",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "disclaimer": "Note: Daisy is an AI assistant for emotional support, not a therapist or substitute for professional medical care; in crisis or clinical situations, please contact a qualified professional."
   },
   "onboarding": {
     "welcome": "Welcome to Daisy",

@@ -44,32 +44,32 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 mb-4">
-            <Sparkles className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-app-bg flex items-center justify-center p-6 sm:p-8">
+      <div className="w-full max-w-[420px]">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary shadow-app-lg mb-6">
+            <Sparkles className="w-10 h-10 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('welcomeBack')} Daisy</h1>
-          <p className="text-gray-600">{t('continueJourney')}</p>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">{t('welcomeBack')} Daisy</h1>
+          <p className="text-muted-foreground">{t('continueJourney')}</p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('signIn')}</CardTitle>
+        <Card className="border-app-border rounded-app-lg shadow-app-md overflow-hidden">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl">{t('signIn')}</CardTitle>
             <CardDescription>{t('enterCredentials')}</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <CardContent className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="rounded-app">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">{t('email')}</Label>
+                <Label htmlFor="email" className="text-sm font-medium">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -78,11 +78,12 @@ export default function LoginPage() {
                   placeholder={t('emailPlaceholder')}
                   required
                   disabled={isLoading}
+                  className="h-11 rounded-app border-app-border"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">{t('password')}</Label>
+                <Label htmlFor="password" className="text-sm font-medium">{t('password')}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -92,12 +93,12 @@ export default function LoginPage() {
                     placeholder={t('passwordPlaceholder')}
                     required
                     disabled={isLoading}
-                    className="pr-10"
+                    className="h-11 rounded-app border-app-border pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -105,32 +106,32 @@ export default function LoginPage() {
               </div>
 
               <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="rounded border-gray-300" />
-                  <span className="text-gray-600">{t('rememberMe')}</span>
+                <label className="flex items-center gap-2 cursor-pointer text-muted-foreground">
+                  <input type="checkbox" className="rounded border-app-border" />
+                  <span>{t('rememberMe')}</span>
                 </label>
-                <Link href={`/${locale}/forgot-password`} className="text-blue-600 hover:text-blue-700">
+                <Link href={`/${locale}/forgot-password`} className="text-primary hover:underline font-medium">
                   {t('forgotPassword')}
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full h-11 rounded-app font-medium" disabled={isLoading}>
                 {isLoading ? t('signingIn') : t('signIn')}
               </Button>
 
-              <div className="relative">
+              <div className="relative py-2">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
+                  <div className="w-full border-t border-app-border" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">{t('orContinueWith')}</span>
+                  <span className="px-3 bg-app-surface text-muted-foreground">{t('orContinueWith')}</span>
                 </div>
               </div>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full"
+                className="w-full h-11 rounded-app border-app-border hover:bg-app-surface-hover"
                 onClick={() => window.location.href = '/api/auth/google'}
               >
                 <FaGoogle className="w-4 h-4 mr-2 text-[#4285F4]" />
@@ -140,9 +141,9 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-8 text-center text-sm text-muted-foreground">
           {t('noAccount')}{' '}
-          <Link href={`/${locale}/onboarding`} className="font-semibold text-blue-600 hover:text-blue-700">
+          <Link href={`/${locale}/register`} className="font-semibold text-primary hover:underline">
             {t('signUp')}
           </Link>
         </p>

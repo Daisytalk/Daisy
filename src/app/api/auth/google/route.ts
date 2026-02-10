@@ -3,11 +3,13 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/google`
+  const clientId = process.env.GOOGLE_CLIENT_ID
+  const redirectUri =
+    process.env.GOOGLE_REDIRECT_URI ||
+    `${process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin}/api/auth/callback/google`
 
   if (!clientId) {
-    console.error('GOOGLE_CLIENT_ID environment variable is not set')
+    console.error('Google OAuth: GOOGLE_CLIENT_ID is not set in .env')
     return NextResponse.json(
       { message: 'OAuth configuration error' },
       { status: 500 }

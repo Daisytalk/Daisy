@@ -36,21 +36,21 @@ const QuestionComponent = ({
       { id: 'other', label: t('other'), icon: '…' },
     ]
 
-    return (
+            return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {options.map((opt) => {
           const selected = answer === opt.id
           return (
             <Card
               key={opt.id}
-              className={`cursor-pointer transition-all ${
-                selected ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-300'
+              className={`cursor-pointer transition-all rounded-app border-app-border ${
+                selected ? 'border-primary bg-primary/10 shadow-app' : 'hover:border-primary/30 hover:bg-app-surface-hover'
               }`}
               onClick={() => onChange(opt.id)}
             >
               <CardContent className="p-4 flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${
-                  selected ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
+                <div className={`w-10 h-10 rounded-app flex items-center justify-center text-xl ${
+                  selected ? 'bg-primary text-primary-foreground' : 'bg-app-bg text-muted-foreground'
                 }`}>
                   {opt.icon}
                 </div>
@@ -80,8 +80,8 @@ const QuestionComponent = ({
             {question.options?.map((option) => (
               <Card
                 key={option}
-                className={`cursor-pointer transition-all ${
-                  answer === option ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-300'
+                className={`cursor-pointer transition-all rounded-app border-app-border ${
+                  answer === option ? 'border-primary bg-primary/10 shadow-app' : 'hover:border-primary/30 hover:bg-app-surface-hover'
                 }`}
               >
                 <CardContent className="p-4">
@@ -256,26 +256,26 @@ function OnboardingPageContent() {
   const progress = ((currentQuestionIndex + 1) / flatQuestions.length) * 100
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-app-bg flex items-center justify-center p-6 sm:p-8">
       <div className="w-full max-w-2xl">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-app-lg bg-primary shadow-app flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{t('welcome')}</h1>
-                <p className="text-sm text-gray-600">
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">{t('welcome')}</h1>
+                <p className="text-sm text-muted-foreground">
                   {t('questionOf', { current: currentQuestionIndex + 1, total: flatQuestions.length })}
                 </p>
               </div>
             </div>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-2 rounded-full" />
         </div>
 
-        <Card>
+        <Card className="rounded-app-lg border-app-border shadow-app-md">
           <CardContent className="p-8">
             <form onSubmit={handleSubmit}>
               <AnimatePresence mode="wait">
@@ -288,7 +288,7 @@ function OnboardingPageContent() {
                   className="space-y-6"
                 >
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h2 className="text-xl font-semibold text-foreground mb-2">
                       {currentQuestion.question}
                       {currentQuestion.required && <span className="text-red-500 ml-1">*</span>}
                     </h2>
@@ -307,10 +307,11 @@ function OnboardingPageContent() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-4">
+                  <div className="flex items-center justify-between pt-4 gap-3">
                     <Button
                       type="button"
                       variant="outline"
+                      className="rounded-app border-app-border"
                       onClick={prevQuestion}
                       disabled={currentQuestionIndex === 0}
                     >
@@ -319,12 +320,12 @@ function OnboardingPageContent() {
                     </Button>
 
                     {currentQuestionIndex < flatQuestions.length - 1 ? (
-                      <Button type="button" onClick={nextQuestion}>
+                      <Button type="button" className="rounded-app" onClick={nextQuestion}>
                         {t('next')}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     ) : (
-                      <Button type="submit" disabled={isSubmitting}>
+                      <Button type="submit" className="rounded-app" disabled={isSubmitting}>
                         {isSubmitting ? t('submitting') : t('complete')}
                         <CheckCircle className="w-4 h-4 ml-2" />
                       </Button>

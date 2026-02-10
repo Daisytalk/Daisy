@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Sparkles, Paperclip, Mic } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 import { AppLayout } from '@/shared/components/AppLayout'
@@ -22,6 +22,7 @@ interface Message {
 
 function ChatPageContent() {
   const { user } = useAuth()
+  const t = useTranslations('chat')
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -250,15 +251,15 @@ function ChatPageContent() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center space-y-8 py-12"
               >
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto">
-                  <Sparkles className="w-8 h-8 text-white" />
+                <div className="w-20 h-20 rounded-app-lg bg-primary shadow-app flex items-center justify-center mx-auto">
+                  <Sparkles className="w-10 h-10 text-primary-foreground" />
                 </div>
 
                 <div>
-                  <h2 className="text-3xl font-semibold text-gray-900 mb-2">
+                  <h2 className="text-3xl font-semibold text-foreground tracking-tight mb-2">
                     Hi {user?.name}! 👋
                   </h2>
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     How are you feeling today?
                   </p>
                 </div>
@@ -267,10 +268,10 @@ function ChatPageContent() {
                   {suggestedPrompts.map((prompt, index) => (
                     <Card
                       key={index}
-                      className="p-4 cursor-pointer hover:border-gray-300 hover:shadow-sm transition-all"
+                      className="p-4 cursor-pointer rounded-app border-app-border hover:border-primary/30 hover:shadow-app transition-all bg-app-surface"
                       onClick={() => setInputValue(prompt)}
                     >
-                      <p className="text-sm text-gray-700">{prompt}</p>
+                      <p className="text-sm text-foreground">{prompt}</p>
                     </Card>
                   ))}
                 </div>
@@ -282,23 +283,23 @@ function ChatPageContent() {
                     key={message.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {message.role === 'assistant' && (
-                      <Avatar className="flex-shrink-0">
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600">
-                          <Sparkles className="w-4 h-4 text-white" />
+                      <Avatar className="flex-shrink-0 h-9 w-9 rounded-app">
+                        <AvatarFallback className="bg-primary text-primary-foreground rounded-app">
+                          <Sparkles className="w-4 h-4" />
                         </AvatarFallback>
                       </Avatar>
                     )}
-                    <Card className={`max-w-[70%] ${message.role === 'user' ? 'bg-gray-900 text-white border-gray-900' : ''}`}>
+                    <Card className={`max-w-[75%] rounded-app-lg border-app-border shadow-app ${message.role === 'user' ? 'bg-primary text-primary-foreground border-primary' : 'bg-app-surface'}`}>
                       <div className="p-4">
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                       </div>
                     </Card>
                     {message.role === 'user' && (
-                      <Avatar className="flex-shrink-0">
-                        <AvatarFallback className="bg-gray-200 text-gray-700">
+                      <Avatar className="flex-shrink-0 h-9 w-9 rounded-app">
+                        <AvatarFallback className="bg-app-border text-muted-foreground rounded-app text-sm font-medium">
                           {user?.name?.charAt(0).toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
@@ -310,22 +311,25 @@ function ChatPageContent() {
 
             {isLoading && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex gap-4"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex gap-3"
+                aria-live="polite"
+                aria-label={t('thinking')}
               >
-                <Avatar className="flex-shrink-0">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600">
-                    <Sparkles className="w-4 h-4 text-white animate-pulse" />
+                <Avatar className="flex-shrink-0 h-9 w-9 rounded-app">
+                  <AvatarFallback className="bg-primary/90 text-primary-foreground rounded-app">
+                    <Sparkles className="w-4 h-4 animate-pulse" />
                   </AvatarFallback>
                 </Avatar>
-                <Card>
-                  <div className="p-4">
+                <Card className="max-w-[75%] rounded-app-lg border-app-border bg-app-surface shadow-app">
+                  <div className="p-4 flex items-center gap-3">
                     <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
+                    <span className="text-sm text-muted-foreground">{t('thinking')}</span>
                   </div>
                 </Card>
               </motion.div>
@@ -335,7 +339,7 @@ function ChatPageContent() {
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-gray-200 bg-white p-4">
+        <div className="border-t border-app-border bg-app-surface p-4">
           <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
             <div className="flex items-end gap-3">
               <div className="flex-1 relative">
@@ -349,9 +353,9 @@ function ChatPageContent() {
                       handleSubmit(e)
                     }
                   }}
-                  placeholder="Type your message..."
+                  placeholder={t('placeholder')}
                   disabled={isLoading}
-                  className="resize-none min-h-[48px] max-h-[120px]"
+                  className="resize-none min-h-[48px] max-h-[120px] rounded-app border-app-border bg-app-bg"
                   rows={1}
                 />
                 <div className="absolute right-2 bottom-2 flex items-center gap-1">
@@ -366,11 +370,14 @@ function ChatPageContent() {
               <Button
                 type="submit"
                 disabled={isLoading || !inputValue.trim()}
-                className="h-12"
+                className="h-12 rounded-app px-5"
               >
                 <Send className="w-4 h-4" />
               </Button>
             </div>
+            <p className="mt-2 text-xs text-muted-foreground text-center max-w-3xl mx-auto" role="note">
+              {t('disclaimer')}
+            </p>
           </form>
         </div>
       </div>
