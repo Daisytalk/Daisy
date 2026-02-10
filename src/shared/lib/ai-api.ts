@@ -123,9 +123,9 @@ function normalizeTherapyResponse(rawResponse: string): string {
 }
 
 /**
- * Build conversation prompt with history
+ * Build conversation prompt with history (reserved for future use)
  */
-function buildConversationPrompt(
+function _buildConversationPrompt(
   currentMessage: string,
   conversationHistory?: Array<{ role: string; content: string }>
 ): string {
@@ -231,12 +231,12 @@ export async function sendChatMessage(
     }
 
     // Azure ML can return: JSON object, JSON string (including BOM), or array with one item
-    let data: any;
+    let data: Record<string, unknown> | undefined;
     try {
       const raw = await response.text();
       const trimmed = raw.trim();
       const toParse = trimmed.startsWith('\uFEFF') ? trimmed.slice(1) : trimmed; // strip BOM
-      let parsed: any;
+      let parsed: unknown;
       try {
         parsed = JSON.parse(toParse);
       } catch {
@@ -254,7 +254,7 @@ export async function sendChatMessage(
         }
       }
       if (data === undefined && parsed != null && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        data = parsed;
+        data = parsed as Record<string, unknown>;
       }
       if (data === undefined) {
         data = { response: typeof raw === 'string' ? raw.trim() : String(raw) };
@@ -262,7 +262,7 @@ export async function sendChatMessage(
       // If data ended up as a string (e.g. from older code paths or BOM), parse it
       if (typeof data === 'string') {
         try {
-          data = JSON.parse(data);
+          data = JSON.parse(data) as Record<string, unknown>;
         } catch {
           data = { response: data };
         }
@@ -270,47 +270,50 @@ export async function sendChatMessage(
       if (!data || typeof data !== 'object') {
         data = { response: String(raw || '').trim() };
       }
-      console.log('📦 Azure ML response keys:', Object.keys(data).filter(k => !/^\d+$/.test(k)).slice(0, 10));
+      const dataObj = data as Record<string, unknown>;
+      console.log('📦 Azure ML response keys:', Object.keys(dataObj).filter((k: string) => !/^\d+$/.test(k)).slice(0, 10));
     } catch (error) {
       console.error('❌ Failed to parse Azure ML response:', error);
       throw new Error(`Failed to parse AI API response: ${error}`);
     }
 
-    if (data?.error) {
-      throw new Error(`AI API returned error: ${data.error}`);
+    const dataObj = data as Record<string, unknown>;
+    if (dataObj?.error) {
+      throw new Error(`AI API returned error: ${dataObj.error}`);
     }
 
-    let responseText = data?.response;
+    let responseText: unknown = dataObj?.response;
     if (responseText != null && typeof responseText !== 'string') responseText = String(responseText);
     if (responseText == null || responseText === '') {
-      console.error('❌ Invalid Azure ML response format:', data);
+      console.error('❌ Invalid Azure ML response format:', dataObj);
       throw new Error('Invalid AI API response format: missing "response" field');
     }
+    const responseStr = String(responseText);
 
-    const normalizedResponse = normalizeTherapyResponse(responseText);
+    const normalizedResponse = normalizeTherapyResponse(responseStr);
 
     console.log('✅ Azure ML response normalized:', {
-      originalLength: responseText.length,
+      originalLength: responseStr.length,
       normalizedLength: normalizedResponse.length
     });
 
-    const aiProfile = data?.ai_profile && typeof data.ai_profile === 'object' ? data.ai_profile as AIProfile : undefined;
-    const memoryUpdate = Array.isArray(data?.memory_update)
-      ? (data.memory_update as unknown[]).filter((x): x is string => typeof x === 'string')
+    const aiProfile = dataObj?.ai_profile && typeof dataObj.ai_profile === 'object' ? dataObj.ai_profile as AIProfile : undefined;
+    const memoryUpdate = Array.isArray(dataObj?.memory_update)
+      ? (dataObj.memory_update as unknown[]).filter((x): x is string => typeof x === 'string')
       : undefined;
 
     return {
       response: normalizedResponse,
-      persona_used: data.persona_used ?? 'active_listener',
-      protocol_used: data.protocol_used ?? 'cbt',
-      diagnosis: Array.isArray(data.diagnosis) ? data.diagnosis : [],
+      persona_used: (dataObj.persona_used as string | undefined) ?? 'active_listener',
+      protocol_used: (dataObj.protocol_used as string | undefined) ?? 'cbt',
+      diagnosis: Array.isArray(dataObj.diagnosis) ? dataObj.diagnosis as string[] : [],
       prompt: text,
       parameters: {
         max_tokens: (requestBody.max_tokens as number),
         temperature: (requestBody.temperature as number),
         top_p: 0.9
       },
-      metrics: data.metrics,
+      metrics: dataObj.metrics,
       ai_profile: aiProfile,
       memory_update: memoryUpdate
     };
