@@ -56,4 +56,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-CMD ["node", "server.js"]
+# Use full path to node so it's found when running as nextjs user (avoids exit 127 in Azure)
+CMD ["/usr/local/bin/node", "server.js"]
