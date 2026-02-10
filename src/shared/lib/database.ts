@@ -11,19 +11,12 @@ function createPrismaClient() {
   const databaseUrl = process.env.DATABASE_URL
 
   if (!databaseUrl) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('DATABASE_URL is required in production')
-    }
-    console.warn('⚠️  DATABASE_URL not set, using dummy connection')
-    return new PrismaClient().$extends(withAccelerate())
+    // Don't throw at import time — let route handlers catch the error and return JSON
+    console.error('❌ DATABASE_URL is not set! Database queries will fail.')
   }
 
   const client = new PrismaClient({
-    datasources: {
-      db: {
-        url: databaseUrl,
-      },
-    },
+    ...(databaseUrl ? { datasources: { db: { url: databaseUrl } } } : {}),
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   })
 
