@@ -2,7 +2,9 @@
  * AI API Service - Normalized Response Handler
  * 
  * This service ensures consistent CBT therapy responses from the AI model
- * by using structured prompts and response normalization
+ * by using structured prompts and response normalization.
+ * 
+ * Updated: 2026-02-10 - Fixed Azure ML endpoint authentication
  */
 
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
