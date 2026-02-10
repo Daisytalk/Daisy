@@ -2,15 +2,9 @@ const withNextIntl = require('next-intl/plugin')('./src/i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Standalone output for Docker/Azure deployment
-  output: 'standalone',
-  
-  // Include Prisma files in standalone build
-  experimental: {
-    outputFileTracingIncludes: {
-      '/api/**/*': ['./node_modules/.prisma/**/*', './node_modules/@prisma/client/**/*'],
-    },
-  },
+  // Use standalone only for non-Docker builds
+  // For Docker, we'll copy full node_modules
+  output: process.env.DOCKER_BUILD ? undefined : 'standalone',
   
   images: {
     remotePatterns: [
