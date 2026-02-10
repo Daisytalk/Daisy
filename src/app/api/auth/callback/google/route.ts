@@ -109,6 +109,7 @@ export async function GET(request: NextRequest) {
     // Check if user exists or create new user
     let user = await prisma.user.findUnique({
       where: { email: googleUser.email.toLowerCase() },
+      select: { id: true, email: true, name: true, googleId: true },
     })
 
     let isNewUser = false
@@ -151,6 +152,7 @@ export async function GET(request: NextRequest) {
       user = await prisma.user.update({
         where: { id: user.id },
         data: { googleId: googleUser.id },
+        select: { id: true, email: true, name: true, googleId: true },
       })
     }
 

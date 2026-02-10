@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,59 +8,50 @@ datasource db {
 }
 
 model User {
-  id                 String   @id @default(cuid())
-  email              String   @unique
+  id                 String            @id @default(cuid())
+  email              String            @unique
   name               String?
   password           String
-  googleId           String?  @unique
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  isOnboarded        Boolean  @default(false)
-  subscriptionStatus String   @default("trial")
-  aiProfile          Json?    @map("ai_profile") // AI-generated user image (summary, goals, concerns)
-  conversationMemory Json?    @map("conversation_memory") // Accumulated memory_update[] from API, passed back in user_context
-
-  // Relations
-  onboarding     OnboardingData?
-  aiSessions     AiSession[]
-  cbtConversations CbtConversation[]
+  googleId           String?           @unique
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  isOnboarded        Boolean           @default(false)
+  subscriptionStatus String            @default("trial")
+  aiProfile          Json?             @map("ai_profile")
+  aiSessions         AiSession[]
+  cbtConversations   CbtConversation[]
+  onboarding         OnboardingData?
 
   @@map("users")
 }
-model OnboardingData {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Onboarding responses (JSON for flexibility)
+model OnboardingData {
+  id        String   @id @default(cuid())
+  userId    String   @unique
   responses Json
   completed Boolean  @default(false)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("onboarding_data")
 }
 
 model AiSession {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Session data
-  messages Json
-  context  Json?
-
+  id        String   @id @default(cuid())
+  userId    String
+  messages  Json
+  context   Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("ai_sessions")
 }
 
 model Newsletter {
-  id    String @id @default(cuid())
-  email String @unique
-
+  id        String   @id @default(cuid())
+  email     String   @unique
   createdAt DateTime @default(now())
 
   @@map("newsletter")
@@ -81,14 +69,14 @@ model TokenBlacklist {
 }
 
 model CbtConversation {
-  id        String      @id @default(cuid())
+  id        String       @id @default(cuid())
   userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  CbtMessage[]
   sessionId String?
-  persona   String      @default("active_listener")
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  persona   String       @default("active_listener")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  CbtMessage[]
 
   @@index([userId])
   @@index([sessionId])
@@ -98,16 +86,13 @@ model CbtConversation {
 model CbtMessage {
   id             String          @id @default(cuid())
   conversationId String
-  conversation   CbtConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  role           String          // "user" or "assistant"
-  content        String          @db.Text
-  
-  // CBT-specific metadata
+  role           String
+  content        String
   protocol       String?
   diagnosis      String[]
   persona        String?
-  
   createdAt      DateTime        @default(now())
+  conversation   CbtConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
   @@map("cbt_messages")

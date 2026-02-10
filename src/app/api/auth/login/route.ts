@@ -31,8 +31,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await prisma.user.findUnique({ 
-      where: { email: email.toLowerCase() } 
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     })
 
     const isValidPassword = await AuthService.comparePassword(
@@ -90,8 +98,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
+      { message: 'Something went wrong. Please try again.' },
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     )
   }
 }

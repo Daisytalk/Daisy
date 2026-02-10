@@ -43,8 +43,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const existingUser = await prisma.user.findUnique({ 
-      where: { email: email.toLowerCase() } 
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+      select: { id: true },
     })
     
     if (existingUser) {
