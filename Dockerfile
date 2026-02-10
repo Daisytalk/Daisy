@@ -40,6 +40,7 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV DATABASE_URL="postgresql://daisyadmin:database1%21@daisy.postgres.database.azure.com:5432/postgres?sslmode=require"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

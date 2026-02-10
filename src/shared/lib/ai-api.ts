@@ -7,19 +7,30 @@
  * Updated: 2026-02-10 - Fixed environment variables for server-side
  */
 
-// Server-side: use regular env vars (not NEXT_PUBLIC_*)
-const AI_API_URL = process.env.AI_API_URL || process.env.NEXT_PUBLIC_AI_API_URL;
-const AI_API_KEY = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY;
-
-/** Validate and return base URL at request time so missing env does not crash server at startup */
+/** Read AI API config at request time (not at module load) so runtime env vars are always picked up */
 function getApiBaseUrl(): string {
-  if (!AI_API_URL || !AI_API_KEY) {
+  const url = process.env.AI_API_URL || process.env.NEXT_PUBLIC_AI_API_URL;
+  const key = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY;
+  console.log('🔑 AI API config check:', {
+    AI_API_URL: url ? url.substring(0, 40) + '...' : '(not set)',
+    AI_API_KEY: key ? `set (${key.length} chars)` : '(not set)',
+    source_url: process.env.AI_API_URL ? 'AI_API_URL' : process.env.NEXT_PUBLIC_AI_API_URL ? 'NEXT_PUBLIC_AI_API_URL' : 'none',
+  });
+  if (!url || !key) {
     throw new Error('AI API configuration missing: set NEXT_PUBLIC_AI_API_URL and NEXT_PUBLIC_AI_API_KEY');
   }
-  if (!AI_API_URL.startsWith('http://') && !AI_API_URL.startsWith('https://')) {
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
     throw new Error('NEXT_PUBLIC_AI_API_URL must include protocol (http:// or https://)');
   }
-  return AI_API_URL.endsWith('/') ? AI_API_URL.slice(0, -1) : AI_API_URL;
+  return url.endsWith('/') ? url.slice(0, -1) : url;
+}
+
+function getApiKey(): string {
+  const key = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY;
+  if (!key) {
+    throw new Error('AI API key missing: set NEXT_PUBLIC_AI_API_KEY');
+  }
+  return key;
 }
 
 /**
@@ -189,7 +200,7 @@ export async function sendChatMessage(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AI_API_KEY!}`
+        'Authorization': `Bearer ${getApiKey()}`
       },
       body: JSON.stringify(requestBody),
       signal: controller.signal
@@ -330,7 +341,7 @@ export async function checkAIApiHealth(): Promise<boolean> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AI_API_KEY!}`
+        'Authorization': `Bearer ${getApiKey()}`
       },
       body: JSON.stringify({
         message: 'health check',
@@ -351,9 +362,11 @@ export async function checkAIApiHealth(): Promise<boolean> {
  * Get AI API configuration (for debugging)
  */
 export function getAIApiConfig() {
+  const url = process.env.AI_API_URL || process.env.NEXT_PUBLIC_AI_API_URL;
+  const key = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY;
   return {
-    url: AI_API_URL ?? '(not set)',
-    hasApiKey: !!AI_API_KEY,
-    apiKeyLength: AI_API_KEY?.length || 0
+    url: url ?? '(not set)',
+    hasApiKey: !!key,
+    apiKeyLength: key?.length || 0
   };
 }
