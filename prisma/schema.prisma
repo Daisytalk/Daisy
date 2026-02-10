@@ -20,6 +20,7 @@ model User {
   updatedAt          DateTime @updatedAt
   isOnboarded        Boolean  @default(false)
   subscriptionStatus String   @default("trial")
+  aiProfile          Json?    // AI-generated user image (summary, goals, concerns)
 
   // Relations
   onboarding     OnboardingData?

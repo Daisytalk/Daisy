@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { Prisma } from '@prisma/client'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { sendChatMessage } from '@/shared/lib/ai-api'
@@ -34,14 +35,27 @@ async function processAsyncChat(
       }
     })
     
-    // History for Azure: previous messages only (drop the last if it's the current user message we just saved)
     const allMessages = conversation?.messages ?? []
     const last = allMessages[allMessages.length - 1]
     const isLastCurrentUser = last?.role === 'user' && last?.content === userMessage
     const forHistory = isLastCurrentUser ? allMessages.slice(0, -1) : allMessages
     const history = forHistory.map(msg => ({ role: msg.role, content: msg.content }))
-    
-    const aiResponse = await sendChatMessage(userMessage, userId, conversationId, history)
+
+    const isFirstMessageInConversation = history.length === 0
+    let onboardingSummary: unknown = undefined
+    if (isFirstMessageInConversation) {
+      const onboardingData = await prisma.onboardingData.findUnique({
+        where: { userId }
+      })
+      if (onboardingData?.responses && typeof onboardingData.responses === 'object') {
+        onboardingSummary = onboardingData.responses
+      }
+    }
+
+    const aiResponse = await sendChatMessage(userMessage, userId, conversationId, history, {
+      request_ai_profile: isFirstMessageInConversation,
+      ...(onboardingSummary != null && { onboarding_summary: onboardingSummary })
+    })
 
     console.log('✅ Azure ML API response received:', {
       protocol: aiResponse.protocol_used,
@@ -74,6 +88,14 @@ async function processAsyncChat(
           updatedAt: new Date()
         }
       })
+    }
+
+    if (aiResponse.ai_profile) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { aiProfile: aiResponse.ai_profile } as Prisma.UserUpdateInput
+      })
+      console.log('💾 Saved AI profile for user:', userId)
     }
 
     console.log('✅ Successfully saved assistant response for message:', messageId)

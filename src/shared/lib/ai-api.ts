@@ -50,6 +50,15 @@ Respond naturally as if in a therapy session.`;
 /**
  * AI API Response Interface
  */
+/** AI-generated user image (summary, goals, concerns) */
+export interface AIProfile {
+  summary?: string;
+  goals?: string[];
+  concerns?: string[];
+  communication_style?: string;
+  updatedAt?: string;
+}
+
 export interface AIApiResponse {
   response: string;
   persona_used?: string;
@@ -61,8 +70,9 @@ export interface AIApiResponse {
     temperature: number;
     top_p: number;
   };
-  metrics?: any;
+  metrics?: unknown;
   error?: string;
+  ai_profile?: AIProfile;
 }
 
 /**
@@ -124,36 +134,41 @@ function buildConversationPrompt(
 
 /**
  * Send chat message to AI API with normalized response
- * 
- * @param text - User message text
- * @param userId - User identifier
- * @param sessionId - Session identifier
- * @param conversationHistory - Previous messages for context
- * @returns AI API response with normalized therapy format
+ *
+ * @param options.request_ai_profile - Ask API to generate/update ai_profile in the response
+ * @param options.onboarding_summary - User onboarding context for personalization and ai_profile
  */
 export async function sendChatMessage(
   text: string,
   userId: string,
   sessionId: string,
-  conversationHistory?: Array<{ role: string; content: string }>
+  conversationHistory?: Array<{ role: string; content: string }>,
+  options?: { request_ai_profile?: boolean; onboarding_summary?: unknown }
 ): Promise<AIApiResponse> {
   const endpoint = getApiBaseUrl();
 
-  // Azure ML endpoint expects: { message, user_id, max_tokens, temperature, history }
-  const requestBody = {
+  const requestBody: Record<string, unknown> = {
     message: text,
     user_id: userId || 'web_user',
     max_tokens: 300,
     temperature: 0.7,
     history: conversationHistory || []
   };
+  if (options?.request_ai_profile === true) {
+    requestBody.request_ai_profile = true;
+  }
+  if (options?.onboarding_summary != null) {
+    requestBody.onboarding_summary = options.onboarding_summary;
+  }
 
+  const historyArr = (requestBody.history as Array<{ role: string; content: string }>) || []
   console.log('📤 Sending to Azure ML AI API:', {
     url: endpoint,
     userId,
     sessionId,
     messageLength: text.length,
-    historyLength: requestBody.history.length,
+    historyLength: historyArr.length,
+    request_ai_profile: requestBody.request_ai_profile,
     timestamp: new Date().toISOString()
   });
 
@@ -259,6 +274,8 @@ export async function sendChatMessage(
       normalizedLength: normalizedResponse.length
     });
 
+    const aiProfile = data?.ai_profile && typeof data.ai_profile === 'object' ? data.ai_profile as AIProfile : undefined;
+
     return {
       response: normalizedResponse,
       persona_used: data.persona_used ?? 'active_listener',
@@ -266,11 +283,12 @@ export async function sendChatMessage(
       diagnosis: Array.isArray(data.diagnosis) ? data.diagnosis : [],
       prompt: text,
       parameters: {
-        max_tokens: requestBody.max_tokens,
-        temperature: requestBody.temperature,
+        max_tokens: (requestBody.max_tokens as number),
+        temperature: (requestBody.temperature as number),
         top_p: 0.9
       },
-      metrics: data.metrics
+      metrics: data.metrics,
+      ai_profile: aiProfile
     };
 
   } catch (error) {
