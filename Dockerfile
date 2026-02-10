@@ -27,9 +27,9 @@ RUN pnpm prisma generate
 # Build-time environment variables
 ARG NEXT_PUBLIC_AI_API_URL
 ARG NEXT_PUBLIC_AI_API_KEY
-ENV DATABASE_URL="postgresql://daisyadmin:database1%21@daisy.postgres.database.azure.com:5432/postgres?sslmode=require"
 ENV NEXT_PUBLIC_AI_API_URL=$NEXT_PUBLIC_AI_API_URL
 ENV NEXT_PUBLIC_AI_API_KEY=$NEXT_PUBLIC_AI_API_KEY
+ENV DATABASE_URL="postgresql://daisyadmin:database1%21@daisy.postgres.database.azure.com:5432/postgres?sslmode=require"
 ENV DOCKER_BUILD=true
 
 # Build Next.js

@@ -10,7 +10,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: daisy-therapy-app
   REGISTRY_NAME: cbttherapyregistry
-  IMAGE_NAME: daisy-nextjs16
+  IMAGE_NAME: daisy-app
 
 jobs:
   build-and-deploy:
