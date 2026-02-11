@@ -196,6 +196,7 @@ export async function sendChatMessage(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 180000);
 
+    console.log('📞 Calling Azure ML fetch now...', { endpoint: endpoint.substring(0, 60) + '...' });
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -319,19 +320,20 @@ export async function sendChatMessage(
     };
 
   } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error))
     console.error('❌ AI API Request Failed:', {
-      error: error instanceof Error ? error.message : String(error),
+      errorMessage: err.message,
+      errorName: err.name,
+      stack: err.stack,
       endpoint,
       userId,
       sessionId,
       timestamp: new Date().toISOString()
     });
-
     if (error instanceof Error) {
       throw error;
-    } else {
-      throw new Error(`Network error: ${String(error)}`);
     }
+    throw new Error(`Network error: ${String(error)}`);
   }
 }
 

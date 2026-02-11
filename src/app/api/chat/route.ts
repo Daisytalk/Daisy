@@ -55,22 +55,29 @@ async function processAsyncChat(
       }
     }
 
-    const user = (await prisma.user.findUnique({
-      where: { id: userId },
-      select: { aiProfile: true, conversationMemory: true } as Record<string, boolean>
-    })) as UserContextRow
-    const userContextParts: string[] = []
-    if (user?.aiProfile && typeof user.aiProfile === 'object' && !Array.isArray(user.aiProfile)) {
-      const ap = user.aiProfile as Record<string, unknown>
-      if (typeof ap.summary === 'string') userContextParts.push(`Summary: ${ap.summary}`)
-      if (Array.isArray(ap.goals) && ap.goals.length) userContextParts.push(`Goals: ${(ap.goals as string[]).join(', ')}`)
-      if (Array.isArray(ap.concerns) && ap.concerns.length) userContextParts.push(`Concerns: ${(ap.concerns as string[]).join(', ')}`)
-      if (typeof ap.communication_style === 'string') userContextParts.push(`Style: ${ap.communication_style}`)
+    let userContext: string | undefined
+    try {
+      const user = (await prisma.user.findUnique({
+        where: { id: userId },
+        select: { aiProfile: true, conversationMemory: true } as Record<string, boolean>
+      })) as UserContextRow
+      const userContextParts: string[] = []
+      if (user?.aiProfile && typeof user.aiProfile === 'object' && !Array.isArray(user.aiProfile)) {
+        const ap = user.aiProfile as Record<string, unknown>
+        if (typeof ap.summary === 'string') userContextParts.push(`Summary: ${ap.summary}`)
+        if (Array.isArray(ap.goals) && ap.goals.length) userContextParts.push(`Goals: ${(ap.goals as string[]).join(', ')}`)
+        if (Array.isArray(ap.concerns) && ap.concerns.length) userContextParts.push(`Concerns: ${(ap.concerns as string[]).join(', ')}`)
+        if (typeof ap.communication_style === 'string') userContextParts.push(`Style: ${ap.communication_style}`)
+      }
+      const memoryArr = Array.isArray(user?.conversationMemory) ? (user.conversationMemory as string[]) : []
+      if (memoryArr.length) userContextParts.push(`Memory: ${memoryArr.join('. ')}`)
+      userContext = userContextParts.length ? userContextParts.join('\n') : undefined
+    } catch (userContextErr) {
+      console.warn('⚠️ Failed to load user context (continuing without):', userContextErr instanceof Error ? userContextErr.message : userContextErr)
+      userContext = undefined
     }
-    const memoryArr = Array.isArray(user?.conversationMemory) ? (user.conversationMemory as string[]) : []
-    if (memoryArr.length) userContextParts.push(`Memory: ${memoryArr.join('. ')}`)
-    const userContext = userContextParts.length ? userContextParts.join('\n') : undefined
 
+    console.log('📞 About to call sendChatMessage (Azure ML)...', { hasUserContext: !!userContext, historyLength: history.length })
     const aiResponse = await sendChatMessage(userMessage, userId, conversationId, history, {
       request_ai_profile: isFirstMessageInConversation,
       ...(onboardingSummary != null && { onboarding_summary: onboardingSummary }),
@@ -119,7 +126,16 @@ async function processAsyncChat(
     }
 
     if (aiResponse.memory_update && aiResponse.memory_update.length > 0) {
-      const existing = (user?.conversationMemory as string[] | null) ?? []
+      let existing: string[] = []
+      try {
+        const u = (await prisma.user.findUnique({
+          where: { id: userId },
+          select: { conversationMemory: true } as Record<string, boolean>
+        })) as { conversationMemory: unknown } | null
+        existing = Array.isArray(u?.conversationMemory) ? (u.conversationMemory as string[]) : []
+      } catch {
+        // ignore
+      }
       const merged = [...existing, ...aiResponse.memory_update]
       await prisma.user.update({
         where: { id: userId },
@@ -131,11 +147,15 @@ async function processAsyncChat(
     console.log('✅ Successfully saved assistant response for message:', messageId)
 
   } catch (error: unknown) {
-    console.error('❌ Async processing error:', {
+    const err = error instanceof Error ? error : new Error(String(error))
+    console.error('❌ Async chat processing failed:', {
       messageId,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : undefined
+      conversationId,
+      userId,
+      errorMessage: err.message,
+      errorName: err.name,
+      stack: err.stack,
+      fullError: String(error),
     })
     
     try {
