@@ -12,12 +12,15 @@ import { Button } from '@/shared/ui/button'
 import { Textarea } from '@/shared/ui/textarea'
 import { Card } from '@/shared/ui/card'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
+import { TypewriterText } from '@/shared/ui/typewriter-text'
 
 interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  /** When true, assistant message is revealed with typewriter effect */
+  stream?: boolean
 }
 
 function ChatPageContent() {
@@ -137,10 +140,10 @@ function ChatPageContent() {
     }
   }
 
-  const POLL_INTERVAL_MS = 1500
+  const POLL_INTERVAL_MS = 3000
 
   const pollForResponse = async (requestId: string, token: string | null) => {
-    const maxAttempts = 80 // ~2 min at 1.5s
+    const maxAttempts = 45 // ~2.25 min at 3s
     let attempts = 0
 
     const poll = async (): Promise<void> => {
@@ -199,8 +202,10 @@ function ChatPageContent() {
             role: 'assistant',
             content,
             timestamp: new Date(),
+            stream: true,
           }
           setMessages(prev => [...prev, assistantMessage])
+          await new Promise(r => setTimeout(r, 300))
           return
         }
 
@@ -294,7 +299,19 @@ function ChatPageContent() {
                     )}
                     <Card className={`max-w-[75%] rounded-app-lg border-app-border shadow-app ${message.role === 'user' ? 'bg-primary text-primary-foreground border-primary' : 'bg-app-surface'}`}>
                       <div className="p-4">
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                          {message.role === 'assistant' && message.stream ? (
+                            <TypewriterText
+                              text={message.content}
+                              speedMs={10}
+                              onComplete={() => {
+                                setMessages(prev => prev.map(m => m.id === message.id ? { ...m, stream: false } : m))
+                              }}
+                            />
+                          ) : (
+                            message.content
+                          )}
+                        </p>
                       </div>
                     </Card>
                     {message.role === 'user' && (
