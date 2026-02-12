@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles, Paperclip, Mic } from 'lucide-react'
+import { Send, Sparkles } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useLocale, useTranslations } from 'next-intl'
 import { ClientOnly } from '@/shared/components/ClientOnly'
@@ -10,7 +10,6 @@ import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 import { AppLayout } from '@/shared/components/AppLayout'
 import { Button } from '@/shared/ui/button'
 import { Textarea } from '@/shared/ui/textarea'
-import { Card } from '@/shared/ui/card'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
 import { TypewriterText } from '@/shared/ui/typewriter-text'
 
@@ -246,59 +245,61 @@ function ChatPageContent() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col h-full">
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <div className="max-w-3xl mx-auto space-y-6">
+      <div className="flex flex-col h-full min-h-0 bg-[hsl(var(--app-bg))]">
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
             {messages.length === 0 ? (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center space-y-8 py-12"
+                className="flex flex-col items-center text-center pt-8 sm:pt-16"
               >
-                <div className="w-20 h-20 rounded-app-lg bg-primary shadow-app flex items-center justify-center mx-auto">
-                  <Sparkles className="w-10 h-10 text-primary-foreground" />
+                <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-6">
+                  <Sparkles className="w-8 h-8 text-primary-foreground" />
                 </div>
-
-                <div>
-                  <h2 className="text-3xl font-semibold text-foreground tracking-tight mb-2">
-                    Hi {user?.name}! 👋
-                  </h2>
-                  <p className="text-muted-foreground">
-                    How are you feeling today?
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
+                <h2 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight mb-2">
+                  Hi {user?.name?.split(' ')[0] || 'there'} 👋
+                </h2>
+                <p className="text-muted-foreground mb-8 max-w-sm">
+                  How are you feeling today? Start the conversation below or pick a prompt.
+                </p>
+                <div className="flex flex-wrap justify-center gap-2 w-full max-w-xl">
                   {suggestedPrompts.map((prompt, index) => (
-                    <Card
+                    <button
                       key={index}
-                      className="p-4 cursor-pointer rounded-app border-app-border hover:border-primary/30 hover:shadow-app transition-all bg-app-surface"
+                      type="button"
                       onClick={() => setInputValue(prompt)}
+                      className="px-4 py-2.5 rounded-2xl border-2 border-[hsl(var(--app-border))] bg-white hover:border-primary/40 hover:bg-primary/5 text-sm font-medium text-foreground transition-colors"
                     >
-                      <p className="text-sm text-foreground">{prompt}</p>
-                    </Card>
+                      {prompt}
+                    </button>
                   ))}
                 </div>
               </motion.div>
             ) : (
-              <AnimatePresence>
-                {messages.map((message) => (
-                  <motion.div
-                    key={message.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {message.role === 'assistant' && (
-                      <Avatar className="flex-shrink-0 h-9 w-9 rounded-app">
-                        <AvatarFallback className="bg-primary text-primary-foreground rounded-app">
-                          <Sparkles className="w-4 h-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    <Card className={`max-w-[75%] rounded-app-lg border-app-border shadow-app ${message.role === 'user' ? 'bg-primary text-primary-foreground border-primary' : 'bg-app-surface'}`}>
-                      <div className="p-4">
+              <div className="space-y-6">
+                <AnimatePresence>
+                  {messages.map((message) => (
+                    <motion.div
+                      key={message.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {message.role === 'assistant' && (
+                        <Avatar className="flex-shrink-0 h-8 w-8 rounded-xl">
+                          <AvatarFallback className="bg-primary text-primary-foreground rounded-xl">
+                            <Sparkles className="w-3.5 h-3.5" />
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div
+                        className={`max-w-[85%] sm:max-w-[420px] rounded-2xl px-4 py-3 ${
+                          message.role === 'user'
+                            ? 'rounded-br-md bg-primary text-primary-foreground'
+                            : 'rounded-bl-md bg-white border border-[hsl(var(--app-border))] shadow-sm'
+                        }`}
+                      >
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
                           {message.role === 'assistant' && message.stream ? (
                             <TypewriterText
@@ -313,86 +314,77 @@ function ChatPageContent() {
                           )}
                         </p>
                       </div>
-                    </Card>
-                    {message.role === 'user' && (
-                      <Avatar className="flex-shrink-0 h-9 w-9 rounded-app">
-                        <AvatarFallback className="bg-app-border text-muted-foreground rounded-app text-sm font-medium">
-                          {user?.name?.charAt(0).toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            )}
+                      {message.role === 'user' && (
+                        <Avatar className="flex-shrink-0 h-8 w-8 rounded-xl">
+                          <AvatarFallback className="bg-muted text-muted-foreground rounded-xl text-xs font-medium">
+                            {user?.name?.charAt(0).toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
 
-            {isLoading && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex gap-3"
-                aria-live="polite"
-                aria-label={t('thinking')}
-              >
-                <Avatar className="flex-shrink-0 h-9 w-9 rounded-app">
-                  <AvatarFallback className="bg-primary/90 text-primary-foreground rounded-app">
-                    <Sparkles className="w-4 h-4 animate-pulse" />
-                  </AvatarFallback>
-                </Avatar>
-                <Card className="max-w-[75%] rounded-app-lg border-app-border bg-app-surface shadow-app">
-                  <div className="p-4 flex items-center gap-3">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                {isLoading && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex gap-3"
+                    aria-live="polite"
+                    aria-label={t('thinking')}
+                  >
+                    <Avatar className="flex-shrink-0 h-8 w-8 rounded-xl">
+                      <AvatarFallback className="bg-primary/90 text-primary-foreground rounded-xl">
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="rounded-2xl rounded-bl-md bg-white border border-[hsl(var(--app-border))] shadow-sm px-4 py-3 flex items-center gap-3">
+                      <motion.span
+                        className="text-2xl leading-none"
+                        animate={{ rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.1, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.3 }}
+                        role="img"
+                        aria-hidden
+                      >
+                        🤔
+                      </motion.span>
+                      <span className="text-sm text-muted-foreground">{t('thinking')}</span>
                     </div>
-                    <span className="text-sm text-muted-foreground">{t('thinking')}</span>
-                  </div>
-                </Card>
-              </motion.div>
+                  </motion.div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
         </div>
 
-        {/* Input Area */}
-        <div className="border-t border-app-border bg-app-surface p-4">
-          <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-            <div className="flex items-end gap-3">
-              <div className="flex-1 relative">
-                <Textarea
-                  ref={textareaRef}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSubmit(e)
-                    }
-                  }}
-                  placeholder={t('placeholder')}
-                  disabled={isLoading}
-                  className="resize-none min-h-[48px] max-h-[120px] rounded-app border-app-border bg-app-bg"
-                  rows={1}
-                />
-                <div className="absolute right-2 bottom-2 flex items-center gap-1">
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
-                    <Paperclip className="w-4 h-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
-                    <Mic className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
+        <div className="shrink-0 p-4 sm:p-6 bg-[hsl(var(--app-bg))]">
+          <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
+            <div className="flex items-end gap-3 p-2 rounded-2xl bg-white border-2 border-[hsl(var(--app-border))] shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+              <Textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSubmit(e)
+                  }
+                }}
+                placeholder={t('placeholder')}
+                disabled={isLoading}
+                className="min-h-[48px] max-h-[120px] resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 rounded-xl"
+                rows={1}
+              />
               <Button
                 type="submit"
                 disabled={isLoading || !inputValue.trim()}
-                className="h-12 rounded-app px-5"
+                className="h-11 w-11 shrink-0 rounded-xl"
               >
                 <Send className="w-4 h-4" />
               </Button>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground text-center max-w-3xl mx-auto" role="note">
+            <p className="mt-2 text-xs text-muted-foreground text-center" role="note">
               {t('disclaimer')}
             </p>
           </form>

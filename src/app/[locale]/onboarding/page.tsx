@@ -11,9 +11,7 @@ import { OnboardingApiService } from '@/shared/services/onboarding'
 import { OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
-import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
-import { Card, CardContent } from '@/shared/ui/card'
 import { Progress } from '@/shared/ui/progress'
 import { RadioGroup, RadioGroupItem } from '@/shared/ui/radio-group'
 
@@ -41,22 +39,21 @@ const QuestionComponent = ({
         {options.map((opt) => {
           const selected = answer === opt.id
           return (
-            <Card
+            <button
               key={opt.id}
-              className={`cursor-pointer transition-all rounded-app border-app-border ${
-                selected ? 'border-primary bg-primary/10 shadow-app' : 'hover:border-primary/30 hover:bg-app-surface-hover'
+              type="button"
+              className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
+                selected ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40 hover:bg-muted/50'
               }`}
               onClick={() => onChange(opt.id)}
             >
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-app flex items-center justify-center text-xl ${
-                  selected ? 'bg-primary text-primary-foreground' : 'bg-app-bg text-muted-foreground'
-                }`}>
-                  {opt.icon}
-                </div>
-                <span className="font-medium">{opt.label}</span>
-              </CardContent>
-            </Card>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${
+                selected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+              }`}>
+                {opt.icon}
+              </div>
+              <span className="font-medium">{opt.label}</span>
+            </button>
           )
         })}
       </div>
@@ -71,6 +68,7 @@ const QuestionComponent = ({
           value={(answer as string) || ''}
           onChange={(e) => onChange(e.target.value)}
           required={question.required}
+          className="h-12 rounded-2xl border-2"
         />
       )
     case 'single-choice':
@@ -78,21 +76,15 @@ const QuestionComponent = ({
         <RadioGroup value={answer as string} onValueChange={onChange}>
           <div className="space-y-2">
             {question.options?.map((option) => (
-              <Card
+              <label
                 key={option}
-                className={`cursor-pointer transition-all rounded-app border-app-border ${
-                  answer === option ? 'border-primary bg-primary/10 shadow-app' : 'hover:border-primary/30 hover:bg-app-surface-hover'
+                className={`flex items-center gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                  answer === option ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40 hover:bg-muted/50'
                 }`}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <RadioGroupItem value={option} id={option} />
-                    <Label htmlFor={option} className="cursor-pointer flex-1">
-                      {option}
-                    </Label>
-                  </div>
-                </CardContent>
-              </Card>
+                <RadioGroupItem value={option} id={option} />
+                <span className="font-medium">{option}</span>
+              </label>
             ))}
           </div>
         </RadioGroup>
@@ -105,6 +97,7 @@ const QuestionComponent = ({
           placeholder={t('typeYourAnswer')}
           required={question.required}
           rows={4}
+          className="rounded-2xl border-2 min-h-[120px]"
         />
       )
     default:
@@ -115,6 +108,7 @@ const QuestionComponent = ({
           onChange={(e) => onChange(e.target.value)}
           placeholder={t('typeYourAnswer')}
           required={question.required}
+          className="h-12 rounded-2xl border-2"
         />
       )
   }
@@ -223,12 +217,12 @@ function OnboardingPageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-app-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <Sparkles className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 rounded-[var(--app-radius-lg)] bg-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <Sparkles className="w-8 h-8 text-primary-foreground" />
           </div>
-          <p className="text-gray-600">{t('loading')}</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     )
@@ -236,17 +230,17 @@ function OnboardingPageContent() {
 
   if (submitSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-app-bg flex items-center justify-center">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="text-center"
         >
-          <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-10 h-10 text-green-600" />
+          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-10 h-10 text-primary" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('allSet')}</h2>
-          <p className="text-gray-600">{t('redirecting')}</p>
+          <h2 className="text-2xl font-semibold text-foreground mb-2">{t('allSet')}</h2>
+          <p className="text-muted-foreground">{t('redirecting')}</p>
         </motion.div>
       </div>
     )
@@ -256,86 +250,79 @@ function OnboardingPageContent() {
   const progress = ((currentQuestionIndex + 1) / flatQuestions.length) * 100
 
   return (
-    <div className="min-h-screen bg-app-bg flex items-center justify-center p-6 sm:p-8">
-      <div className="w-full max-w-2xl">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-app-lg bg-primary shadow-app flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground tracking-tight">{t('welcome')}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {t('questionOf', { current: currentQuestionIndex + 1, total: flatQuestions.length })}
-                </p>
-              </div>
-            </div>
-          </div>
-          <Progress value={progress} className="h-2 rounded-full" />
+    <div className="min-h-screen flex flex-col bg-[hsl(var(--app-bg))]">
+      <div className="shrink-0 h-1.5 w-full bg-muted overflow-hidden">
+        <motion.div
+          className="h-full bg-primary"
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.3 }}
+        />
+      </div>
+
+      <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 py-8 max-w-2xl mx-auto w-full">
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            {t('questionOf', { current: currentQuestionIndex + 1, total: flatQuestions.length })}
+          </p>
+          <form onSubmit={handleSubmit} id="onboarding-form">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentQuestionIndex}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.25 }}
+                className="space-y-8"
+              >
+                <h2 className="text-2xl sm:text-3xl font-semibold text-foreground leading-tight">
+                  {currentQuestion.question}
+                  {currentQuestion.required && <span className="text-destructive ml-1">*</span>}
+                </h2>
+
+                <QuestionComponent
+                  question={currentQuestion}
+                  answer={answers[currentQuestion.id]}
+                  onChange={(value) => handleAnswerChange(currentQuestion.id, value)}
+                  t={t}
+                />
+
+                {error && (
+                  <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-sm text-destructive">
+                    {error}
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </form>
         </div>
 
-        <Card className="rounded-app-lg border-app-border shadow-app-md">
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentQuestionIndex}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                >
-                  <div>
-                    <h2 className="text-xl font-semibold text-foreground mb-2">
-                      {currentQuestion.question}
-                      {currentQuestion.required && <span className="text-red-500 ml-1">*</span>}
-                    </h2>
-                  </div>
-
-                  <QuestionComponent
-                    question={currentQuestion}
-                    answer={answers[currentQuestion.id]}
-                    onChange={(value) => handleAnswerChange(currentQuestion.id, value)}
-                    t={t}
-                  />
-
-                  {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                      {error}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-4 gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="rounded-app border-app-border"
-                      onClick={prevQuestion}
-                      disabled={currentQuestionIndex === 0}
-                    >
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      {t('previous')}
-                    </Button>
-
-                    {currentQuestionIndex < flatQuestions.length - 1 ? (
-                      <Button type="button" className="rounded-app" onClick={nextQuestion}>
-                        {t('next')}
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    ) : (
-                      <Button type="submit" className="rounded-app" disabled={isSubmitting}>
-                        {isSubmitting ? t('submitting') : t('complete')}
-                        <CheckCircle className="w-4 h-4 ml-2" />
-                      </Button>
-                    )}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </form>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-between gap-4 pt-8 mt-8 border-t border-[hsl(var(--app-border))]">
+          <Button
+            type="button"
+            variant="ghost"
+            className="rounded-2xl text-muted-foreground hover:text-foreground"
+            onClick={prevQuestion}
+            disabled={currentQuestionIndex === 0}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {t('previous')}
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {currentQuestionIndex + 1} / {flatQuestions.length}
+          </span>
+          {currentQuestionIndex < flatQuestions.length - 1 ? (
+            <Button type="button" className="rounded-2xl" onClick={nextQuestion}>
+              {t('next')}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          ) : (
+            <Button type="submit" form="onboarding-form" className="rounded-2xl" disabled={isSubmitting}>
+              {isSubmitting ? t('submitting') : t('complete')}
+              <CheckCircle className="w-4 h-4 ml-2" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -4,12 +4,11 @@ import { ReactNode, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { useAuth } from '@/shared/hooks/useAuth'
-import { 
-  MessageSquare, 
-  History, 
-  User, 
-  Settings, 
-  LogOut, 
+import {
+  MessageSquare,
+  History,
+  User,
+  LogOut,
   Sparkles,
   Menu,
   X,
@@ -42,10 +41,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-app-bg">
+    <div className="flex h-screen bg-[hsl(var(--app-bg))]">
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
           aria-hidden
         />
@@ -53,25 +52,25 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-72 bg-app-surface border-r border-app-border shadow-app-md transform transition-transform duration-200 ease-out lg:translate-x-0 lg:static lg:z-0 lg:shadow-none',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed inset-y-0 left-0 z-50 w-[280px] bg-white border-r border-[hsl(var(--app-border))] transform transition-transform duration-200 ease-out lg:translate-x-0 lg:static lg:z-0',
+          sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-5 border-b border-app-border">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-app-lg bg-primary flex items-center justify-center shadow-app">
-                <Sparkles className="w-6 h-6 text-primary-foreground" />
+          <div className="flex items-center justify-between p-4 lg:px-5 border-b border-[hsl(var(--app-border))]">
+            <Link href={`/${locale}`} className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-foreground tracking-tight">Daisy</h1>
+                <span className="font-semibold text-foreground text-lg tracking-tight">Daisy</span>
                 <p className="text-xs text-muted-foreground">AI Therapist</p>
               </div>
-            </div>
+            </Link>
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden rounded-app text-muted-foreground hover:text-foreground hover:bg-app-surface-hover"
+              className="lg:hidden rounded-xl text-muted-foreground"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="w-5 h-5" />
@@ -82,37 +81,34 @@ export function AppLayout({ children }: AppLayoutProps) {
             <Button
               variant="ghost"
               className={cn(
-                'w-full justify-start gap-3 h-11 rounded-app text-muted-foreground hover:text-foreground hover:bg-app-surface-hover',
-                pathname === `/${locale}` && 'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
+                'w-full justify-start gap-3 h-12 rounded-2xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors',
+                pathname === `/${locale}` && 'bg-primary/10 text-primary hover:bg-primary/15'
               )}
-              onClick={() => router.push(`/${locale}`)}
+              onClick={() => { router.push(`/${locale}`); setSidebarOpen(false) }}
             >
               <Home className="w-5 h-5 shrink-0" />
-              Home
+              <span className="font-medium">Home</span>
             </Button>
             {navigation.map((item) => (
               <Button
                 key={item.name}
                 variant="ghost"
                 className={cn(
-                  'w-full justify-start gap-3 h-11 rounded-app text-muted-foreground hover:text-foreground hover:bg-app-surface-hover',
-                  pathname === item.href && 'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
+                  'w-full justify-start gap-3 h-12 rounded-2xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors',
+                  pathname === item.href && 'bg-primary/10 text-primary hover:bg-primary/15'
                 )}
-                onClick={() => {
-                  router.push(item.href)
-                  setSidebarOpen(false)
-                }}
+                onClick={() => { router.push(item.href); setSidebarOpen(false) }}
               >
                 <item.icon className="w-5 h-5 shrink-0" />
-                {item.name}
+                <span className="font-medium">{item.name}</span>
               </Button>
             ))}
           </nav>
 
-          <div className="p-4 border-t border-app-border space-y-2">
-            <div className="flex items-center gap-3 p-3 rounded-app bg-app-bg">
-              <Avatar className="h-10 w-10 rounded-app">
-                <AvatarFallback className="bg-primary/90 text-primary-foreground text-sm font-medium rounded-app">
+          <div className="p-3 border-t border-[hsl(var(--app-border))]">
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 mb-2">
+              <Avatar className="h-10 w-10 rounded-xl">
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium rounded-xl">
                   {user?.name?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -121,24 +117,23 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
               </div>
             </div>
-            <div className="space-y-0.5">
+            <div className="flex gap-1">
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start gap-2 h-9 rounded-app text-muted-foreground hover:text-foreground hover:bg-app-surface-hover"
-                onClick={() => router.push(`/${locale}/profile`)}
+                className="flex-1 h-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                onClick={() => { router.push(`/${locale}/profile`); setSidebarOpen(false) }}
               >
-                <Settings className="w-4 h-4" />
-                Settings
+                <User className="w-4 h-4 mr-1" />
+                Profile
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start gap-2 h-9 rounded-app text-red-600 hover:text-red-700 hover:bg-red-500/10"
+                className="h-9 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={handleLogout}
               >
                 <LogOut className="w-4 h-4" />
-                Logout
               </Button>
             </div>
           </div>
@@ -146,21 +141,21 @@ export function AppLayout({ children }: AppLayoutProps) {
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <header className="lg:hidden bg-app-surface border-b border-app-border px-4 py-3 flex items-center justify-between shrink-0">
+        <header className="lg:hidden bg-white border-b border-[hsl(var(--app-border))] px-4 py-3 flex items-center justify-between shrink-0">
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-app text-muted-foreground"
+            className="rounded-xl text-muted-foreground"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="w-5 h-5" />
           </Button>
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-app bg-primary flex items-center justify-center">
+          <Link href={`/${locale}`} className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-semibold text-foreground">Daisy</span>
-          </div>
+          </Link>
           <div className="w-10" />
         </header>
 

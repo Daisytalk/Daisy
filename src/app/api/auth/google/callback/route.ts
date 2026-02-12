@@ -56,11 +56,14 @@ export async function GET(req: NextRequest) {
       await prisma.aiSession.create({ data: { userId: user.id, messages: [], context: { persona: 'intake_specialist' } } })
     }
 
+    const onboardingData = await prisma.onboardingData.findUnique({ where: { userId: user.id } })
+    const isOnboarded = onboardingData?.completed ?? false
+
     const tokenPayload: User = {
       id: user.id,
       email: user.email,
       name: user.name ?? undefined,
-      isOnboarded: false,
+      isOnboarded,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       subscriptionStatus: 'trial',
@@ -68,14 +71,15 @@ export async function GET(req: NextRequest) {
     }
     const token = AuthService.generateToken(tokenPayload)
 
-    // Return a tiny HTML that posts the token back to the client and redirects
+    // New or non-onboarded users go to onboarding
+    const redirectPath = !isOnboarded ? '/en/onboarding' : '/en/dashboard'
     const safeToken = JSON.stringify(token)
     const html = `<!doctype html><html><body>
     <script>
       try {
         localStorage.setItem('auth_token', ${safeToken})
       } catch(e) { /* ignore */ }
-      window.location = '/en/dashboard'
+      window.location = '${redirectPath}'
     </script>
     </body></html>`
 

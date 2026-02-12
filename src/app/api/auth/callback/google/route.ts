@@ -176,8 +176,9 @@ export async function GET(request: NextRequest) {
       trialEndsAt,
     })
 
-    // Redirect to dashboard with locale (app uses [locale]/dashboard)
-    const redirectUrl = new URL(`/${defaultLocale}/dashboard`, request.url)
+    // New or non-onboarded users go to onboarding; others to dashboard
+    const redirectPath = !isOnboarded ? `/${defaultLocale}/onboarding` : `/${defaultLocale}/dashboard`
+    const redirectUrl = new URL(redirectPath, request.url)
     const response = NextResponse.redirect(redirectUrl)
 
     response.cookies.set('auth_token', token, {

@@ -3,13 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
-import { Eye, EyeOff, Sparkles, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
 import { AuthApiService } from '@/shared/services/auth'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
 
 export default function LoginPage() {
@@ -34,7 +33,6 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(data.user))
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
 
-      // Full page redirect so AuthProvider re-runs and sees the auth cookie; go to dashboard then to chat
       window.location.href = `/${locale}/dashboard`
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loginFailed'))
@@ -44,109 +42,151 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-app-bg flex items-center justify-center p-6 sm:p-8">
-      <div className="w-full max-w-[420px]">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary shadow-app-lg mb-6">
-            <Sparkles className="w-10 h-10 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">{t('welcomeBack')} Daisy</h1>
-          <p className="text-muted-foreground">{t('continueJourney')}</p>
+    <div className="min-h-screen flex bg-[hsl(var(--app-bg))]">
+      {/* Left: Brand / Visual (hidden on small screens) */}
+      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 p-12 xl:p-16 text-primary-foreground">
+        {/* Decorative shapes */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute top-1/2 -left-20 w-72 h-72 rounded-full bg-white/5 blur-2xl" />
+          <div className="absolute bottom-32 right-20 w-40 h-40 rounded-full bg-white/10 blur-xl" />
+          <svg className="absolute inset-0 w-full h-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </svg>
         </div>
 
-        <Card className="border-app-border rounded-app-lg shadow-app-md overflow-hidden">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">{t('signIn')}</CardTitle>
-            <CardDescription>{t('enterCredentials')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <Alert variant="destructive" className="rounded-app">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+        <div className="relative z-10">
+          <span className="inline-flex items-center gap-2 text-primary-foreground/90 font-medium tracking-wide">
+            <span className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
+            Daisy
+          </span>
+        </div>
+        <div className="relative z-10 space-y-8">
+          <h2 className="text-3xl xl:text-4xl font-semibold leading-tight max-w-sm">
+            {t('welcomeBack')}
+          </h2>
+          <p className="text-primary-foreground/90 text-lg max-w-sm leading-relaxed">
+            {t('continueJourney')}
+          </p>
+          <blockquote className="border-l-4 border-white/30 pl-5 text-primary-foreground/80 italic text-sm max-w-xs">
+            A safe space to reflect and grow.
+          </blockquote>
+        </div>
+        <div className="relative z-10 flex flex-wrap gap-x-6 gap-y-1 text-sm text-primary-foreground/75">
+          <span>AI therapy</span>
+          <span>·</span>
+          <span>Private & safe</span>
+          <span>·</span>
+          <span>24/7</span>
+        </div>
+      </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">{t('email')}</Label>
+      {/* Right: Form */}
+      <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 py-12 lg:py-16 lg:pl-14 xl:pl-20 relative">
+        <div className="absolute inset-0 pointer-events-none lg:hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
+        </div>
+        <div className="w-full max-w-[400px] mx-auto lg:mx-0 relative z-10">
+          <div className="lg:hidden mb-10">
+            <h1 className="text-2xl font-semibold text-foreground">Daisy</h1>
+            <p className="text-muted-foreground mt-1">{t('continueJourney')}</p>
+          </div>
+
+          <h2 className="text-2xl font-semibold text-foreground mb-1">{t('signIn')}</h2>
+          <p className="text-muted-foreground text-sm mb-8">{t('enterCredentials')}</p>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <Alert variant="destructive" className="rounded-2xl border-0 bg-destructive/10 text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                {t('email')}
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('emailPlaceholder')}
+                required
+                disabled={isLoading}
+                className="h-12 rounded-2xl border-2 border-input bg-transparent px-4 focus-visible:ring-2 focus-visible:ring-primary/20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                {t('password')}
+              </Label>
+              <div className="relative">
                 <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t('emailPlaceholder')}
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t('passwordPlaceholder')}
                   required
                   disabled={isLoading}
-                  className="h-11 rounded-app border-app-border"
+                  className="h-12 rounded-2xl border-2 border-input bg-transparent px-4 pr-12 focus-visible:ring-2 focus-visible:ring-primary/20"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">{t('password')}</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t('passwordPlaceholder')}
-                    required
-                    disabled={isLoading}
-                    className="h-11 rounded-app border-app-border pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+            <Button
+              type="submit"
+              className="w-full h-12 rounded-2xl font-medium text-base"
+              disabled={isLoading}
+            >
+              {isLoading ? t('signingIn') : t('signIn')}
+            </Button>
+
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
               </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer text-muted-foreground">
-                  <input type="checkbox" className="rounded border-app-border" />
-                  <span>{t('rememberMe')}</span>
-                </label>
-                <Link href={`/${locale}/forgot-password`} className="text-primary hover:underline font-medium">
-                  {t('forgotPassword')}
-                </Link>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-3 bg-background text-muted-foreground">{t('orContinueWith')}</span>
               </div>
+            </div>
 
-              <Button type="submit" className="w-full h-11 rounded-app font-medium" disabled={isLoading}>
-                {isLoading ? t('signingIn') : t('signIn')}
-              </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 rounded-2xl border-2 border-input bg-transparent hover:bg-muted/50"
+              onClick={() => window.location.href = '/api/auth/google'}
+            >
+              <FaGoogle className="w-5 h-5 mr-2 text-[#4285F4]" />
+              {t('google')}
+            </Button>
+          </form>
 
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-app-border" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-3 bg-app-surface text-muted-foreground">{t('orContinueWith')}</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-11 rounded-app border-app-border hover:bg-app-surface-hover"
-                onClick={() => window.location.href = '/api/auth/google'}
-              >
-                <FaGoogle className="w-4 h-4 mr-2 text-[#4285F4]" />
-                {t('google')}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <p className="mt-8 text-center text-sm text-muted-foreground">
-          {t('noAccount')}{' '}
-          <Link href={`/${locale}/register`} className="font-semibold text-primary hover:underline">
-            {t('signUp')}
-          </Link>
-        </p>
+          <p className="mt-10 text-center text-sm text-muted-foreground">
+            {t('noAccount')}{' '}
+            <Link
+              href={`/${locale}/register`}
+              className="font-semibold text-primary hover:underline underline-offset-2"
+            >
+              {t('signUp')}
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
