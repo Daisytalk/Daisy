@@ -143,10 +143,19 @@
     "yourProgress": "Your Progress",
     "startNewSession": "Start New Session"
   },
+  "history": {
+    "title": "Chat History",
+    "subtitle": "Your conversations with Daisy",
+    "emptyTitle": "No conversations yet",
+    "emptyDesc": "Start your first conversation with Daisy whenever you're ready.",
+    "startChatting": "Start chatting",
+    "newChat": "New chat"
+  },
   "chat": {
     "title": "Chat with Daisy",
     "placeholder": "Type your message...",
     "send": "Send",
+    "newChat": "New chat",
     "thinking": "Daisy is thinking...",
     "error": "Something went wrong. Please try again.",
     "disclaimer": "Note: Daisy is an AI assistant for emotional support, not a therapist or substitute for professional medical care; in crisis or clinical situations, please contact a qualified professional."

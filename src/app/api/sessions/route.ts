@@ -2,20 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 
-// Type for Gemini message format
-interface GeminiMessage {
-  role: 'user' | 'model'
-  parts: Array<{ text: string }>
-}
-
 export async function GET(request: NextRequest) {
   try {
-    // Authentication
     let token = request.cookies.get('auth_token')?.value
-
     if (!token) {
       const authHeader = request.headers.get('authorization')
-      if (authHeader && authHeader.startsWith('Bearer ')) {
+      if (authHeader?.startsWith('Bearer ')) {
         token = authHeader.substring(7)
       }
     }
@@ -29,50 +21,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // Fetch user's sessions
-    const sessions = await prisma.aiSession.findMany({
+    const conversations = await prisma.cbtConversation.findMany({
       where: { userId: decoded.userId },
       orderBy: { updatedAt: 'desc' },
-      select: {
-        id: true,
-        createdAt: true,
-        updatedAt: true,
-        messages: true,
-        context: true,
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          select: { id: true, role: true, content: true },
+        },
       },
     })
 
-    // Format sessions for response
-    const formattedSessions = sessions.map(session => {
-      // Type assertion for messages array - convert through unknown for safety
-      const messages = (Array.isArray(session.messages) ? session.messages : []) as unknown as GeminiMessage[]
-      const messageCount = messages.length
-
-      // Get first user message as title
-      let title = 'New Conversation'
-      if (messageCount > 0) {
-        const firstUserMessage = messages.find(msg => msg.role === 'user')
-        if (firstUserMessage?.parts?.[0]?.text) {
-          const text = firstUserMessage.parts[0].text
-          title = text.substring(0, 50) + (text.length > 50 ? '...' : '')
-        }
-      }
+    const sessions = conversations.map((conv) => {
+      const messages = conv.messages
+      const firstUser = messages.find((m) => m.role === 'user')
+      const title = firstUser?.content
+        ? firstUser.content.substring(0, 50) + (firstUser.content.length > 50 ? '...' : '')
+        : 'New Conversation'
 
       return {
-        id: session.id,
+        id: conv.id,
         title,
-        messageCount,
-        createdAt: session.createdAt,
-        updatedAt: session.updatedAt,
-        persona: (session.context as any)?.persona || 'intake_specialist',
+        messageCount: messages.length,
+        createdAt: conv.createdAt,
+        updatedAt: conv.updatedAt,
+        persona: conv.persona || 'intake_specialist',
       }
     })
 
-    return NextResponse.json({ sessions: formattedSessions })
-  } catch (error: any) {
+    return NextResponse.json({ sessions })
+  } catch (error: unknown) {
     console.error('Sessions API error:', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     )
   }

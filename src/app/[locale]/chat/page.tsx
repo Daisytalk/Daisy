@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles } from 'lucide-react'
+import { Send, Sparkles, Plus } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useLocale, useTranslations } from 'next-intl'
 import { ClientOnly } from '@/shared/components/ClientOnly'
@@ -29,6 +29,7 @@ function ChatPageContent() {
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [streamingRevealedId, setStreamingRevealedId] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -204,7 +205,6 @@ function ChatPageContent() {
             stream: true,
           }
           setMessages(prev => [...prev, assistantMessage])
-          await new Promise(r => setTimeout(r, 300))
           return
         }
 
@@ -236,6 +236,14 @@ function ChatPageContent() {
     await poll()
   }
 
+  const startNewChat = () => {
+    const tempId = `temp_${Date.now()}`
+    setSessionId(tempId)
+    setMessages([])
+    setInputValue('')
+    localStorage.setItem('active_chat_session', tempId)
+  }
+
   const suggestedPrompts = [
     "I'm feeling anxious today",
     "Can we talk about stress?",
@@ -246,6 +254,14 @@ function ChatPageContent() {
   return (
     <AppLayout>
       <div className="flex flex-col h-full min-h-0 bg-[hsl(var(--app-bg))]">
+        <div className="shrink-0 flex justify-end px-4 sm:px-6 py-2 border-b border-[hsl(var(--app-border))] bg-white/80">
+          <div className="max-w-2xl w-full mx-auto flex justify-end">
+            <Button variant="outline" size="sm" className="rounded-xl gap-2" onClick={startNewChat}>
+              <Plus className="w-4 h-4" />
+              {t('newChat')}
+            </Button>
+          </div>
+        </div>
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
             {messages.length === 0 ? (
@@ -294,25 +310,65 @@ function ChatPageContent() {
                         </Avatar>
                       )}
                       <div
-                        className={`max-w-[85%] sm:max-w-[420px] rounded-2xl px-4 py-3 ${
+                        className={`max-w-[85%] sm:max-w-[420px] rounded-2xl px-4 py-3 min-h-[44px] ${
                           message.role === 'user'
                             ? 'rounded-br-md bg-primary text-primary-foreground'
                             : 'rounded-bl-md bg-white border border-[hsl(var(--app-border))] shadow-sm'
                         }`}
                       >
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                          {message.role === 'assistant' && message.stream ? (
-                            <TypewriterText
-                              text={message.content}
-                              speedMs={10}
-                              onComplete={() => {
-                                setMessages(prev => prev.map(m => m.id === message.id ? { ...m, stream: false } : m))
-                              }}
-                            />
-                          ) : (
-                            message.content
-                          )}
-                        </p>
+                        {message.role === 'assistant' && message.stream ? (
+                          <div className="relative min-h-[28px]">
+                            <motion.div
+                              className={streamingRevealedId === message.id ? 'relative' : 'absolute inset-0 pointer-events-none'}
+                              initial={false}
+                              animate={{ opacity: streamingRevealedId === message.id ? 1 : 0 }}
+                              transition={{ duration: 0.3 }}
+                              aria-hidden={streamingRevealedId !== message.id}
+                            >
+                              <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                                <TypewriterText
+                                  text={message.content}
+                                  speedMs={10}
+                                  onFirstChar={() => {
+                                    setStreamingRevealedId(message.id)
+                                    setIsLoading(false)
+                                  }}
+                                  onComplete={() => {
+                                    setMessages(prev => prev.map(m => m.id === message.id ? { ...m, stream: false } : m))
+                                  }}
+                                />
+                              </p>
+                            </motion.div>
+                            <AnimatePresence>
+                              {streamingRevealedId !== message.id && (
+                                <motion.div
+                                  key="thinking"
+                                  className="absolute inset-0 flex items-center gap-3"
+                                  initial={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 0.25 }}
+                                  aria-live="polite"
+                                  aria-label={t('thinking')}
+                                >
+                                  <motion.span
+                                    className="text-2xl leading-none"
+                                    animate={{ rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.1, 1] }}
+                                    transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.3 }}
+                                    role="img"
+                                    aria-hidden
+                                  >
+                                    🤔
+                                  </motion.span>
+                                  <span className="text-sm text-muted-foreground">{t('thinking')}</span>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        ) : (
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        )}
                       </div>
                       {message.role === 'user' && (
                         <Avatar className="flex-shrink-0 h-8 w-8 rounded-xl">
@@ -325,33 +381,38 @@ function ChatPageContent() {
                   ))}
                 </AnimatePresence>
 
-                {isLoading && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex gap-3"
-                    aria-live="polite"
-                    aria-label={t('thinking')}
-                  >
-                    <Avatar className="flex-shrink-0 h-8 w-8 rounded-xl">
-                      <AvatarFallback className="bg-primary/90 text-primary-foreground rounded-xl">
-                        <Sparkles className="w-3.5 h-3.5" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="rounded-2xl rounded-bl-md bg-white border border-[hsl(var(--app-border))] shadow-sm px-4 py-3 flex items-center gap-3">
-                      <motion.span
-                        className="text-2xl leading-none"
-                        animate={{ rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.1, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.3 }}
-                        role="img"
-                        aria-hidden
-                      >
-                        🤔
-                      </motion.span>
-                      <span className="text-sm text-muted-foreground">{t('thinking')}</span>
-                    </div>
-                  </motion.div>
-                )}
+                {isLoading && (() => {
+                  const lastMsg = messages[messages.length - 1]
+                  const lastIsStreamingAssistant = lastMsg?.role === 'assistant' && lastMsg?.stream
+                  if (lastIsStreamingAssistant) return null
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex gap-3"
+                      aria-live="polite"
+                      aria-label={t('thinking')}
+                    >
+                      <Avatar className="flex-shrink-0 h-8 w-8 rounded-xl">
+                        <AvatarFallback className="bg-primary/90 text-primary-foreground rounded-xl">
+                          <Sparkles className="w-3.5 h-3.5" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="rounded-2xl rounded-bl-md bg-white border border-[hsl(var(--app-border))] shadow-sm px-4 py-3 flex items-center gap-3">
+                        <motion.span
+                          className="text-2xl leading-none"
+                          animate={{ rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.1, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.3 }}
+                          role="img"
+                          aria-hidden
+                        >
+                          🤔
+                        </motion.span>
+                        <span className="text-sm text-muted-foreground">{t('thinking')}</span>
+                      </div>
+                    </motion.div>
+                  )
+                })()}
                 <div ref={messagesEndRef} />
               </div>
             )}

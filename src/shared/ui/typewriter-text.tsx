@@ -7,19 +7,32 @@ export function TypewriterText({
   text,
   speedMs = 12,
   onComplete,
+  onFirstChar,
   className,
   showCursor = true,
 }: {
   text: string
   speedMs?: number
   onComplete?: () => void
+  /** Called when the first character is shown (so thinking state can be cleared) */
+  onFirstChar?: () => void
   className?: string
   showCursor?: boolean
 }) {
   const [visibleLength, setVisibleLength] = useState(0)
   const onCompleteRef = useRef(onComplete)
+  const onFirstCharRef = useRef(onFirstChar)
+  const firstCharFiredRef = useRef(false)
   onCompleteRef.current = onComplete
+  onFirstCharRef.current = onFirstChar
   const isComplete = visibleLength >= text.length
+
+  useEffect(() => {
+    if (visibleLength >= 1 && text.length >= 1 && !firstCharFiredRef.current) {
+      firstCharFiredRef.current = true
+      onFirstCharRef.current?.()
+    }
+  }, [visibleLength, text.length])
 
   useEffect(() => {
     if (isComplete) {
@@ -32,6 +45,7 @@ export function TypewriterText({
 
   useEffect(() => {
     setVisibleLength(0)
+    firstCharFiredRef.current = false
   }, [text])
 
   return (

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, Trash2, Loader2, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 import { AppLayout } from '@/shared/components/AppLayout'
@@ -19,6 +19,7 @@ interface Session {
 }
 
 function HistoryPageContent() {
+  const t = useTranslations('history')
   const [sessions, setSessions] = useState<Session[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -102,15 +103,15 @@ function HistoryPageContent() {
         <div className="shrink-0 border-b border-[hsl(var(--app-border))] bg-white px-4 sm:px-6 py-4">
           <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-xl font-semibold text-foreground">Chat History</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">Your conversations with Daisy</p>
+              <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">{t('subtitle')}</p>
             </div>
             <button
               onClick={startNewChat}
               className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-2xl bg-primary text-primary-foreground font-medium hover:opacity-95 transition-opacity shrink-0"
             >
               <Plus className="w-4 h-4" />
-              New chat
+              {t('newChat')}
             </button>
           </div>
         </div>
@@ -130,14 +131,14 @@ function HistoryPageContent() {
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
                   <MessageCircle className="w-8 h-8 text-primary" />
                 </div>
-                <h2 className="text-xl font-semibold text-foreground mb-2">No conversations yet</h2>
-                <p className="text-muted-foreground mb-6 max-w-sm">Start your first conversation with Daisy whenever you’re ready.</p>
+                <h2 className="text-xl font-semibold text-foreground mb-2">{t('emptyTitle')}</h2>
+                <p className="text-muted-foreground mb-6 max-w-sm">{t('emptyDesc')}</p>
                 <button
                   onClick={startNewChat}
                   className="inline-flex items-center gap-2 h-11 px-5 rounded-2xl bg-primary text-primary-foreground font-medium hover:opacity-95"
                 >
                   <Plus className="w-4 h-4" />
-                  Start chatting
+                  {t('startChatting')}
                 </button>
               </motion.div>
             ) : (

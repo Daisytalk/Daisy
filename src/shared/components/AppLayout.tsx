@@ -3,7 +3,7 @@
 import { ReactNode, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useAuth } from '@/shared/hooks/useAuth'
 import {
   MessageSquare,
@@ -18,12 +18,14 @@ import {
 import { Button } from '@/shared/ui/button'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
 import { cn } from '@/shared/lib/utils'
+import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 
 interface AppLayoutProps {
   children: ReactNode
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const t = useTranslations('nav')
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
@@ -31,9 +33,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const navigation = [
-    { name: 'Chat', href: `/${locale}/chat`, icon: MessageSquare },
-    { name: 'History', href: `/${locale}/history`, icon: History },
-    { name: 'Profile', href: `/${locale}/profile`, icon: User },
+    { name: t('chat'), href: `/${locale}/chat`, icon: MessageSquare },
+    { name: t('history'), href: `/${locale}/history`, icon: History },
+    { name: t('profile'), href: `/${locale}/profile`, icon: User },
   ]
 
   const handleLogout = async () => {
@@ -78,6 +80,9 @@ export function AppLayout({ children }: AppLayoutProps) {
             </Button>
           </div>
 
+          <div className="px-3 py-2 border-b border-[hsl(var(--app-border))]">
+            <LanguageSwitcher variant="light" />
+          </div>
           <nav className="flex-1 p-3 space-y-1">
             <Button
               variant="ghost"
@@ -88,7 +93,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               onClick={() => { router.push(`/${locale}`); setSidebarOpen(false) }}
             >
               <Home className="w-5 h-5 shrink-0" />
-              <span className="font-medium">Home</span>
+              <span className="font-medium">{t('home')}</span>
             </Button>
             {navigation.map((item) => (
               <Button
@@ -126,7 +131,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 onClick={() => { router.push(`/${locale}/profile`); setSidebarOpen(false) }}
               >
                 <User className="w-4 h-4 mr-1" />
-                Profile
+                {t('profile')}
               </Button>
               <Button
                 variant="ghost"
