@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Plus } from 'lucide-react'
+import { Send } from 'lucide-react'
 import Image from 'next/image'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useLocale, useTranslations } from 'next-intl'
@@ -26,6 +27,7 @@ interface Message {
 function ChatPageContent() {
   const { user } = useAuth()
   const locale = useLocale()
+  const searchParams = useSearchParams()
   const t = useTranslations('chat')
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -46,6 +48,17 @@ function ChatPageContent() {
       localStorage.setItem('active_chat_session', tempId)
     }
   }, [])
+
+  // «Новый чат» из сайдбара: ?new=1
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      const tempId = `temp_${Date.now()}`
+      setSessionId(tempId)
+      setMessages([])
+      localStorage.setItem('active_chat_session', tempId)
+      window.history.replaceState(null, '', `/${locale}/chat`)
+    }
+  }, [searchParams, locale])
 
   const fetchSessionMessages = async (sessionId: string) => {
     try {
@@ -258,14 +271,6 @@ function ChatPageContent() {
   return (
     <AppLayout>
       <div className="flex flex-col h-full min-h-0 bg-[hsl(var(--app-bg))]">
-        <div className="shrink-0 flex justify-end px-4 sm:px-6 py-2 border-b border-[hsl(var(--app-border))] bg-white/80">
-          <div className="max-w-2xl w-full mx-auto flex justify-end">
-            <Button variant="outline" size="sm" className="rounded-xl gap-2" onClick={startNewChat}>
-              <Plus className="w-4 h-4" />
-              {t('newChat')}
-            </Button>
-          </div>
-        </div>
         <div className="flex-1 overflow-y-auto relative">
           {/* Фон личного кабинета — вся область чата */}
           <div className="absolute inset-0 pointer-events-none z-0">

@@ -121,16 +121,16 @@ const QuestionComponent = ({
                   key={opt.value}
                   type="button"
                   onClick={() => onChange({ ...scaleAnswer, rating: opt.value, comment })}
-                  className={`flex flex-col items-center gap-2 p-4 min-w-[4.5rem] rounded-2xl border-2 transition-all shadow-sm ${
+                  className={`flex flex-col items-center justify-center gap-2 w-24 min-h-[5.5rem] p-4 rounded-2xl border-2 transition-all shadow-sm ${
                     selected
                       ? 'border-primary bg-primary/10 shadow-primary/10'
                       : 'border-[hsl(var(--app-border))] bg-white hover:border-primary/40 hover:bg-muted/30'
                   }`}
                 >
-                  <span className="text-3xl sm:text-4xl leading-none" role="img" aria-hidden>
+                  <span className="text-3xl sm:text-4xl leading-none shrink-0" role="img" aria-hidden>
                     {opt.emoji}
                   </span>
-                  <span className="text-xs font-medium text-center text-foreground/90">
+                  <span className="text-xs font-medium text-center text-foreground/90 leading-tight min-h-[2rem] flex items-center justify-center">
                     {t(opt.labelKey)}
                   </span>
                 </button>
@@ -311,10 +311,19 @@ function OnboardingPageContent() {
   const currentQuestion = flatQuestions[currentQuestionIndex]
   const progress = ((currentQuestionIndex + 1) / flatQuestions.length) * 100
 
-  // Русская локализация текста вопроса и commentLabel из messages
-  const questionTextKey = `questions.${currentQuestion.id}.question`
+  // Текст вопроса с учётом пола: мужчина → questionM, женщина → questionF, иначе нейтральный question
+  const gender = answers['gender'] as string | undefined
+  const questionBaseKey = `questions.${currentQuestion.id}`
+  const questionTextKey = `${questionBaseKey}.question`
+  let translatedQuestion = t(questionTextKey)
+  if (gender === 'male') {
+    const m = t(`${questionBaseKey}.questionM`)
+    if (m && !m.startsWith('questions.')) translatedQuestion = m
+  } else if (gender === 'female') {
+    const f = t(`${questionBaseKey}.questionF`)
+    if (f && !f.startsWith('questions.')) translatedQuestion = f
+  }
   const commentLabelKey = `questions.${currentQuestion.id}.commentLabel`
-  const translatedQuestion = t(questionTextKey)
   const translatedCommentLabel = t(commentLabelKey)
   const displayQuestion: OnboardingQuestion = {
     ...currentQuestion,

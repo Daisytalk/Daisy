@@ -60,8 +60,8 @@ export default function ForgotPasswordPage() {
           </span>
         </div>
         <div className="relative z-10 space-y-8">
-          <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white/20 mb-4">
-            <Image src="/images/daisy-icon.png" alt="Daisy" width={80} height={80} className="object-cover" />
+          <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white/20 mb-4 flex items-center justify-center bg-white/95">
+            <Image src="/images/daisy-icon.png" alt="Daisy" width={80} height={80} className="object-contain w-full h-full" />
           </div>
           <h2 className="text-3xl xl:text-4xl font-semibold leading-tight max-w-sm">
             {t('forgotPasswordTitle')}

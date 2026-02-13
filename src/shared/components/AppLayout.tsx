@@ -12,7 +12,8 @@ import {
   LogOut,
   Menu,
   X,
-  Home
+  Home,
+  Plus
 } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/shared/ui/button'
@@ -24,6 +25,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const t = useTranslations('nav')
+  const tChat = useTranslations('chat')
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
@@ -35,6 +37,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     { name: t('history'), href: `/${locale}/history`, icon: History },
     { name: t('profile'), href: `/${locale}/profile`, icon: User },
   ]
+
+  const isChatPage = pathname === `/${locale}/chat` || pathname === `/${locale}/chat/`
 
   const handleLogout = async () => {
     await logout()
@@ -95,6 +99,16 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Home className="w-5 h-5 shrink-0" />
               <span className="font-medium">{t('home')}</span>
             </Button>
+            {isChatPage && (
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 rounded-2xl border-2"
+                onClick={() => { router.push(`/${locale}/chat?new=1`); setSidebarOpen(false) }}
+              >
+                <Plus className="w-5 h-5 shrink-0" />
+                <span className="font-medium">{tChat('newChat')}</span>
+              </Button>
+            )}
             {navigation.map((item) => (
               <Button
                 key={item.name}
