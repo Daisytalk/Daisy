@@ -1,155 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server'
-import type { Prisma } from '@prisma/client'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { sendChatMessage } from '@/shared/lib/ai-api'
-
-/** User fields used for building user_context (aiProfile + conversationMemory) */
-type UserContextRow = { aiProfile: unknown; conversationMemory: unknown } | null
+import { buildDaisyRequest, handleDaisyResponse, type DaisyLocale } from '@/shared/lib/daisy-integration'
 
 /**
- * Process chat request asynchronously
- * This runs in the background without blocking the response
+ * Обработка чата в фоне: сбор запроса через buildDaisyRequest, вызов Daisy API, сохранение через handleDaisyResponse.
  */
 async function processAsyncChat(
-  messageId: string,
   conversationId: string,
   userMessage: string,
-  userId: string
+  userId: string,
+  locale?: DaisyLocale
 ) {
   try {
     console.log('🚀 Starting async chat processing:', {
-      messageId,
       conversationId,
       userId,
       messagePreview: userMessage.substring(0, 50)
     })
 
-    console.log('📞 Calling Azure ML API...')
-    
-    // Get conversation history from database
-    const conversation = await prisma.cbtConversation.findUnique({
-      where: { id: conversationId },
-      include: {
-        messages: {
-          orderBy: { createdAt: 'asc' },
-          take: 10 // Last 10 messages for context
-        }
-      }
-    })
-    
-    const allMessages = conversation?.messages ?? []
-    const last = allMessages[allMessages.length - 1]
-    const isLastCurrentUser = last?.role === 'user' && last?.content === userMessage
-    const forHistory = isLastCurrentUser ? allMessages.slice(0, -1) : allMessages
-    const history = forHistory.map(msg => ({ role: msg.role, content: msg.content }))
-
-    const isFirstMessageInConversation = history.length === 0
-    let onboardingSummary: unknown = undefined
-    if (isFirstMessageInConversation) {
-      const onboardingData = await prisma.onboardingData.findUnique({
-        where: { userId }
-      })
-      if (onboardingData?.responses && typeof onboardingData.responses === 'object') {
-        onboardingSummary = onboardingData.responses
-      }
-    }
-
-    let userContext: string | undefined
-    try {
-      const user = (await prisma.user.findUnique({
-        where: { id: userId },
-        select: { aiProfile: true, conversationMemory: true } as Record<string, boolean>
-      })) as UserContextRow
-      const userContextParts: string[] = []
-      if (user?.aiProfile && typeof user.aiProfile === 'object' && !Array.isArray(user.aiProfile)) {
-        const ap = user.aiProfile as Record<string, unknown>
-        if (typeof ap.summary === 'string') userContextParts.push(`Summary: ${ap.summary}`)
-        if (Array.isArray(ap.goals) && ap.goals.length) userContextParts.push(`Goals: ${(ap.goals as string[]).join(', ')}`)
-        if (Array.isArray(ap.concerns) && ap.concerns.length) userContextParts.push(`Concerns: ${(ap.concerns as string[]).join(', ')}`)
-        if (typeof ap.communication_style === 'string') userContextParts.push(`Style: ${ap.communication_style}`)
-      }
-      const memoryArr = Array.isArray(user?.conversationMemory) ? (user.conversationMemory as string[]) : []
-      if (memoryArr.length) userContextParts.push(`Memory: ${memoryArr.join('. ')}`)
-      userContext = userContextParts.length ? userContextParts.join('\n') : undefined
-    } catch (userContextErr) {
-      console.warn('⚠️ Failed to load user context (continuing without):', userContextErr instanceof Error ? userContextErr.message : userContextErr)
-      userContext = undefined
-    }
-
-    console.log('📞 About to call sendChatMessage (Azure ML)...', { hasUserContext: !!userContext, historyLength: history.length })
-    const aiResponse = await sendChatMessage(userMessage, userId, conversationId, history, {
-      request_ai_profile: isFirstMessageInConversation,
-      ...(onboardingSummary != null && { onboarding_summary: onboardingSummary }),
-      ...(userContext != null && { user_context: userContext })
+    const payload = await buildDaisyRequest({
+      userId,
+      conversationId,
+      userMessage,
+      locale: locale ?? 'ru',
     })
 
-    console.log('✅ Azure ML API response received:', {
+    console.log('📞 Calling Daisy API...', {
+      has_onboarding: payload.onboarding_summary != null,
+      has_memory: payload.user_context != null && payload.user_context.length > 0,
+      history_used: payload.history.length,
+      persona: payload.persona,
+      locale: payload.locale,
+    })
+
+    const aiResponse = await sendChatMessage(
+      payload.message,
+      payload.user_id,
+      conversationId,
+      payload.history,
+      {
+        request_ai_profile: payload.request_ai_profile,
+        onboarding_summary: payload.onboarding_summary,
+        user_context: payload.user_context,
+        persona: payload.persona,
+        locale: payload.locale,
+      }
+    )
+
+    console.log('✅ Daisy API response received:', {
       protocol: aiResponse.protocol_used,
       persona: aiResponse.persona_used,
       responseLength: aiResponse.response?.length || 0,
-      hasResponse: !!aiResponse.response
+      hasResponse: !!aiResponse.response,
     })
 
-    if (!aiResponse.response) {
-      throw new Error('No response content from Azure ML API')
-    }
-
-    console.log('💾 Saving assistant response to database...')
-    await prisma.cbtMessage.create({
-      data: {
-        conversationId: conversationId,
-        role: 'assistant',
-        content: aiResponse.response,
-        protocol: aiResponse.protocol_used,
-        diagnosis: aiResponse.diagnosis || [],
-        persona: aiResponse.persona_used,
-      },
-    })
-
-    if (aiResponse.persona_used) {
-      await prisma.cbtConversation.update({
-        where: { id: conversationId },
-        data: {
-          persona: aiResponse.persona_used,
-          updatedAt: new Date()
-        }
-      })
-    }
-
-    if (aiResponse.ai_profile) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { aiProfile: aiResponse.ai_profile } as Prisma.UserUpdateInput
-      })
-      console.log('💾 Saved AI profile for user:', userId)
-    }
-
-    if (aiResponse.memory_update && aiResponse.memory_update.length > 0) {
-      let existing: string[] = []
-      try {
-        const u = (await prisma.user.findUnique({
-          where: { id: userId },
-          select: { conversationMemory: true } as Record<string, boolean>
-        })) as { conversationMemory: unknown } | null
-        existing = Array.isArray(u?.conversationMemory) ? (u.conversationMemory as string[]) : []
-      } catch {
-        // ignore
-      }
-      const merged = [...existing, ...aiResponse.memory_update]
-      await prisma.user.update({
-        where: { id: userId },
-        data: { conversationMemory: merged } as Prisma.UserUpdateInput
-      })
-      console.log('💾 Appended memory_update for user:', userId, 'count:', aiResponse.memory_update.length)
-    }
-
-    console.log('✅ Successfully saved assistant response for message:', messageId)
-
+    await handleDaisyResponse(userId, conversationId, aiResponse)
+    console.log('✅ Successfully saved assistant response for conversation:', conversationId)
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error))
     console.error('❌ Async chat processing failed:', {
-      messageId,
       conversationId,
       userId,
       errorMessage: err.message,
@@ -157,13 +68,12 @@ async function processAsyncChat(
       stack: err.stack,
       fullError: String(error),
     })
-    
     try {
       await prisma.cbtMessage.create({
         data: {
-          conversationId: conversationId,
+          conversationId,
           role: 'assistant',
-          content: 'I apologize, but I encountered an error processing your message. Please try again.',
+          content: 'Извини, произошла ошибка при обработке сообщения. Попробуй ещё раз.',
           diagnosis: [],
           protocol: 'error',
         },
@@ -238,8 +148,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Get session ID from request body
     const sessionId = body.sessionId || body.id
+    const locale = (body.locale === 'ru' || body.locale === 'kk' || body.locale === 'en' ? body.locale : 'ru') as DaisyLocale
 
     // Get or create CBT conversation based on sessionId
     let conversation
@@ -287,12 +197,9 @@ export async function POST(request: NextRequest) {
 
     console.log('💾 Saved user message:', userMessageRecord.id)
 
-    // Start async processing in background
-    // Don't await - let it process asynchronously
-    processAsyncChat(userMessageRecord.id, conversation.id, userMessage, user.id)
-      .catch(error => {
-        console.error('❌ Async chat processing failed:', error)
-      })
+    processAsyncChat(conversation.id, userMessage, user.id, locale).catch((error) => {
+      console.error('❌ Async chat processing failed:', error)
+    })
 
     // Return immediately with request ID for polling
     return NextResponse.json({

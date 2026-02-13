@@ -249,6 +249,17 @@ function OnboardingPageContent() {
   const currentQuestion = flatQuestions[currentQuestionIndex]
   const progress = ((currentQuestionIndex + 1) / flatQuestions.length) * 100
 
+  // Русская локализация текста вопроса и commentLabel из messages
+  const questionTextKey = `questions.${currentQuestion.id}.question`
+  const commentLabelKey = `questions.${currentQuestion.id}.commentLabel`
+  const translatedQuestion = t(questionTextKey)
+  const translatedCommentLabel = t(commentLabelKey)
+  const displayQuestion: OnboardingQuestion = {
+    ...currentQuestion,
+    question: translatedQuestion && !translatedQuestion.startsWith('questions.') ? translatedQuestion : currentQuestion.question,
+    commentLabel: translatedCommentLabel && !translatedCommentLabel.startsWith('questions.') ? translatedCommentLabel : (currentQuestion.commentLabel ?? t('comment')),
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[hsl(var(--app-bg))]">
       <div className="shrink-0 h-1.5 w-full bg-muted overflow-hidden">
@@ -276,12 +287,12 @@ function OnboardingPageContent() {
                 className="space-y-8"
               >
                 <h2 className="text-2xl sm:text-3xl font-semibold text-foreground leading-tight">
-                  {currentQuestion.question}
+                  {displayQuestion.question}
                   {currentQuestion.required && <span className="text-destructive ml-1">*</span>}
                 </h2>
 
                 <QuestionComponent
-                  question={currentQuestion}
+                  question={displayQuestion}
                   answer={answers[currentQuestion.id]}
                   onChange={(value) => handleAnswerChange(currentQuestion.id, value)}
                   t={t}

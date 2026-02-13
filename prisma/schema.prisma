@@ -15,10 +15,11 @@ model User {
   googleId           String?           @unique
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
-  isOnboarded        Boolean           @default(false)
-  subscriptionStatus String            @default("trial")
-  aiProfile          Json?             @map("ai_profile")
-  aiSessions         AiSession[]
+  isOnboarded          Boolean           @default(false)
+  subscriptionStatus   String            @default("trial")
+  aiProfile            Json?             @map("ai_profile")
+  conversationMemory   Json?             @map("conversation_memory")
+  aiSessions           AiSession[]
   cbtConversations   CbtConversation[]
   onboarding         OnboardingData?
 

@@ -1,0 +1,176 @@
+/**
+ * Интеграция сайта с Daisy API: сбор запроса и сохранение ответа.
+ * При КАЖДОМ запросе собираем onboarding_summary, user_context, history, persona, locale.
+ * После КАЖДОГО ответа сохраняем ai_profile, memory_update, CbtMessage, логируем debug_context.
+ */
+
+import type { Prisma } from '@prisma/client'
+import prisma from '@/shared/lib/database'
+import type { AIApiResponse } from '@/shared/lib/ai-api'
+
+const HISTORY_LIMIT = 30
+export type DaisyLocale = 'ru' | 'kk' | 'en'
+
+export interface DaisyRequestPayload {
+  message: string
+  user_id: string
+  history: Array<{ role: string; content: string }>
+  onboarding_summary?: unknown
+  user_context?: string
+  persona?: string
+  locale?: DaisyLocale
+  request_ai_profile?: boolean
+}
+
+interface BuildDaisyRequestInput {
+  userId: string
+  conversationId: string
+  userMessage: string
+  locale?: DaisyLocale
+}
+
+/**
+ * Собирает payload для запроса к Daisy API из БД.
+ * Поле запроса → откуда:
+ * - onboarding_summary: OnboardingData.responses + User.aiProfile (кто пользователь, цели, проблемы)
+ * - user_context: User.conversationMemory (накопленные факты)
+ * - history: CbtMessage последние 30
+ * - persona: CbtConversation.persona
+ * - locale: настройки пользователя или "ru"
+ */
+export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<DaisyRequestPayload> {
+  const { userId, conversationId, userMessage, locale = 'ru' } = input
+
+  const [conversation, user, onboardingData] = await Promise.all([
+    prisma.cbtConversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: HISTORY_LIMIT,
+        },
+      },
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { aiProfile: true, conversationMemory: true },
+    }),
+    prisma.onboardingData.findUnique({
+      where: { userId },
+      select: { responses: true },
+    }),
+  ])
+
+  const messages = [...(conversation?.messages ?? [])].reverse()
+  const last = messages[messages.length - 1]
+  const isLastCurrentUser = last?.role === 'user' && last?.content === userMessage
+  const forHistory = isLastCurrentUser ? messages.slice(0, -1) : messages
+  const history = forHistory.map((msg) => ({ role: msg.role, content: msg.content }))
+  const isFirstInConversation = history.length === 0
+
+  // onboarding_summary: ответы онбординга + при необходимости aiProfile для контекста
+  let onboardingSummary: unknown = undefined
+  if (onboardingData?.responses != null && typeof onboardingData.responses === 'object') {
+    onboardingSummary = onboardingData.responses
+  }
+  if (user?.aiProfile != null && typeof user.aiProfile === 'object' && !Array.isArray(user.aiProfile)) {
+    const ap = user.aiProfile as Record<string, unknown>
+    const aiProfilePart = {
+      ...(typeof ap.summary === 'string' && { summary: ap.summary }),
+      ...(Array.isArray(ap.goals) && ap.goals.length && { goals: ap.goals }),
+      ...(Array.isArray(ap.concerns) && ap.concerns.length && { concerns: ap.concerns }),
+      ...(typeof ap.communication_style === 'string' && { communication_style: ap.communication_style }),
+    }
+    if (Object.keys(aiProfilePart).length > 0) {
+      onboardingSummary =
+        typeof onboardingSummary === 'object' && onboardingSummary !== null && !Array.isArray(onboardingSummary)
+          ? { ...(onboardingSummary as Record<string, unknown>), ai_profile: aiProfilePart }
+          : { ai_profile: aiProfilePart }
+    }
+  }
+
+  // user_context: только conversationMemory (накопленные факты из прошлых сессий)
+  let userContext: string | undefined
+  const memoryArr = Array.isArray(user?.conversationMemory)
+    ? (user.conversationMemory as string[])
+    : []
+  if (memoryArr.length > 0) {
+    userContext = memoryArr.join('. ')
+  }
+
+  const persona = conversation?.persona ?? 'active_listener'
+
+  const payload: DaisyRequestPayload = {
+    message: userMessage,
+    user_id: userId,
+    history,
+    persona,
+    locale,
+    request_ai_profile: isFirstInConversation,
+  }
+  if (onboardingSummary != null) {
+    payload.onboarding_summary = onboardingSummary
+  }
+  if (userContext != null && userContext !== '') {
+    payload.user_context = userContext
+  }
+
+  return payload
+}
+
+/**
+ * После ответа Daisy: сохраняем ai_profile, memory_update, новый CbtMessage; логируем debug_context.
+ */
+export async function handleDaisyResponse(
+  userId: string,
+  conversationId: string,
+  aiResponse: AIApiResponse
+): Promise<void> {
+  if (aiResponse.debug_context) {
+    console.log('📋 Daisy debug_context:', JSON.stringify(aiResponse.debug_context, null, 2))
+  }
+
+  if (!aiResponse.response) {
+    throw new Error('No response content from Daisy API')
+  }
+
+  await prisma.cbtMessage.create({
+    data: {
+      conversationId,
+      role: 'assistant',
+      content: aiResponse.response,
+      protocol: aiResponse.protocol_used ?? undefined,
+      diagnosis: aiResponse.diagnosis ?? [],
+      persona: aiResponse.persona_used ?? undefined,
+    },
+  })
+
+  if (aiResponse.persona_used) {
+    await prisma.cbtConversation.update({
+      where: { id: conversationId },
+      data: { persona: aiResponse.persona_used, updatedAt: new Date() },
+    })
+  }
+
+  if (aiResponse.ai_profile) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { aiProfile: aiResponse.ai_profile as Prisma.InputJsonValue },
+    })
+    console.log('💾 Saved AI profile for user:', userId)
+  }
+
+  if (aiResponse.memory_update && aiResponse.memory_update.length > 0) {
+    const u = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { conversationMemory: true },
+    })
+    const existing = Array.isArray(u?.conversationMemory) ? (u!.conversationMemory as string[]) : []
+    const merged = [...existing, ...aiResponse.memory_update]
+    await prisma.user.update({
+      where: { id: userId },
+      data: { conversationMemory: merged as Prisma.InputJsonValue },
+    })
+    console.log('💾 Appended memory_update for user:', userId, 'count:', aiResponse.memory_update.length)
+  }
+}

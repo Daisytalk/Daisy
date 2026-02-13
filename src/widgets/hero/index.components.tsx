@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/shared/ui'
 import { Menu, X, Brain, Bot, Heart } from 'lucide-react'
-import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
-
 interface HeroSectionProps {
   onGetStarted?: () => void
   onLearnMore?: () => void
@@ -61,7 +60,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         <nav className="mx-auto flex max-w-8xl items-center justify-between p-4 sm:p-6 lg:px-8" aria-label="Global">
           <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5">
-            <img src="/images/logo.svg" className="h-8 sm:h-10 lg:h-12 w-auto" alt="Daisy logo" />
+            <Image src="/images/logo.svg" className="h-8 sm:h-10 lg:h-12 w-auto" alt="Daisy logo" width={48} height={48} priority />
           </Link>
           </div>
           <div className="flex flex-1 justify-end items-center">
@@ -73,9 +72,6 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               ))}
             </div>
             <div className="hidden lg:flex lg:justify-end lg:gap-x-2 xl:gap-x-3 lg:items-center">
-              <div className="mr-2">
-                <LanguageSwitcher />
-              </div>
               <Button
                 variant="outline"
                 className="text-white border-white bg-transparent rounded-full px-3 xl:px-4 py-1.5 xl:py-2 text-xs xl:text-sm"
@@ -137,9 +133,6 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                     ))}
                   </div>
                   <div className="py-6 space-y-4">
-                    <div className="mb-4">
-                      <LanguageSwitcher />
-                    </div>
                     <Button
                       variant="outline"
                       className="w-full text-black border-white hover:bg-gray-800 py-3 text-base"

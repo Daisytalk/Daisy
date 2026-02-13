@@ -71,8 +71,8 @@ export async function GET(req: NextRequest) {
     }
     const token = AuthService.generateToken(tokenPayload)
 
-    // New or non-onboarded users go to onboarding
-    const redirectPath = !isOnboarded ? '/en/onboarding' : '/en/dashboard'
+    const locale = 'ru'
+    const redirectPath = !isOnboarded ? `/${locale}/onboarding` : `/${locale}/chat`
     const safeToken = JSON.stringify(token)
     const html = `<!doctype html><html><body>
     <script>

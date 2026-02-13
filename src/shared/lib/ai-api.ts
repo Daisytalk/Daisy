@@ -38,6 +38,11 @@ function getApiKey(): string {
  */
 const CBT_SYSTEM_PROMPT = `You are Daisy, a professional Cognitive Behavioral Therapy (CBT) assistant.
 
+CONTEXT AND MEMORY:
+- Always use the conversation history and user_context you are given. Stay on the current topic the user is discussing.
+- Do not bring up unrelated past topics or jump to themes from earlier sessions unless the user does.
+- Reference what the user just said and what was said earlier in this conversation to keep continuity.
+
 RESPONSE RULES:
 1. Keep responses under 150 words
 2. Ask ONE focused question at a time
@@ -73,6 +78,16 @@ export interface AIProfile {
   updatedAt?: string;
 }
 
+/** Диагностика: что модель получила (has_onboarding, has_memory, history_used и т.д.) */
+export interface DebugContext {
+  has_onboarding?: boolean;
+  has_memory?: boolean;
+  has_persona?: boolean;
+  history_used?: number;
+  prompt_tokens?: number;
+  [key: string]: unknown;
+}
+
 export interface AIApiResponse {
   response: string;
   persona_used?: string;
@@ -89,6 +104,8 @@ export interface AIApiResponse {
   ai_profile?: AIProfile;
   /** 1–3 short facts from this exchange; save to DB and pass back in user_context */
   memory_update?: string[];
+  /** Что модель получила — для диагностики */
+  debug_context?: DebugContext;
 }
 
 /**
@@ -149,18 +166,26 @@ function _buildConversationPrompt(
 }
 
 /**
- * Send chat message to AI API with normalized response
+ * Send chat message to Daisy API with normalized response
  *
  * @param options.request_ai_profile - Ask API to generate/update ai_profile in the response
- * @param options.onboarding_summary - User onboarding context for personalization and ai_profile
- * @param options.user_context - Accumulated context (ai_profile + conversation_memory) for model memory
+ * @param options.onboarding_summary - OnboardingData.responses + User.aiProfile
+ * @param options.user_context - User.conversationMemory (накопленные факты)
+ * @param options.persona - CbtConversation.persona
+ * @param options.locale - "ru" | "kk" | "en"
  */
 export async function sendChatMessage(
   text: string,
   userId: string,
   sessionId: string,
   conversationHistory?: Array<{ role: string; content: string }>,
-  options?: { request_ai_profile?: boolean; onboarding_summary?: unknown; user_context?: string }
+  options?: {
+    request_ai_profile?: boolean;
+    onboarding_summary?: unknown;
+    user_context?: string;
+    persona?: string;
+    locale?: string;
+  }
 ): Promise<AIApiResponse> {
   const endpoint = getApiBaseUrl();
 
@@ -179,6 +204,12 @@ export async function sendChatMessage(
   }
   if (options?.user_context != null && options.user_context !== '') {
     requestBody.user_context = options.user_context;
+  }
+  if (options?.persona != null && options.persona !== '') {
+    requestBody.persona = options.persona;
+  }
+  if (options?.locale != null && options.locale !== '') {
+    requestBody.locale = options.locale;
   }
 
   const historyArr = (requestBody.history as Array<{ role: string; content: string }>) || []
@@ -302,6 +333,9 @@ export async function sendChatMessage(
     const memoryUpdate = Array.isArray(dataObj?.memory_update)
       ? (dataObj.memory_update as unknown[]).filter((x): x is string => typeof x === 'string')
       : undefined;
+    const debugContext = dataObj?.debug_context && typeof dataObj.debug_context === 'object'
+      ? (dataObj.debug_context as DebugContext)
+      : undefined;
 
     return {
       response: normalizedResponse,
@@ -316,7 +350,8 @@ export async function sendChatMessage(
       },
       metrics: dataObj.metrics,
       ai_profile: aiProfile,
-      memory_update: memoryUpdate
+      memory_update: memoryUpdate,
+      debug_context: debugContext
     };
 
   } catch (error) {

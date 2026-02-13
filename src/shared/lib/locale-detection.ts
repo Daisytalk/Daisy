@@ -25,12 +25,9 @@ function parseAcceptLanguage(acceptLanguage: string): Locale {
     })
     .sort((a, b) => b.quality - a.quality);
 
-  // Find first matching locale
+  // Find first matching locale (currently only 'ru' is supported)
   for (const { langCode } of languages) {
-    // Match any Russian variant (ru, ru-RU, ru-KZ, etc.)
     if (langCode === 'ru') return 'ru';
-    // Match English
-    if (langCode === 'en') return 'en';
   }
 
   return defaultLocale;

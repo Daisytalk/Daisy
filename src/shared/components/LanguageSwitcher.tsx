@@ -43,7 +43,7 @@ export function LanguageSwitcher({ variant = 'dark' }: { variant?: Variant }) {
               ? isLight ? 'bg-primary text-primary-foreground' : 'bg-white text-gray-900'
               : isLight ? 'text-muted-foreground hover:text-foreground hover:bg-muted/70' : 'text-white/70 hover:text-white hover:bg-white/10'
           }`}
-          aria-label={`Switch to ${loc === 'en' ? 'English' : loc === 'ru' ? 'Russian' : 'Kazakh'}`}
+          aria-label={`Switch to ${loc === 'ru' ? 'Русский' : loc}`}
         >
           {loc.toUpperCase()}
         </button>

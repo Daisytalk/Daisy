@@ -44,18 +44,30 @@ export default function RegisterPage() {
     }
     setIsLoading(true)
     try {
+      let onboardingAnswers: Record<string, unknown> | undefined
+      try {
+        const pending = localStorage.getItem('pending_onboarding')
+        if (pending) {
+          const answers: { questionId: string; answer: unknown }[] = JSON.parse(pending)
+          onboardingAnswers = Object.fromEntries(answers.map((a) => [a.questionId, a.answer]))
+        }
+      } catch {
+        // ignore
+      }
       const authService = new AuthApiService()
       const data = await authService.register({
         name: formData.name,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        ...(onboardingAnswers && Object.keys(onboardingAnswers).length > 0 && { onboardingAnswers }),
       })
       localStorage.setItem('auth_token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
       localStorage.removeItem('pending_onboarding')
       await new Promise(resolve => setTimeout(resolve, 300))
-      window.location.href = `/${locale}/onboarding`
+      // Если отправили ответы онбординга — уже онбордированы, идём в чат; иначе — в онбординг
+      window.location.href = data.user?.isOnboarded ? `/${locale}/chat` : `/${locale}/onboarding`
     } catch (err) {
       setError(err instanceof Error ? err.message : t('registrationFailed'))
     } finally {

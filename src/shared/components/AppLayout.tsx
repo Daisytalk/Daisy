@@ -18,8 +18,6 @@ import {
 import { Button } from '@/shared/ui/button'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
 import { cn } from '@/shared/lib/utils'
-import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
-
 interface AppLayoutProps {
   children: ReactNode
 }
@@ -80,9 +78,6 @@ export function AppLayout({ children }: AppLayoutProps) {
             </Button>
           </div>
 
-          <div className="px-3 py-2 border-b border-[hsl(var(--app-border))]">
-            <LanguageSwitcher variant="light" />
-          </div>
           <nav className="flex-1 p-3 space-y-1">
             <Button
               variant="ghost"

@@ -24,6 +24,7 @@ interface Message {
 
 function ChatPageContent() {
   const { user } = useAuth()
+  const locale = useLocale()
   const t = useTranslations('chat')
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -101,6 +102,7 @@ function ChatPageContent() {
         body: JSON.stringify({
           messages: [{ role: 'user', content: messageText }],
           sessionId: sessionId,
+          locale: locale,
         }),
       })
 
@@ -310,7 +312,7 @@ function ChatPageContent() {
                         </Avatar>
                       )}
                       <div
-                        className={`max-w-[85%] sm:max-w-[420px] rounded-2xl px-4 py-3 min-h-[44px] ${
+                        className={`max-w-[85%] sm:max-w-[420px] min-w-0 rounded-2xl px-4 py-3 min-h-[44px] break-words overflow-hidden ${
                           message.role === 'user'
                             ? 'rounded-br-md bg-primary text-primary-foreground'
                             : 'rounded-bl-md bg-white border border-[hsl(var(--app-border))] shadow-sm'
@@ -325,7 +327,7 @@ function ChatPageContent() {
                               transition={{ duration: 0.3 }}
                               aria-hidden={streamingRevealedId !== message.id}
                             >
-                              <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                              <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                                 <TypewriterText
                                   text={message.content}
                                   speedMs={10}
@@ -365,7 +367,7 @@ function ChatPageContent() {
                             </AnimatePresence>
                           </div>
                         ) : (
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                             {message.content}
                           </p>
                         )}
