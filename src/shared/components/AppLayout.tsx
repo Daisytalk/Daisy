@@ -11,7 +11,6 @@ import {
   LogOut,
   Menu,
   X,
-  Home,
   Plus
 } from 'lucide-react'
 import Image from 'next/image'
@@ -91,17 +90,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
 
           <nav className="flex-1 p-3 space-y-1">
-            <Button
-              variant="ghost"
-              className={cn(
-                'w-full justify-start gap-3 h-12 rounded-2xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors',
-                pathname === `/${locale}` && 'bg-primary/10 text-primary hover:bg-primary/15'
-              )}
-              onClick={() => { router.push(`/${locale}`); setSidebarOpen(false) }}
-            >
-              <Home className="w-5 h-5 shrink-0" />
-              <span className="font-medium">{t('home')}</span>
-            </Button>
             {isChatPage && (
               <Button
                 variant="outline"
