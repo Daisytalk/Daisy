@@ -80,7 +80,8 @@
     "companionSubtitle": "Emotional companion",
     "trialExpiredTitle": "Trial period ended",
     "trialExpiredDesc": "New users get 3 days free. Subscribe to continue chatting with Daisy.",
-    "trialExpiredCta": "Choose a plan"
+    "trialExpiredCta": "Choose a plan",
+    "logout": "Logout"
   },
   "auth": {
     "login": "Login",

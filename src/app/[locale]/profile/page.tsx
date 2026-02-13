@@ -158,13 +158,16 @@ function ProfilePageContent() {
 
             <section className="rounded-2xl bg-primary p-6 text-primary-foreground relative overflow-hidden">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30">
-                  <Image src="/images/daisy-icon.png" alt="Daisy" width={40} height={40} className="object-cover" />
+                <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30 flex items-center justify-center bg-white/95">
+                  <Image src="/images/daisy-icon.png" alt="Daisy" width={40} height={40} className="object-contain w-full h-full" />
                 </div>
                 <h2 className="font-semibold text-lg">Твой эмоциональный компаньон</h2>
               </div>
-              <p className="text-white/90 text-sm mb-4">
+              <p className="text-white/90 text-sm mb-2">
                 Daisy использует твои ответы онбординга, чтобы адаптировать беседу. Начни чат, когда будешь готов.
+              </p>
+              <p className="text-white/80 text-sm mb-4">
+                Вы всегда сможете изменить стиль общения в настройках или попросить Дэйзи адаптироваться прямо во время разговора.
               </p>
               <button
                 onClick={() => router.push(`/${locale}/chat`)}

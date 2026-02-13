@@ -84,7 +84,8 @@
     "companionSubtitle": "Эмоциональный компаньон",
     "trialExpiredTitle": "Пробный период закончился",
     "trialExpiredDesc": "У новых пользователей 3 дня бесплатного доступа. Оформите подписку, чтобы продолжить общение с Daisy.",
-    "trialExpiredCta": "Выбрать план"
+    "trialExpiredCta": "Выбрать план",
+    "logout": "Выйти"
   },
   "auth": {
     "login": "Войти",
