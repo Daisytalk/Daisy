@@ -11,17 +11,17 @@ export function BenefitsSection() {
     {
       name: t('benefit1Title'),
       description: t('benefit1Desc'),
-      imageUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=210&h=126&fit=crop&crop=center',
+      imageUrl: '/images/support.JPG',
     },
     {
       name: t('benefit2Title'),
       description: t('benefit2Desc'),
-      imageUrl: 'https://images.unsplash.com/photo-1758691462667-f2fb90a067ff?w=210&h=126&fit=crop&crop=center',
+      imageUrl: '/images/proven.JPG',
     },
     {
       name: t('benefit3Title'),
       description: t('benefit3Desc'),
-      imageUrl: 'https://plus.unsplash.com/premium_photo-1661344296685-35460b960e35?w=210&h=126&fit=crop&crop=center',
+      imageUrl: '/images/available.JPG',
     },
   ]
 

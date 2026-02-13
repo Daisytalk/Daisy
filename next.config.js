@@ -30,7 +30,7 @@ const nextConfig = {
       process.env.GOOGLE_CLIENT_SECRET || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
     GOOGLE_REDIRECT_URI:
       process.env.GOOGLE_REDIRECT_URI || process.env.NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT,
-    DATABASE_URL: process.env.DATABASE_URL,
+    // DATABASE_URL не задаём здесь — иначе Next подставляет значение со сборки (localhost). В проде берётся только из process.env (Azure).
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     MAILGUN_API_KEY: process.env.MAILGUN_API_KEY,
