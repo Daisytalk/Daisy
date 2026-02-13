@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { User as UserIcon, Mail, Calendar, Shield, MessageCircle } from 'lucide-react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { useAuth } from '@/shared/hooks/useAuth'
@@ -48,12 +49,12 @@ function ProfilePageContent() {
     if (typeof answer === 'object' && answer !== null) {
       const o = answer as Record<string, unknown>
       if (o.rating !== undefined) {
-        return `Rating: ${o.rating}/5${o.comment ? ` — ${o.comment}` : ''}`
+        return `Оценка: ${o.rating}/5${o.comment ? ` — ${o.comment}` : ''}`
       }
       return JSON.stringify(answer)
     }
     if (Array.isArray(answer)) return answer.join(', ')
-    if (typeof answer === 'boolean') return answer ? 'Yes' : 'No'
+    if (typeof answer === 'boolean') return answer ? 'Да' : 'Нет'
     return String(answer)
   }
 
@@ -67,7 +68,7 @@ function ProfilePageContent() {
         <div className="h-full flex items-center justify-center bg-[hsl(var(--app-bg))]">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
             <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4 animate-spin" />
-            <p className="text-muted-foreground">Loading your profile...</p>
+            <p className="text-muted-foreground">Загрузка профиля...</p>
           </motion.div>
         </div>
       </AppLayout>
@@ -84,18 +85,18 @@ function ProfilePageContent() {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col sm:flex-row sm:items-end gap-4 pb-6"
           >
-            <div className="w-24 h-24 rounded-2xl bg-white border-4 border-[hsl(var(--app-bg))] shadow-lg flex items-center justify-center text-3xl font-semibold text-primary shrink-0">
-              {user?.name?.charAt(0).toUpperCase()}
+            <div className="w-24 h-24 rounded-full bg-white border-4 border-[hsl(var(--app-bg))] shadow-lg overflow-hidden shrink-0">
+              <Image src="/images/user-icon.png" alt={user?.name || 'User'} width={96} height={96} className="object-cover w-full h-full" />
             </div>
             <div className="flex-1">
               <h1 className="text-2xl font-semibold text-foreground">{user?.name}</h1>
               <p className="text-muted-foreground">{user?.email}</p>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className="px-3 py-1 rounded-xl text-xs font-medium bg-primary/10 text-primary">
-                  {user?.subscriptionStatus === 'trial' ? `Trial · ${trialDaysLeft} days left` : 'Premium'}
+                  {user?.subscriptionStatus === 'trial' ? `Пробный · ${trialDaysLeft} дн. осталось` : 'Премиум'}
                 </span>
                 <span className="px-3 py-1 rounded-xl text-xs font-medium bg-muted text-muted-foreground">
-                  {onboardingData?.completedAt ? 'Onboarding complete' : 'Setup pending'}
+                  {onboardingData?.completedAt ? 'Онбординг пройден' : 'Настройка не завершена'}
                 </span>
               </div>
             </div>
@@ -103,35 +104,35 @@ function ProfilePageContent() {
 
           <div className="space-y-8 pb-12">
             <section>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Account</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Аккаунт</h2>
               <div className="rounded-2xl border border-[hsl(var(--app-border))] bg-white overflow-hidden divide-y divide-[hsl(var(--app-border))]">
                 <div className="flex items-center gap-4 p-4">
                   <UserIcon className="w-5 h-5 text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Full name</p>
+                    <p className="text-xs text-muted-foreground">Имя</p>
                     <p className="font-medium text-foreground">{user?.name}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 p-4">
                   <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="text-xs text-muted-foreground">Эл. почта</p>
                     <p className="font-medium text-foreground">{user?.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 p-4">
                   <Shield className="w-5 h-5 text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Subscription</p>
-                    <p className="font-medium text-foreground">{user?.subscriptionStatus === 'trial' ? 'Free Trial' : 'Premium'}</p>
+                    <p className="text-xs text-muted-foreground">Подписка</p>
+                    <p className="font-medium text-foreground">{user?.subscriptionStatus === 'trial' ? 'Пробный период' : 'Премиум'}</p>
                   </div>
                 </div>
                 {user?.subscriptionStatus === 'trial' && (
                   <div className="flex items-center gap-4 p-4">
                     <Calendar className="w-5 h-5 text-muted-foreground shrink-0" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Trial</p>
-                      <p className="font-medium text-foreground">{trialDaysLeft > 0 ? `${trialDaysLeft} days remaining` : 'Expired'}</p>
+                      <p className="text-xs text-muted-foreground">Пробный период</p>
+                      <p className="font-medium text-foreground">{trialDaysLeft > 0 ? `Осталось ${trialDaysLeft} дн.` : 'Истёк'}</p>
                     </div>
                   </div>
                 )}
@@ -140,7 +141,7 @@ function ProfilePageContent() {
 
             {onboardingData?.answers && onboardingData.answers.length > 0 && (
               <section>
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Onboarding responses</h2>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Ответы онбординга</h2>
                 <div className="rounded-2xl border border-[hsl(var(--app-border))] bg-white overflow-hidden divide-y divide-[hsl(var(--app-border))]">
                   {onboardingData.answers.map((answer, index) => (
                     <div key={index} className="p-4">
@@ -150,22 +151,27 @@ function ProfilePageContent() {
                   ))}
                 </div>
                 <p className="mt-3 text-sm text-muted-foreground">
-                  These answers help Daisy personalize support for you.
+                  Эти ответы помогают Daisy адаптировать поддержку под вас.
                 </p>
               </section>
             )}
 
-            <section className="rounded-2xl bg-primary p-6 text-primary-foreground">
-              <h2 className="font-semibold text-lg mb-2">Your personalized AI therapist</h2>
+            <section className="rounded-2xl bg-primary p-6 text-primary-foreground relative overflow-hidden">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30">
+                  <Image src="/images/daisy-icon.png" alt="Daisy" width={40} height={40} className="object-cover" />
+                </div>
+                <h2 className="font-semibold text-lg">Твой персональный AI-терапевт</h2>
+              </div>
               <p className="text-white/90 text-sm mb-4">
-                Daisy uses your onboarding responses to tailor conversations. Start a chat when you’re ready.
+                Daisy использует твои ответы онбординга, чтобы адаптировать беседу. Начни чат, когда будешь готов.
               </p>
               <button
                 onClick={() => router.push(`/${locale}/chat`)}
                 className="inline-flex items-center gap-2 h-11 px-5 rounded-2xl bg-white text-primary font-medium hover:bg-white/95 transition-colors"
               >
                 <MessageCircle className="w-4 h-4" />
-                Open chat
+                Открыть чат
               </button>
             </section>
           </div>

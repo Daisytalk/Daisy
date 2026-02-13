@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles, Plus } from 'lucide-react'
+import { Send, Plus } from 'lucide-react'
+import Image from 'next/image'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useLocale, useTranslations } from 'next-intl'
 import { ClientOnly } from '@/shared/components/ClientOnly'
@@ -10,7 +11,7 @@ import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 import { AppLayout } from '@/shared/components/AppLayout'
 import { Button } from '@/shared/ui/button'
 import { Textarea } from '@/shared/ui/textarea'
-import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar'
 import { TypewriterText } from '@/shared/ui/typewriter-text'
 
 interface Message {
@@ -247,10 +248,10 @@ function ChatPageContent() {
   }
 
   const suggestedPrompts = [
-    "I'm feeling anxious today",
-    "Can we talk about stress?",
-    "I need some motivation",
-    "Help me with my thoughts"
+    "Мне тревожно сегодня",
+    "Давай поговорим о стрессе",
+    "Мне нужна мотивация",
+    "Помоги разобраться в мыслях"
   ]
 
   return (
@@ -270,16 +271,33 @@ function ChatPageContent() {
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center text-center pt-8 sm:pt-16"
+                className="flex flex-col items-center text-center pt-8 sm:pt-16 relative"
               >
-                <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-6">
-                  <Sparkles className="w-8 h-8 text-primary-foreground" />
+                {/* Cabinet background */}
+                <div className="absolute inset-0 -z-10 overflow-hidden rounded-3xl opacity-30 pointer-events-none">
+                  <Image
+                    src="/images/cabinet.png"
+                    alt=""
+                    fill
+                    className="object-cover object-center"
+                    priority
+                  />
+                </div>
+                <div className="w-20 h-20 rounded-full overflow-hidden mb-6 shadow-lg ring-4 ring-white/80">
+                  <Image
+                    src="/images/daisy-icon.png"
+                    alt="Daisy"
+                    width={80}
+                    height={80}
+                    className="object-cover"
+                    priority
+                  />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight mb-2">
-                  Hi {user?.name?.split(' ')[0] || 'there'} 👋
+                  {user?.name?.split(' ')[0] || 'there'}, привет!
                 </h2>
                 <p className="text-muted-foreground mb-8 max-w-sm">
-                  How are you feeling today? Start the conversation below or pick a prompt.
+                  Как ты себя чувствуешь сегодня? Напиши мне или выбери тему ниже.
                 </p>
                 <div className="flex flex-wrap justify-center gap-2 w-full max-w-xl">
                   {suggestedPrompts.map((prompt, index) => (
@@ -287,7 +305,7 @@ function ChatPageContent() {
                       key={index}
                       type="button"
                       onClick={() => setInputValue(prompt)}
-                      className="px-4 py-2.5 rounded-2xl border-2 border-[hsl(var(--app-border))] bg-white hover:border-primary/40 hover:bg-primary/5 text-sm font-medium text-foreground transition-colors"
+                      className="px-4 py-2.5 rounded-2xl border-2 border-[hsl(var(--app-border))] bg-white/90 backdrop-blur-sm hover:border-primary/40 hover:bg-primary/5 text-sm font-medium text-foreground transition-colors"
                     >
                       {prompt}
                     </button>
@@ -305,10 +323,9 @@ function ChatPageContent() {
                       className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       {message.role === 'assistant' && (
-                        <Avatar className="flex-shrink-0 h-8 w-8 rounded-xl">
-                          <AvatarFallback className="bg-primary text-primary-foreground rounded-xl">
-                            <Sparkles className="w-3.5 h-3.5" />
-                          </AvatarFallback>
+                        <Avatar className="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden">
+                          <AvatarImage src="/images/daisy-icon.png" alt="Daisy" className="object-cover" />
+                          <AvatarFallback className="bg-primary text-primary-foreground rounded-full text-xs">D</AvatarFallback>
                         </Avatar>
                       )}
                       <div
@@ -373,8 +390,9 @@ function ChatPageContent() {
                         )}
                       </div>
                       {message.role === 'user' && (
-                        <Avatar className="flex-shrink-0 h-8 w-8 rounded-xl">
-                          <AvatarFallback className="bg-muted text-muted-foreground rounded-xl text-xs font-medium">
+                        <Avatar className="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden">
+                          <AvatarImage src="/images/user-icon.png" alt="Вы" className="object-cover" />
+                          <AvatarFallback className="bg-muted text-muted-foreground rounded-full text-xs font-medium">
                             {user?.name?.charAt(0).toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
@@ -395,10 +413,9 @@ function ChatPageContent() {
                       aria-live="polite"
                       aria-label={t('thinking')}
                     >
-                      <Avatar className="flex-shrink-0 h-8 w-8 rounded-xl">
-                        <AvatarFallback className="bg-primary/90 text-primary-foreground rounded-xl">
-                          <Sparkles className="w-3.5 h-3.5" />
-                        </AvatarFallback>
+                      <Avatar className="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden">
+                        <AvatarImage src="/images/daisy-icon.png" alt="Daisy" className="object-cover" />
+                        <AvatarFallback className="bg-primary/90 text-primary-foreground rounded-full text-xs">D</AvatarFallback>
                       </Avatar>
                       <div className="rounded-2xl rounded-bl-md bg-white border border-[hsl(var(--app-border))] shadow-sm px-4 py-3 flex items-center gap-3">
                         <motion.span

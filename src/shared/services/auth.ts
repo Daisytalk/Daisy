@@ -6,6 +6,8 @@ export interface IAuthService {
   logout(): Promise<void>
   getCurrentUser(): Promise<User | null>
   refreshToken(): Promise<string>
+  forgotPassword(email: string): Promise<{ message: string }>
+  resetPassword(token: string, password: string): Promise<{ message: string }>
 }
 
 export class AuthApiService implements IAuthService {
@@ -85,5 +87,35 @@ export class AuthApiService implements IAuthService {
 
     const { token } = await response.json()
     return token
+  }
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const response = await fetch(`${this.baseUrl}/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || 'Failed to send reset email')
+    }
+
+    return response.json()
+  }
+
+  async resetPassword(token: string, password: string): Promise<{ message: string }> {
+    const response = await fetch(`${this.baseUrl}/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || 'Failed to reset password')
+    }
+
+    return response.json()
   }
 }

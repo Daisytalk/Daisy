@@ -65,7 +65,8 @@
     "feature10": "Кризисное вмешательство 24/7",
     "feature11": "Психиатрическая консультация",
     "feature12": "Семейные терапевтические сеансы",
-    "feature13": "Персонализированные планы лечения"
+    "feature13": "Персонализированные планы лечения",
+    "oneMonthFree": "1 месяц бесплатно"
   },
   "nav": {
     "home": "Главная",
@@ -138,7 +139,29 @@
     "passwordTooShort": "Пароль должен содержать не менее 8 символов",
     "registrationFailed": "Регистрация не удалась. Пожалуйста, попробуйте снова.",
     "loginFailed": "Вход не удался. Пожалуйста, попробуйте снова.",
-    "createAccountDesc": "Создайте свой аккаунт, чтобы начать"
+    "createAccountDesc": "Создайте свой аккаунт, чтобы начать",
+    "backToLogin": "Назад к входу",
+    "rememberPassword": "Вспомнили пароль?",
+    "forgotPasswordTitle": "Забыли пароль?",
+    "forgotPasswordDesc": "Введите email, указанный при регистрации. Мы отправим ссылку для сброса пароля.",
+    "forgotPasswordBrandDesc": "Не переживайте — мы поможем восстановить доступ к вашему аккаунту.",
+    "forgotPasswordSubmit": "Отправить ссылку",
+    "forgotPasswordSending": "Отправляем...",
+    "forgotPasswordError": "Не удалось отправить ссылку. Попробуйте снова.",
+    "forgotPasswordSentTitle": "Письмо отправлено!",
+    "forgotPasswordSentDesc": "Мы отправили инструкции по сбросу пароля на указанный email:",
+    "forgotPasswordResend": "Отправить ещё раз",
+    "forgotPasswordCheckSpam": "Не видите письмо? Проверьте папку «Спам» или повторите попытку через пару минут.",
+    "newPassword": "Новый пароль",
+    "resetPasswordTitle": "Создайте новый пароль",
+    "resetPasswordDesc": "Введите новый пароль для вашего аккаунта. Минимум 8 символов.",
+    "resetPasswordSubmit": "Сохранить пароль",
+    "resetPasswordSubmitting": "Сохраняем...",
+    "resetPasswordError": "Не удалось сбросить пароль. Попробуйте снова.",
+    "resetPasswordSuccessTitle": "Пароль изменён!",
+    "resetPasswordSuccessDesc": "Ваш пароль успешно обновлён. Теперь вы можете войти с новым паролем.",
+    "resetPasswordInvalidLink": "Ссылка недействительна",
+    "resetPasswordInvalidLinkDesc": "Ссылка для сброса пароля повреждена или отсутствует. Запросите новую."
   },
   "dashboard": {
     "welcome": "С возвращением",

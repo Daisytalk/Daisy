@@ -5,17 +5,37 @@ import { Check, Star } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/shared/ui'
 
+/** Идентификаторы планов, используемые для создания платежей через Freedom Pay */
+export type PlanId = 'month_1' | 'month_3' | 'month_6'
+
+export interface PlanInfo {
+  id: PlanId
+  name: string
+  price: number
+  /** Длительность в месяцах */
+  durationMonths: number
+  originalPrice?: number
+  description: string
+  features: string[]
+  popular: boolean
+  cta: string
+  savings: string | null
+  period: string
+}
+
 interface PricingSectionProps {
-  onSelectPlan?: (planName: string) => void
+  onSelectPlan?: (plan: PlanInfo) => void
 }
 
 export function PricingSection({ onSelectPlan }: PricingSectionProps) {
   const t = useTranslations('pricing')
   
-  const plans = [
+  const plans: PlanInfo[] = [
     {
+      id: 'month_1',
       name: t('plan1Name'),
       price: 15,
+      durationMonths: 1,
       period: t('perMonth'),
       description: t('plan1Desc'),
       features: [
@@ -28,8 +48,10 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
       savings: null
     },
     {
+      id: 'month_3',
       name: t('plan2Name'),
       price: 40,
+      durationMonths: 3,
       period: t('for3Months'),
       originalPrice: 45,
       description: t('plan2Desc'),
@@ -43,8 +65,10 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
       savings: `${t('save')} $5`
     },
     {
+      id: 'month_6',
       name: t('plan3Name'),
       price: 75,
+      durationMonths: 6,
       period: t('for6Months'),
       originalPrice: 90,
       description: t('plan3Desc'),
@@ -59,7 +83,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
       ],
       popular: false,
       cta: t('plan3Cta'),
-      savings: '1 month for free'
+      savings: t('oneMonthFree')
     }
   ]
 
@@ -136,7 +160,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
                       ? 'bg-emerald-600 hover:bg-emerald-700' 
                       : 'bg-gray-900 hover:bg-gray-800'
                   }`}
-                  onClick={() => onSelectPlan?.(plan.name)}
+                  onClick={() => onSelectPlan?.(plan)}
                 >
                   {plan.cta}
                 </Button>

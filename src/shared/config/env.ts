@@ -8,6 +8,9 @@ export const env = {
   AI_API_URL: process.env.NEXT_PUBLIC_AI_API_URL || '',
   AI_API_KEY: process.env.NEXT_PUBLIC_AI_API_KEY || '',
   NODE_ENV: process.env.NODE_ENV || 'development',
+  // Freedom Pay (https://docs.freedompay.kz) — когда будет реальная интеграция
+  FREEDOMPAY_MERCHANT_ID: process.env.FREEDOMPAY_MERCHANT_ID || '',
+  FREEDOMPAY_API_KEY: process.env.FREEDOMPAY_API_KEY || '',
 } as const
 
 if (typeof window === 'undefined') {

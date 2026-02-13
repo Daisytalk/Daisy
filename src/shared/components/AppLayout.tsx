@@ -10,13 +10,13 @@ import {
   History,
   User,
   LogOut,
-  Sparkles,
   Menu,
   X,
   Home
 } from 'lucide-react'
+import Image from 'next/image'
 import { Button } from '@/shared/ui/button'
-import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar'
 import { cn } from '@/shared/lib/utils'
 interface AppLayoutProps {
   children: ReactNode
@@ -60,12 +60,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 lg:px-5 border-b border-[hsl(var(--app-border))]">
             <Link href={`/${locale}`} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
+              <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm">
+                <Image src="/images/daisy-icon.png" alt="Daisy" width={40} height={40} className="object-cover" />
               </div>
               <div>
                 <span className="font-semibold text-foreground text-lg tracking-tight">Daisy</span>
-                <p className="text-xs text-muted-foreground">AI Therapist</p>
+                <p className="text-xs text-muted-foreground">AI-терапевт</p>
               </div>
             </Link>
             <Button
@@ -108,8 +108,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           <div className="p-3 border-t border-[hsl(var(--app-border))]">
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 mb-2">
-              <Avatar className="h-10 w-10 rounded-xl">
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium rounded-xl">
+              <Avatar className="h-10 w-10 rounded-full overflow-hidden">
+                <AvatarImage src="/images/user-icon.png" alt={user?.name || 'User'} className="object-cover" />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium rounded-full">
                   {user?.name?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -152,8 +153,8 @@ export function AppLayout({ children }: AppLayoutProps) {
             <Menu className="w-5 h-5" />
           </Button>
           <Link href={`/${locale}`} className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
+            <div className="w-9 h-9 rounded-full overflow-hidden shadow-sm">
+              <Image src="/images/daisy-icon.png" alt="Daisy" width={36} height={36} className="object-cover" />
             </div>
             <span className="font-semibold text-foreground">Daisy</span>
           </Link>

@@ -19,6 +19,8 @@ model User {
   subscriptionStatus   String            @default("trial")
   aiProfile            Json?             @map("ai_profile")
   conversationMemory   Json?             @map("conversation_memory")
+  passwordResetToken   String?           @unique @map("password_reset_token")
+  passwordResetExpires DateTime?         @map("password_reset_expires")
   aiSessions           AiSession[]
   cbtConversations   CbtConversation[]
   onboarding         OnboardingData?

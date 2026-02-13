@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { HeroSection } from '@/widgets/hero'
@@ -10,6 +11,7 @@ import { NeuroplasticitySection } from '@/widgets/neuroplasticity'
 import { ScienceSection } from '@/widgets/science'
 import { FAQSection } from '@/widgets/faq'
 import { PricingSection } from '@/widgets/pricing'
+import type { PlanInfo } from '@/widgets/pricing/index.components'
 import { CTASection } from '@/widgets/cta'
 import { FooterSection } from '@/widgets/footer'
 import { subscribeToNewsletter } from '@/features/newsletter-signup'
@@ -20,10 +22,10 @@ import { ClientOnly } from '@/shared/components/ClientOnly'
 function HomeContent() {
   const router = useRouter()
   const locale = useLocale()
+  const [paymentLoading, setPaymentLoading] = useState(false)
   
   const handleGetStarted = () => {
     try {
-      // Track analytics event
       const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
       analytics.track({
         action: 'click',
@@ -34,12 +36,10 @@ function HomeContent() {
       console.error('Analytics tracking failed:', error)
     }
 
-    // Navigate to onboarding with locale
     router.push(`/${locale}/onboarding`)
   }
 
   const handleLearnMore = () => {
-    // Track analytics event
     const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
     analytics.track({
       action: 'click',
@@ -47,20 +47,66 @@ function HomeContent() {
       label: 'learn_more',
     })
 
-    // Scroll to features section
     document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const handleSelectPlan = (planName: string) => {
-    // Track analytics event
-    const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
-    analytics.track({
-      action: 'select_plan',
-      category: 'pricing',
-      label: planName.toLowerCase(),
-    })
+  const handleSelectPlan = async (plan: PlanInfo) => {
+    try {
+      const analytics = container.get<IAnalyticsService>(TOKENS.ANALYTICS_SERVICE)
+      analytics.track({
+        action: 'select_plan',
+        category: 'pricing',
+        label: plan.id,
+      })
+    } catch { /* analytics optional */ }
 
-    console.log(`Selected plan: ${planName}`)
+    // Проверяем авторизацию
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      // Сохраняем выбранный план и перенаправляем на регистрацию
+      localStorage.setItem('pending_plan', JSON.stringify({
+        id: plan.id,
+        price: plan.price,
+        durationMonths: plan.durationMonths,
+        name: plan.name,
+      }))
+      router.push(`/${locale}/register`)
+      return
+    }
+
+    // Создаём платёж через Freedom Pay stub API
+    setPaymentLoading(true)
+    try {
+      const response = await fetch('/api/payments/freedompay/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          planId: plan.id,
+          amount: plan.price * 100, // в центах
+          currency: 'USD',
+          description: `Daisy — ${plan.name}`,
+          durationMonths: plan.durationMonths,
+          returnUrl: `${window.location.origin}/${locale}/chat`,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl
+      } else {
+        // Stub: нет редиректа — переходим в чат
+        console.log('Payment stub created:', data)
+        router.push(`/${locale}/chat`)
+      }
+    } catch (error) {
+      console.error('Payment creation failed:', error)
+    } finally {
+      setPaymentLoading(false)
+    }
   }
 
   const handleNewsletterSubmit = async (email: string) => {
