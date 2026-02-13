@@ -84,10 +84,12 @@ export async function POST(request: NextRequest) {
       token, // Still return token for backwards compatibility
     })
 
-    // Set HttpOnly cookie
+    // Set HttpOnly cookie (secure: true для HTTPS; учитываем прокси Azure)
+    const forwardedProto = request.headers.get('x-forwarded-proto')
+    const isSecure = process.env.NODE_ENV === 'production' || forwardedProto === 'https' || request.nextUrl.protocol === 'https:'
     response.cookies.set('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',

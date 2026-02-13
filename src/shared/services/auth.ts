@@ -58,9 +58,16 @@ export class AuthApiService implements IAuthService {
 
   async getCurrentUser(): Promise<User | null> {
     try {
+      // Отправляем токен и в cookie (credentials: 'include'), и в заголовке — в Azure cookie иногда не доходит
+      const headers: HeadersInit = {}
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('auth_token')
+        if (token) headers['Authorization'] = `Bearer ${token}`
+      }
       const response = await fetch('/api/auth/me', {
         cache: 'no-store',
         credentials: 'include',
+        headers,
       });
 
       if (!response.ok) {
