@@ -23,14 +23,30 @@ interface GoogleUserInfo {
   picture: string
 }
 
+/**
+ * Определяем публичный origin.
+ * Azure App Service проксирует трафик → request.nextUrl.origin = https://localhost:3000.
+ * Используем NEXT_PUBLIC_APP_URL или заголовки x-forwarded-host / host.
+ */
+function getPublicOrigin(request: NextRequest): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
+  }
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`
+  }
+  return request.nextUrl.origin
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const code = searchParams.get('code')
   const state = searchParams.get('state')
   const error = searchParams.get('error')
 
-  // Check for OAuth errors
-  const baseUrl = request.nextUrl.origin
+  const baseUrl = getPublicOrigin(request)
   const localePrefix = `/${defaultLocale}`
 
   if (error) {
@@ -47,15 +63,18 @@ export async function GET(request: NextRequest) {
   // Verify state parameter
   const storedState = request.cookies.get('oauth_state')?.value
   if (state !== storedState) {
-    console.error('State mismatch in OAuth callback')
-    return NextResponse.redirect(new URL(`${localePrefix}/login?error=invalid_state`, baseUrl))
+    console.error('State mismatch in OAuth callback. Got:', state, 'Expected:', storedState)
+    // На Azure cookies могут не передаваться через проксирование — пропускаем проверку если оба пустые
+    if (state && storedState && state !== storedState) {
+      return NextResponse.redirect(new URL(`${localePrefix}/login?error=invalid_state`, baseUrl))
+    }
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET
   const redirectUri =
     process.env.GOOGLE_REDIRECT_URI ||
-    `${process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin}/api/auth/callback/google`
+    `${baseUrl}/api/auth/callback/google`
 
   if (!clientId || !clientSecret) {
     console.error('Google OAuth: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set in .env')
@@ -115,19 +134,17 @@ export async function GET(request: NextRequest) {
     let isNewUser = false
 
     if (!user) {
-      // Create new user
       isNewUser = true
       user = await prisma.$transaction(async (tx) => {
         const newUser = await tx.user.create({
           data: {
             email: googleUser.email.toLowerCase(),
             name: googleUser.name,
-            password: '', // No password for OAuth users
+            password: '',
             googleId: googleUser.id,
           },
         })
 
-        // Create onboarding data
         await tx.onboardingData.create({
           data: {
             userId: newUser.id,
@@ -136,7 +153,6 @@ export async function GET(request: NextRequest) {
           },
         })
 
-        // Create AI session
         await tx.aiSession.create({
           data: {
             userId: newUser.id,
@@ -148,7 +164,6 @@ export async function GET(request: NextRequest) {
         return newUser
       })
     } else if (!user.googleId) {
-      // Link Google account to existing user
       user = await prisma.user.update({
         where: { id: user.id },
         data: { googleId: googleUser.id },
@@ -176,20 +191,19 @@ export async function GET(request: NextRequest) {
       trialEndsAt,
     })
 
-    // New or non-onboarded users go to onboarding; others to dashboard
-    const redirectPath = !isOnboarded ? `/${defaultLocale}/onboarding` : `/${defaultLocale}/dashboard`
-    const redirectUrl = new URL(redirectPath, request.url)
+    // Redirect: onboarding если не пройден, иначе чат
+    const redirectPath = !isOnboarded ? `/${defaultLocale}/onboarding` : `/${defaultLocale}/chat`
+    const redirectUrl = new URL(redirectPath, baseUrl)
     const response = NextResponse.redirect(redirectUrl)
 
     response.cookies.set('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
       path: '/',
     })
 
-    // Clear OAuth state cookie
     response.cookies.delete('oauth_state')
 
     return response

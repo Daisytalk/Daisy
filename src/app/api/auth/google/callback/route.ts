@@ -3,7 +3,14 @@ import prisma from '@/shared/lib/database'
 import { AuthService } from '@/shared/lib/auth'
 import type { User } from '@/shared/types/auth'
 
+/**
+ * Альтернативный callback (/api/auth/google/callback).
+ * Основной callback — /api/auth/callback/google (тот что в Google Console).
+ * Этот маршрут использует HTML-ответ для сохранения токена в localStorage.
+ */
 export async function GET(req: NextRequest) {
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '')
+
   try {
     const { searchParams } = new URL(req.url)
     const code = searchParams.get('code')
@@ -13,7 +20,7 @@ export async function GET(req: NextRequest) {
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET
     const redirectUri =
       process.env.GOOGLE_REDIRECT_URI ||
-      `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/api/auth/callback/google`
+      `${baseUrl}/api/auth/callback/google`
 
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -35,7 +42,6 @@ export async function GET(req: NextRequest) {
     const tokenJson = await tokenRes.json()
     const accessToken = tokenJson.access_token
 
-    // Fetch userinfo
     const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
@@ -48,7 +54,6 @@ export async function GET(req: NextRequest) {
     const email = profile.email
     const name = profile.name || profile.email.split('@')[0]
 
-    // upsert user
     let user = await prisma.user.findUnique({ where: { email } })
     if (!user) {
       user = await prisma.user.create({ data: { name, email, password: '' } })
@@ -86,6 +91,6 @@ export async function GET(req: NextRequest) {
     return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
   } catch (err) {
     console.error('OAuth callback error', err)
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
+    return NextResponse.redirect(new URL('/ru/login?error=oauth_failed', baseUrl))
   }
 }

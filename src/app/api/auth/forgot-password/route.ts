@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Формируем ссылку сброса
-    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    // Формируем ссылку сброса (NEXT_PUBLIC_APP_URL — приоритет, т.к. origin может быть localhost в Azure)
+    const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin') || 'http://localhost:3000'
     const resetUrl = `${origin}/ru/reset-password?token=${resetToken}`
 
     // ===== ЗАГЛУШКА: логируем вместо отправки письма =====
