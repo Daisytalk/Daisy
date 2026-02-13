@@ -208,6 +208,7 @@ function ChatPageContent() {
             stream: true,
           }
           setMessages(prev => [...prev, assistantMessage])
+          setStreamingRevealedId(assistantMessage.id)
           return
         }
 
@@ -348,10 +349,7 @@ function ChatPageContent() {
                                 <TypewriterText
                                   text={message.content}
                                   speedMs={10}
-                                  onFirstChar={() => {
-                                    setStreamingRevealedId(message.id)
-                                    setIsLoading(false)
-                                  }}
+                                  onFirstChar={() => setIsLoading(false)}
                                   onComplete={() => {
                                     setMessages(prev => prev.map(m => m.id === message.id ? { ...m, stream: false } : m))
                                   }}
