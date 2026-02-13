@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import type { OnboardingData, OnboardingAnswer } from '@/shared/types/auth'
+import { apiMessages } from '@/shared/api-messages'
 
 export async function GET(request: NextRequest, props: { params: Promise<{ userId: string }> }) {
   const params = await props.params;
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ userI
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { message: 'Authorization token required' },
+        { message: apiMessages.authorizationRequired },
         { status: 401 }
       )
     }
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ userI
     
     if (!decoded) {
       return NextResponse.json(
-        { message: 'Invalid token' },
+        { message: apiMessages.invalidToken },
         { status: 401 }
       )
     }
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ userI
     // Check if user is requesting their own data or is admin
     if (decoded.userId !== userId) {
       return NextResponse.json(
-        { message: 'Unauthorized to access this data' },
+        { message: apiMessages.unauthorizedToAccessData },
         { status: 403 }
       )
     }
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ userI
     
     if (!dbData) {
       return NextResponse.json(
-        { message: 'Onboarding data not found' },
+        { message: apiMessages.onboardingDataNotFound },
         { status: 404 }
       )
     }
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ userI
   } catch (error) {
     console.error('Get onboarding data error:', error)
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: apiMessages.internalServerError },
       { status: 500 }
     )
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { apiMessages } from '@/shared/api-messages'
 
 export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -18,12 +19,12 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
     }
 
     if (!token) {
-      return NextResponse.json({ error: 'Authorization token required' }, { status: 401 })
+      return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 })
     }
 
     const decoded = AuthService.verifyToken(token)
     if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
     }
 
     // Fetch conversation with messages
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
     })
 
     if (!conversation) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+      return NextResponse.json({ error: apiMessages.conversationNotFound }, { status: 404 })
     }
 
     return NextResponse.json({
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
   } catch (error: any) {
     console.error('Conversation detail API error:', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error.message || apiMessages.internalServerError },
       { status: 500 }
     )
   }

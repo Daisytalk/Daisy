@@ -50,7 +50,7 @@
     "plan3Name": "6 Months",
     "plan3Desc": "Comprehensive support with maximum value",
     "plan3Cta": "Start 6 Month Plan",
-    "feature1": "Unlimited messaging with your therapist",
+    "feature1": "Unlimited messaging with your companion",
     "feature2": "Weekly 30-minute live sessions",
     "feature3": "Secure & private platform",
     "feature4": "Everything in 1 Month",
@@ -76,7 +76,11 @@
     "chat": "Chat",
     "profile": "Profile",
     "onboarding": "Onboarding",
-    "history": "History"
+    "history": "History",
+    "companionSubtitle": "Emotional companion",
+    "trialExpiredTitle": "Trial period ended",
+    "trialExpiredDesc": "New users get 3 days free. Subscribe to continue chatting with Daisy.",
+    "trialExpiredCta": "Choose a plan"
   },
   "auth": {
     "login": "Login",
@@ -135,7 +139,11 @@
     "passwordTooShort": "Password must be at least 8 characters long",
     "registrationFailed": "Registration failed. Please try again.",
     "loginFailed": "Login failed. Please try again.",
-    "createAccountDesc": "Create your account to get started"
+    "createAccountDesc": "Create your account to get started",
+    "safeSpaceQuote": "A safe space to reflect and grow.",
+    "badgeCompanion": "Companion",
+    "badgePrivate": "Private & safe",
+    "badge24_7": "24/7"
   },
   "dashboard": {
     "welcome": "Welcome back",
@@ -158,7 +166,7 @@
     "newChat": "New chat",
     "thinking": "Daisy is thinking...",
     "error": "Something went wrong. Please try again.",
-    "disclaimer": "Note: Daisy is an AI assistant for emotional support, not a therapist or substitute for professional medical care; in crisis or clinical situations, please contact a qualified professional."
+    "disclaimer": "Note: Daisy is an AI companion for emotional support, not a substitute for professional medical care; in crisis or clinical situations, please contact a qualified professional."
   },
   "onboarding": {
     "welcome": "Welcome to Daisy",
@@ -179,7 +187,13 @@
     "male": "Male",
     "female": "Female",
     "other": "Other",
-    "preferNotToSay": "Prefer not to say"
+    "preferNotToSay": "Prefer not to say",
+    "comment": "Comment",
+    "scaleVeryBad": "Very bad",
+    "scaleBad": "Bad",
+    "scaleNormal": "Okay",
+    "scaleGood": "Good",
+    "scaleExcellent": "Great"
   },
   "helpTopics": {
     "howItWorks": "How It Works",

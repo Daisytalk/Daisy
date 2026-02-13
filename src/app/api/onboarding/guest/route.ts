@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { OnboardingAnswer } from '@/shared/types/auth'
+import { apiMessages } from '@/shared/api-messages'
 
 /**
  * API endpoint for guest (unauthenticated) users to save onboarding data
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     if (!answers || !Array.isArray(answers)) {
       return NextResponse.json(
-        { message: 'Answers array is required' },
+        { message: apiMessages.answersArrayRequired },
         { status: 400 }
       )
     }
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     // Validate that we have at least some answers
     if (answers.length === 0) {
       return NextResponse.json(
-        { message: 'At least one answer is required' },
+        { message: apiMessages.atLeastOneAnswerRequired },
         { status: 400 }
       )
     }
@@ -37,14 +38,14 @@ export async function POST(request: NextRequest) {
     // The client will pass this data to the registration endpoint
     
     return NextResponse.json({ 
-      message: 'Onboarding data received successfully',
+      message: apiMessages.onboardingDataReceivedSuccess,
       sessionId,
       success: true
     })
   } catch (error) {
     console.error('Guest onboarding error:', error)
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: apiMessages.internalServerError },
       { status: 500 }
     )
   }

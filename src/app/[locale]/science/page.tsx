@@ -63,7 +63,7 @@ export default async function SciencePage({ params }: PageProps) {
                   {paper.authors} ({paper.year})
                 </p>
                 <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
-                  {paper.abstract.split('\n\n')[0]}
+                  {(locale === 'ru' ? paper.abstractRu : paper.abstract).split('\n\n')[0]}
                 </p>
                 <div className="mt-4 inline-flex items-center text-gray-900 text-sm font-semibold group-hover:gap-2 transition-all">
                   <span>Read more</span>

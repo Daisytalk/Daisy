@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { subscribeToNewsletter } from '@/features/newsletter-signup'
 import { createApiResponse } from '@/shared/api/base'
+import { apiMessages } from '@/shared/api-messages'
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || typeof email !== 'string') {
       return NextResponse.json(
-        createApiResponse(null, 'Email is required'),
+        createApiResponse(null, apiMessages.emailRequired),
         { status: 400 }
       )
     }
@@ -16,13 +17,13 @@ export async function POST(request: NextRequest) {
     await subscribeToNewsletter(email)
 
     return NextResponse.json(
-      createApiResponse({ message: 'Successfully subscribed to newsletter' })
+      createApiResponse({ message: apiMessages.newsletterSubscribedSuccess })
     )
   } catch (error) {
     console.error('Newsletter subscription error:', error)
     
     return NextResponse.json(
-      createApiResponse(null, 'Failed to subscribe to newsletter'),
+      createApiResponse(null, apiMessages.subscriptionFailed),
       { status: 500 }
     )
   }

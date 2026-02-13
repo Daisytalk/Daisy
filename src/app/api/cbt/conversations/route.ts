@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { apiMessages } from '@/shared/api-messages'
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,12 +16,12 @@ export async function GET(request: NextRequest) {
     }
 
     if (!token) {
-      return NextResponse.json({ error: 'Authorization token required' }, { status: 401 })
+      return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 })
     }
 
     const decoded = AuthService.verifyToken(token)
     if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
     }
 
     // Fetch user's conversations
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Conversations API error:', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error.message || apiMessages.internalServerError },
       { status: 500 }
     )
   }

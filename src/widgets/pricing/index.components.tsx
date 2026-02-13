@@ -103,15 +103,6 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
           <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
             {t('subtitle')}
           </p>
-          
-          <div className="inline-flex items-center bg-emerald-50 rounded-full p-1 mb-6 sm:mb-8">
-            <div className="bg-emerald-600 text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium">
-              {t('weeklyPlans')}
-            </div>
-            <div className="px-3 sm:px-4 py-2 text-gray-600 text-xs sm:text-sm font-medium">
-              {t('monthlyPlans')}
-            </div>
-          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">

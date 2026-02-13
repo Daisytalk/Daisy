@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { apiMessages } from '@/shared/api-messages'
 import { sendChatMessage } from '@/shared/lib/ai-api'
 import { buildDaisyRequest, handleDaisyResponse, type DaisyLocale } from '@/shared/lib/daisy-integration'
 
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
 
     if (!userMessage || userMessage.trim().length === 0) {
       console.warn('No valid user message found in request')
-      return NextResponse.json({ error: 'No message provided' }, { status: 400 })
+      return NextResponse.json({ error: apiMessages.noMessageProvided }, { status: 400 })
     }
 
     console.log('Extracted user message:', userMessage.substring(0, 100))
@@ -131,12 +132,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (!token) {
-      return NextResponse.json({ error: 'Authorization token required' }, { status: 401 })
+      return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 })
     }
 
     const decoded = AuthService.verifyToken(token)
     if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
     }
 
     const user = await prisma.user.findUnique({
@@ -145,7 +146,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return NextResponse.json({ error: apiMessages.userNotFound }, { status: 404 })
     }
 
     const sessionId = body.sessionId || body.id
@@ -206,7 +207,7 @@ export async function POST(request: NextRequest) {
       status: 'processing',
       requestId: userMessageRecord.id,
       conversationId: conversation.id,
-      message: 'Your message is being processed...'
+      message: apiMessages.messageBeingProcessed
     }, {
       status: 202, // Accepted
       headers: {
@@ -219,7 +220,7 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     console.error('Chat API error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { error: error instanceof Error ? error.message : apiMessages.internalServerError },
       { status: 500 }
     )
   }

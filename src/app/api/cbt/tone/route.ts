@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/shared/lib/auth';
 import { cbtApi } from '@/shared/lib/cbt-api';
+import { apiMessages } from '@/shared/api-messages';
 
 // Prevent static generation during build
 export const dynamic = 'force-dynamic';
@@ -17,12 +18,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (!token) {
-      return NextResponse.json({ error: 'Authorization token required' }, { status: 401 });
+      return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 });
     }
 
     const decoded = AuthService.verifyToken(token);
     if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 });
     }
 
     const { tone } = await req.json();
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Set tone error:', error);
     return NextResponse.json(
-      { error: 'Failed to set tone' },
+      { error: apiMessages.failedToSetTone },
       { status: 500 }
     );
   }

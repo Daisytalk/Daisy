@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { FreedomPayStubService } from '@/shared/services/freedompay'
+import { apiMessages } from '@/shared/api-messages'
 
 /**
  * Заглушка: создание платежа Freedom Pay.
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Freedom Pay create (stub) error:', error)
     return NextResponse.json(
-      { error: 'Payment creation failed' },
+      { error: apiMessages.paymentCreationFailed },
       { status: 500 }
     )
   }

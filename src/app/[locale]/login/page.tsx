@@ -74,15 +74,15 @@ export default function LoginPage() {
             {t('continueJourney')}
           </p>
           <blockquote className="border-l-4 border-white/30 pl-5 text-primary-foreground/80 italic text-sm max-w-xs">
-            A safe space to reflect and grow.
+            {t('safeSpaceQuote')}
           </blockquote>
         </div>
         <div className="relative z-10 flex flex-wrap gap-x-6 gap-y-1 text-sm text-primary-foreground/75">
-          <span>AI therapy</span>
+          <span>{t('badgeCompanion')}</span>
           <span>·</span>
-          <span>Private & safe</span>
+          <span>{t('badgePrivate')}</span>
           <span>·</span>
-          <span>24/7</span>
+          <span>{t('badge24_7')}</span>
         </div>
       </div>
 

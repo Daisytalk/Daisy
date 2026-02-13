@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { OnboardingSection } from '@/shared/types/auth'
+import { apiMessages } from '@/shared/api-messages'
 
 // Mock database for onboarding questions, structured into sections
 const sections: OnboardingSection[] = [
@@ -132,7 +133,7 @@ export async function GET() {
   } catch (error) {
     console.error('Get questions error:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: apiMessages.internalServerError },
       { status: 500 }
     );
   }

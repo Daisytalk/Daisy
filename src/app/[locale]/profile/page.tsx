@@ -161,7 +161,7 @@ function ProfilePageContent() {
                 <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30">
                   <Image src="/images/daisy-icon.png" alt="Daisy" width={40} height={40} className="object-cover" />
                 </div>
-                <h2 className="font-semibold text-lg">Твой персональный AI-терапевт</h2>
+                <h2 className="font-semibold text-lg">Твой эмоциональный компаньон</h2>
               </div>
               <p className="text-white/90 text-sm mb-4">
                 Daisy использует твои ответы онбординга, чтобы адаптировать беседу. Начни чат, когда будешь готов.

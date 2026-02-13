@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/shared/lib/auth';
 import prisma from '@/shared/lib/database';
 import { sendChatMessage } from '@/shared/lib/ai-api';
+import { apiMessages } from '@/shared/api-messages';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,12 +17,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (!token) {
-      return NextResponse.json({ error: 'Authorization token required' }, { status: 401 });
+      return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 });
     }
 
     const decoded = AuthService.verifyToken(token);
     if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: apiMessages.userNotFound }, { status: 404 });
     }
 
     // 2. Parse request
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     } = body;
 
     if (!message || typeof message !== 'string') {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+      return NextResponse.json({ error: apiMessages.messageRequired }, { status: 400 });
     }
 
     // 3. Get or create conversation
@@ -123,8 +124,8 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(
       {
-        error: 'Failed to process message',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: apiMessages.failedToProcessMessage,
+        details: error instanceof Error ? error.message : apiMessages.internalServerError,
       },
       { status: 500 }
     );
@@ -144,12 +145,12 @@ export async function GET(req: NextRequest) {
     }
 
     if (!token) {
-      return NextResponse.json({ error: 'Authorization token required' }, { status: 401 });
+      return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 });
     }
 
     const decoded = AuthService.verifyToken(token);
     if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -188,7 +189,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Get CBT conversations error:', error);
     return NextResponse.json(
-      { error: 'Failed to retrieve conversations' },
+      { error: apiMessages.failedToRetrieveConversations },
       { status: 500 }
     );
   }

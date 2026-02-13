@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import type { User } from '@/shared/types/auth'
+import { apiMessages } from '@/shared/api-messages'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET environment variable is not set')
     return NextResponse.json(
-      { message: 'Server configuration error' },
+      { message: apiMessages.serverConfigurationError },
       { status: 500 }
     )
   }
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     if (!token) {
       return NextResponse.json(
-        { message: 'Authorization token required' },
+        { message: apiMessages.authorizationRequired },
         { status: 401 }
       )
     }
@@ -40,12 +41,12 @@ export async function GET(request: NextRequest) {
       console.error('Me endpoint: verifyToken threw', msg)
       if (msg.includes('JWT_SECRET')) {
         return NextResponse.json(
-          { message: 'Server configuration error' },
+          { message: apiMessages.serverConfigurationError },
           { status: 500 }
         )
       }
       return NextResponse.json(
-        { message: 'Invalid or expired token' },
+        { message: apiMessages.invalidOrExpiredToken },
         { status: 401 }
       )
     }
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
     const userId = decoded?.userId ?? (decoded as { id?: string })?.id
     if (!userId) {
       return NextResponse.json(
-        { message: 'Invalid or expired token' },
+        { message: apiMessages.invalidOrExpiredToken },
         { status: 401 }
       )
     }
@@ -73,14 +74,14 @@ export async function GET(request: NextRequest) {
     } catch (dbErr) {
       console.error('Me endpoint: database error', dbErr)
       return NextResponse.json(
-        { message: 'Service temporarily unavailable' },
+        { message: apiMessages.serviceUnavailable },
         { status: 503 }
       )
     }
 
     if (!user) {
       return NextResponse.json(
-        { message: 'User not found' },
+        { message: apiMessages.userNotFound },
         { status: 404 }
       )
     }
@@ -114,19 +115,19 @@ export async function GET(request: NextRequest) {
 
     if (err.name === 'TokenExpiredError') {
       return NextResponse.json(
-        { message: 'Token has expired' },
+        { message: apiMessages.tokenExpired },
         { status: 401 }
       )
     }
     if (err.name === 'JsonWebTokenError') {
       return NextResponse.json(
-        { message: 'Invalid token' },
+        { message: apiMessages.invalidToken },
         { status: 401 }
       )
     }
 
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: apiMessages.internalServerError },
       { status: 500 }
     )
   }

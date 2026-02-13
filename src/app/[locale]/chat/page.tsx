@@ -266,31 +266,25 @@ function ChatPageContent() {
             </Button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex-1 overflow-y-auto relative">
+          {/* Фон личного кабинета — вся область чата */}
+          <div className="absolute inset-0 pointer-events-none z-0">
+            <Image src="/images/cabinet.png" alt="" fill className="object-cover object-center opacity-[0.12]" priority />
+          </div>
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 relative z-10">
             {messages.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex flex-col items-center text-center pt-8 sm:pt-16 relative"
               >
-                {/* Cabinet background */}
-                <div className="absolute inset-0 -z-10 overflow-hidden rounded-3xl opacity-30 pointer-events-none">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden mb-6 shadow-lg ring-4 ring-white/80 flex items-center justify-center bg-white">
                   <Image
-                    src="/images/cabinet.png"
-                    alt=""
-                    fill
-                    className="object-cover object-center"
-                    priority
-                  />
-                </div>
-                <div className="w-20 h-20 rounded-full overflow-hidden mb-6 shadow-lg ring-4 ring-white/80">
-                  <Image
-                    src="/images/daisy-icon.png"
+                    src="/images/daisy-icon.svg"
                     alt="Daisy"
-                    width={80}
-                    height={80}
-                    className="object-cover"
+                    width={112}
+                    height={112}
+                    className="object-contain max-w-[5rem] max-h-[5rem] sm:max-w-[6rem] sm:max-h-[6rem]"
                     priority
                   />
                 </div>
@@ -324,8 +318,8 @@ function ChatPageContent() {
                       className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       {message.role === 'assistant' && (
-                        <Avatar className="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden">
-                          <AvatarImage src="/images/daisy-icon.png" alt="Daisy" className="object-cover" />
+                        <Avatar className="flex-shrink-0 h-9 w-9 rounded-full overflow-hidden bg-white border border-[hsl(var(--app-border))]">
+                          <AvatarImage src="/images/daisy-icon.svg" alt="Daisy" className="object-contain p-1" />
                           <AvatarFallback className="bg-primary text-primary-foreground rounded-full text-xs">D</AvatarFallback>
                         </Avatar>
                       )}
@@ -411,8 +405,8 @@ function ChatPageContent() {
                       aria-live="polite"
                       aria-label={t('thinking')}
                     >
-                      <Avatar className="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden">
-                        <AvatarImage src="/images/daisy-icon.png" alt="Daisy" className="object-cover" />
+                      <Avatar className="flex-shrink-0 h-9 w-9 rounded-full overflow-hidden bg-white border border-[hsl(var(--app-border))]">
+                        <AvatarImage src="/images/daisy-icon.svg" alt="Daisy" className="object-contain p-1" />
                         <AvatarFallback className="bg-primary/90 text-primary-foreground rounded-full text-xs">D</AvatarFallback>
                       </Avatar>
                       <div className="rounded-2xl rounded-bl-md bg-white border border-[hsl(var(--app-border))] shadow-sm px-4 py-3 flex items-center gap-3">

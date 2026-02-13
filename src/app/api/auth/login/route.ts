@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { apiMessages } from '@/shared/api-messages'
 
 const DUMMY_HASH = '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYbwBRhC5ZO'
 
@@ -8,7 +9,7 @@ export async function POST(request: NextRequest) {
   if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET environment variable is not set')
     return NextResponse.json(
-      { message: 'Server configuration error' },
+      { message: apiMessages.serverConfigurationError },
       { status: 500 }
     )
   }
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { message: 'Email and password are required' },
+        { message: apiMessages.emailPasswordRequired },
         { status: 400 }
       )
     }
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { message: 'Invalid email or password' },
+        { message: apiMessages.invalidEmailOrPassword },
         { status: 401 }
       )
     }
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     if (!user || !isValidPassword) {
       return NextResponse.json(
-        { message: 'Invalid email or password' },
+        { message: apiMessages.invalidEmailOrPassword },
         { status: 401 }
       )
     }
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
-      { message: 'Something went wrong. Please try again.' },
+      { message: apiMessages.somethingWentWrong },
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     )
   }

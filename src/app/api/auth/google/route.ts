@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { apiMessages } from '@/shared/api-messages'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
   if (!clientId) {
     console.error('Google OAuth: GOOGLE_CLIENT_ID is not set in .env')
     return NextResponse.json(
-      { message: 'OAuth configuration error' },
+      { message: apiMessages.oauthConfigError },
       { status: 500 }
     )
   }

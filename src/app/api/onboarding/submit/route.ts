@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import type { OnboardingAnswer } from '@/shared/types/auth'
+import { apiMessages } from '@/shared/api-messages'
 
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { message: 'Authorization token required' },
+        { message: apiMessages.authorizationRequired },
         { status: 401 }
       )
     }
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     
     if (!decoded) {
       return NextResponse.json(
-        { message: 'Invalid token' },
+        { message: apiMessages.invalidToken },
         { status: 401 }
       )
     }
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     if (!answers || !Array.isArray(answers)) {
       return NextResponse.json(
-        { message: 'Answers array is required' },
+        { message: apiMessages.answersArrayRequired },
         { status: 400 }
       )
     }
@@ -42,11 +43,11 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({ message: 'Onboarding completed successfully' })
+    return NextResponse.json({ message: apiMessages.onboardingCompletedSuccess })
   } catch (error) {
     console.error('Submit onboarding error:', error)
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: apiMessages.internalServerError },
       { status: 500 }
     )
   }

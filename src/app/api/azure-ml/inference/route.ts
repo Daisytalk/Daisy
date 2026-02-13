@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/shared/lib/auth';
 import prisma from '@/shared/lib/database';
 import { getAzureMLService } from '@/shared/lib/azure-ml';
+import { apiMessages } from '@/shared/api-messages';
 
 /**
  * Azure ML CBT API Inference Route
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
         if (!text || typeof text !== 'string' || text.trim().length === 0) {
             console.warn('⚠️ Invalid text received');
             return NextResponse.json(
-                { error: 'Text is required and must be a non-empty string' },
+                { error: apiMessages.textRequired },
                 { status: 400 }
             );
         }
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
         if (!token) {
             console.warn('⚠️ No authentication token provided');
             return NextResponse.json(
-                { error: 'Authorization token required' },
+                { error: apiMessages.authorizationRequired },
                 { status: 401 }
             );
         }
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
         if (!decoded) {
             console.warn('⚠️ Invalid authentication token');
             return NextResponse.json(
-                { error: 'Invalid or expired token' },
+                { error: apiMessages.invalidOrExpiredToken },
                 { status: 401 }
             );
         }
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
         if (!user) {
             console.warn('⚠️ User not found:', decoded.userId);
             return NextResponse.json(
-                { error: 'User not found' },
+                { error: apiMessages.userNotFound },
                 { status: 404 }
             );
         }
@@ -125,7 +126,7 @@ export async function POST(request: NextRequest) {
             // Return user-friendly error message
             return NextResponse.json(
                 {
-                    error: 'Failed to get response from AI model',
+                    error: apiMessages.failedToGetAiResponse,
                     details: error.message,
                 },
                 { status: 503 } // Service Unavailable
@@ -189,7 +190,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(
             {
-                error: 'Internal server error',
+                error: apiMessages.internalServerError,
                 details: process.env.NODE_ENV === 'development' ? error.message : undefined,
             },
             { status: 500 }

@@ -62,10 +62,9 @@ export default async function ScienceArticlePage({ params }: PageProps) {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Abstract</h2>
-          
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">{locale === 'ru' ? 'Аннотация' : 'Abstract'}</h2>
           <div className="text-gray-700 text-lg leading-relaxed space-y-4">
-            {paper.abstract.split('\n\n').map((paragraph, index) => (
+            {(locale === 'ru' ? paper.abstractRu : paper.abstract).split('\n\n').map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
             ))}
           </div>

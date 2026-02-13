@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { FreedomPayStubService } from '@/shared/services/freedompay'
+import { apiMessages } from '@/shared/api-messages'
 
 /**
  * Заглушка: статус платежа Freedom Pay.
@@ -12,7 +13,7 @@ export async function GET(
   try {
     const { paymentId } = await params
     if (!paymentId) {
-      return NextResponse.json({ error: 'paymentId required' }, { status: 400 })
+      return NextResponse.json({ error: apiMessages.paymentIdRequired }, { status: 400 })
     }
 
     const service = new FreedomPayStubService()
@@ -21,7 +22,7 @@ export async function GET(
   } catch (error) {
     console.error('Freedom Pay status (stub) error:', error)
     return NextResponse.json(
-      { error: 'Status check failed' },
+      { error: apiMessages.statusCheckFailed },
       { status: 500 }
     )
   }

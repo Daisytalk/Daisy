@@ -41,6 +41,11 @@ export function AppLayout({ children }: AppLayoutProps) {
     router.push(`/${locale}/login`)
   }
 
+  const trialEnded =
+    user?.subscriptionStatus === 'trial' &&
+    user?.trialEndsAt != null &&
+    new Date(user.trialEndsAt).getTime() < Date.now()
+
   return (
     <div className="flex h-screen bg-[hsl(var(--app-bg))]">
       {sidebarOpen && (
@@ -60,12 +65,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 lg:px-5 border-b border-[hsl(var(--app-border))]">
             <Link href={`/${locale}`} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm">
-                <Image src="/images/daisy-icon.png" alt="Daisy" width={40} height={40} className="object-cover" />
+              <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm flex items-center justify-center bg-white">
+                <Image src="/images/daisy-icon.svg" alt="Daisy" width={48} height={48} className="object-contain" />
               </div>
               <div>
                 <span className="font-semibold text-foreground text-lg tracking-tight">Daisy</span>
-                <p className="text-xs text-muted-foreground">AI-терапевт</p>
+                <p className="text-xs text-muted-foreground">{t('companionSubtitle')}</p>
               </div>
             </Link>
             <Button
@@ -153,8 +158,8 @@ export function AppLayout({ children }: AppLayoutProps) {
             <Menu className="w-5 h-5" />
           </Button>
           <Link href={`/${locale}`} className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-full overflow-hidden shadow-sm">
-              <Image src="/images/daisy-icon.png" alt="Daisy" width={36} height={36} className="object-cover" />
+            <div className="w-11 h-11 rounded-full overflow-hidden shadow-sm flex items-center justify-center bg-white">
+              <Image src="/images/daisy-icon.svg" alt="Daisy" width={44} height={44} className="object-contain" />
             </div>
             <span className="font-semibold text-foreground">Daisy</span>
           </Link>
@@ -165,6 +170,19 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </main>
       </div>
+
+      {/* Модалка по истечении пробного периода (3 дня) */}
+      {trialEnded && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 sm:p-8 text-center">
+            <h3 className="text-xl font-semibold text-foreground mb-2">{t('trialExpiredTitle')}</h3>
+            <p className="text-muted-foreground text-sm mb-6">{t('trialExpiredDesc')}</p>
+            <Button asChild className="w-full rounded-xl">
+              <Link href={`/${locale}#pricing`}>{t('trialExpiredCta')}</Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

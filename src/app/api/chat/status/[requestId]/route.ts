@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { apiMessages } from '@/shared/api-messages'
 
 /**
  * Poll endpoint to check status of async chat request
@@ -21,12 +22,12 @@ export async function GET(request: NextRequest, props: { params: Promise<{ reque
         }
 
         if (!token) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: apiMessages.unauthorized }, { status: 401 })
         }
 
         const decoded = AuthService.verifyToken(token)
         if (!decoded) {
-            return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+            return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
         }
 
         // Find the pending message by request ID
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ reque
         })
 
         if (!message) {
-            return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+            return NextResponse.json({ error: apiMessages.requestNotFound }, { status: 404 })
         }
 
         // Check if we have a response yet
@@ -74,13 +75,13 @@ export async function GET(request: NextRequest, props: { params: Promise<{ reque
         // Still processing
         return NextResponse.json({
             status: 'processing',
-            message: 'Your therapist is preparing a response...'
+            message: apiMessages.companionPreparingResponse
         })
 
     } catch (error: unknown) {
         console.error('Status check error:', error)
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : 'Internal server error' },
+            { error: error instanceof Error ? error.message : apiMessages.internalServerError },
             { status: 500 }
         )
     }

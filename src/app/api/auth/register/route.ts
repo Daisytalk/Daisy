@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { apiMessages } from '@/shared/api-messages'
 
 export async function POST(request: NextRequest) {
   if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET environment variable is not set')
     return NextResponse.json(
-      { message: 'Server configuration error' },
+      { message: apiMessages.serverConfigurationError },
       { status: 500 }
     )
   }
@@ -16,14 +17,14 @@ export async function POST(request: NextRequest) {
 
     if (!name || !email || !password) {
       return NextResponse.json(
-        { message: 'Name, email, and password are required' },
+        { message: apiMessages.nameEmailPasswordRequired },
         { status: 400 }
       )
     }
 
     if (name.trim().length < 2) {
       return NextResponse.json(
-        { message: 'Name must be at least 2 characters' },
+        { message: apiMessages.nameMinLength },
         { status: 400 }
       )
     }
@@ -31,14 +32,14 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { message: 'Invalid email format' },
+        { message: apiMessages.invalidEmailFormat },
         { status: 400 }
       )
     }
 
     if (password.length < 8) {
       return NextResponse.json(
-        { message: 'Password must be at least 8 characters' },
+        { message: apiMessages.passwordMinLength },
         { status: 400 }
       )
     }
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
     
     if (existingUser) {
       return NextResponse.json(
-        { message: 'User already exists with this email' },
+        { message: apiMessages.userAlreadyExists },
         { status: 409 }
       )
     }
@@ -130,14 +131,14 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error) {
       if (error.message.includes('Unique constraint')) {
         return NextResponse.json(
-          { message: 'User already exists with this email' },
+          { message: apiMessages.userAlreadyExists },
           { status: 409 }
         )
       }
     }
 
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: apiMessages.internalServerError },
       { status: 500 }
     )
   }

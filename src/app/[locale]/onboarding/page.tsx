@@ -100,6 +100,60 @@ const QuestionComponent = ({
           className="rounded-2xl border-2 min-h-[120px]"
         />
       )
+    case 'scale-with-comment': {
+      const scaleAnswer = (answer as { rating?: number; comment?: string } | null) ?? {}
+      const rating = scaleAnswer.rating ?? 0
+      const comment = scaleAnswer.comment ?? ''
+      const scaleOptions: { value: number; emoji: string; labelKey: string }[] = [
+        { value: 1, emoji: '😥', labelKey: 'scaleVeryBad' },
+        { value: 2, emoji: '☹️', labelKey: 'scaleBad' },
+        { value: 3, emoji: '😐', labelKey: 'scaleNormal' },
+        { value: 4, emoji: '🙂', labelKey: 'scaleGood' },
+        { value: 5, emoji: '😊', labelKey: 'scaleExcellent' },
+      ]
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+            {scaleOptions.map((opt) => {
+              const selected = rating === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onChange({ ...scaleAnswer, rating: opt.value, comment })}
+                  className={`flex flex-col items-center gap-2 p-4 min-w-[4.5rem] rounded-2xl border-2 transition-all shadow-sm ${
+                    selected
+                      ? 'border-primary bg-primary/10 shadow-primary/10'
+                      : 'border-[hsl(var(--app-border))] bg-white hover:border-primary/40 hover:bg-muted/30'
+                  }`}
+                >
+                  <span className="text-3xl sm:text-4xl leading-none" role="img" aria-hidden>
+                    {opt.emoji}
+                  </span>
+                  <span className="text-xs font-medium text-center text-foreground/90">
+                    {t(opt.labelKey)}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+          {question.commentLabel && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                {question.commentLabel}
+              </label>
+              <Textarea
+                value={comment}
+                onChange={(e) => onChange({ ...scaleAnswer, rating, comment: e.target.value })}
+                placeholder={t('typeYourAnswer')}
+                rows={3}
+                className="rounded-2xl border-2 min-h-[80px]"
+              />
+            </div>
+          )}
+        </div>
+      )
+    }
     default:
       return (
         <Input
@@ -155,14 +209,22 @@ function OnboardingPageContent() {
     setError(null)
   }
 
+  const isAnswerEmpty = (q: OnboardingQuestion, value: OnboardingAnswerValue) => {
+    if (q.type === 'scale-with-comment') {
+      const o = value as { rating?: number } | null
+      return !o || typeof o.rating !== 'number' || o.rating < 1 || o.rating > 5
+    }
+    return value == null || value === ''
+  }
+
   const nextQuestion = () => {
     const currentQuestion = flatQuestions[currentQuestionIndex]
-    
-    if (currentQuestion.required && !answers[currentQuestion.id]) {
+
+    if (currentQuestion.required && isAnswerEmpty(currentQuestion, answers[currentQuestion.id])) {
       setError(t('required'))
       return
     }
-    
+
     if (currentQuestionIndex < flatQuestions.length - 1) {
       setCurrentQuestionIndex((i) => i + 1)
       setError(null)
@@ -180,7 +242,7 @@ function OnboardingPageContent() {
     e.preventDefault()
     
     const unansweredRequired = flatQuestions.filter(
-      q => q.required && !answers[q.id]
+      q => q.required && isAnswerEmpty(q, answers[q.id])
     )
     
     if (unansweredRequired.length > 0) {

@@ -4,6 +4,9 @@ export const env = {
   STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
   MAILGUN_API_KEY: process.env.MAILGUN_API_KEY || '',
   MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN || '',
+  /** Azure Communication Services — рассылка (приоритет над Mailgun при наличии) */
+  AZURE_COMMUNICATION_CONNECTION_STRING: process.env.AZURE_COMMUNICATION_CONNECTION_STRING || '',
+  AZURE_COMMUNICATION_EMAIL_SENDER: process.env.AZURE_COMMUNICATION_EMAIL_SENDER || '',
   GOOGLE_ANALYTICS_ID: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || '',
   AI_API_URL: process.env.NEXT_PUBLIC_AI_API_URL || '',
   AI_API_KEY: process.env.NEXT_PUBLIC_AI_API_KEY || '',

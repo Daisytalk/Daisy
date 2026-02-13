@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/shared/lib/database'
 import { AuthService } from '@/shared/lib/auth'
 import type { User } from '@/shared/types/auth'
+import { apiMessages } from '@/shared/api-messages'
 
 /**
  * Альтернативный callback (/api/auth/google/callback).
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const code = searchParams.get('code')
-    if (!code) return NextResponse.json({ message: 'Missing code' }, { status: 400 })
+    if (!code) return NextResponse.json({ message: apiMessages.missingCode }, { status: 400 })
 
     const clientId = process.env.GOOGLE_CLIENT_ID
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
 
     if (!tokenRes.ok) {
       const txt = await tokenRes.text()
-      return NextResponse.json({ message: 'Token exchange failed', detail: txt }, { status: 500 })
+      return NextResponse.json({ message: apiMessages.tokenExchangeFailed, detail: txt }, { status: 500 })
     }
 
     const tokenJson = await tokenRes.json()
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
     })
 
     if (!userInfoRes.ok) {
-      return NextResponse.json({ message: 'Failed to fetch user info' }, { status: 500 })
+      return NextResponse.json({ message: apiMessages.failedToFetchUserInfo }, { status: 500 })
     }
 
     const profile = await userInfoRes.json()
