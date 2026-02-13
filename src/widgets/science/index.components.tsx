@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { getAllResearchPapers, type ResearchPaper } from '@/shared/data/research-papers'
+import Image from 'next/image'
 
 // Group papers into sets of 3 for carousel
 const allPapers = getAllResearchPapers()
@@ -112,7 +113,7 @@ export function ScienceSection() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="relative flex flex-col overflow-hidden rounded-2xl bg-[#D1E2D3]/50 hover:bg-[#D1E2D3]/70 transition-colors cursor-pointer"
                 >
-                  <img src={article.imageUrl} alt={article.title} className="h-56 w-full object-cover" />
+                  <Image src={article.imageUrl} alt={article.title} className="h-56 w-full object-cover" />
                   <div className="flex flex-1 flex-col justify-between p-6">
                     <div>
                       <div className="text-sm leading-6 text-gray-600">

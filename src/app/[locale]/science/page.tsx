@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { getAllResearchPapers } from '@/shared/data/research-papers'
+import Image from 'next/image'
 
 interface PageProps {
   params: Promise<{
@@ -43,7 +44,7 @@ export default async function SciencePage({ params }: PageProps) {
               className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-900 hover:shadow-lg transition-all"
             >
               <div className="relative h-48 overflow-hidden bg-gray-100">
-                <img
+                <Image
                   src={paper.imageUrl}
                   alt={paper.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { CirclePlus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import Image from 'next/image'
 
 export function BenefitsSection() {
   const t = useTranslations('benefits')
@@ -69,7 +70,7 @@ export function BenefitsSection() {
                   className={`relative p-4 sm:p-6 lg:p-8 ${index < benefits.length - 1 ? 'border-b border-gray-300' : ''}`}
                 >
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 lg:gap-8">
-                    <img
+                    <Image
                       className="h-20 w-32 sm:h-24 sm:w-40 flex-shrink-0 rounded-lg object-cover"
                       src={benefit.imageUrl}
                       alt={benefit.name}

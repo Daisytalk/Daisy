@@ -45,7 +45,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
       {/* Background Image - Mountain landscape */}
       <div className="absolute inset-0 -z-10">
         <video
-          src="videos/main.mp4"
+          src="videos/daisy - starting page.mp4"
           autoPlay
           loop
           muted

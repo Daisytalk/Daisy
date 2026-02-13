@@ -26,7 +26,7 @@ Results indicate that AI-supported interventions, especially chatbots and cognit
 
 The review concludes that AI can complement human therapists and extend the reach of psychotherapy in cost-effective ways. Ethical frameworks, transparency, and clinical oversight are essential to ensure responsible integration. Future research should continue to explore the balance between technological efficiency and the therapeutic relationship at the heart of mental health care.`,
     link: 'https://journals.sagepub.com/doi/full/10.1177/02537176241260819',
-    imageUrl: 'https://plus.unsplash.com/premium_photo-1680608979589-e9349ed066d5?w=420&h=210&fit=crop&crop=center'
+    imageUrl: '/images/Artificial intelligence and psychotherapy.JPG'
   },
   {
     id: '2',
@@ -42,7 +42,7 @@ This systematic review screened 95 studies and included 13 based on eligibility 
 
 Findings support the integration of AI into traditional psychotherapy to expand mental health service delivery. However, successful adoption requires addressing challenges of personalization, data privacy, and therapeutic trust. AI is best positioned as a complementary approach, supporting but not replacing human clinicians in mental health care.`,
     link: 'https://journals.sagepub.com/doi/full/10.1177/09727531231221612',
-    imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=420&h=210&fit=crop&crop=center'
+    imageUrl: '/images/digital mental health.JPG'
   },
   {
     id: '3',
@@ -60,7 +60,7 @@ Nonetheless, AI's role remains limited by its lack of genuine emotional understa
 
 The review concludes that AI cannot replace psychotherapists but can significantly extend the reach of mental health care. The future of psychotherapy lies in a hybrid model, where AI augments human expertise, reduces barriers to access, and ensures that care remains both effective and humane.`,
     link: 'https://www.frontiersin.org/journals/psychiatry/articles/10.3389/fpsyt.2024.1444382/full?trk=public_post_comment-text',
-    imageUrl: 'https://plus.unsplash.com/premium_photo-1723507348942-58d245d27c52?w=420&h=210&fit=crop&crop=center'
+    imageUrl: '/images/Can Ai replace psychotherapists.JPG'
   },
   {
     id: '4',
@@ -74,7 +74,7 @@ The review concludes that AI cannot replace psychotherapists but can significant
 
 Research shows that AI can strengthen the impact of therapy by leveraging data from digital interventions, helping therapists personalize care and optimize treatment strategies. While caution is needed to avoid overreliance on algorithms, the evidence suggests that AI-supported psychotherapy can improve clinical outcomes and make effective mental health care more widely accessible.`,
     link: 'https://onlinelibrary.wiley.com/doi/full/10.1002/capr.12758',
-    imageUrl: 'https://images.unsplash.com/photo-1758691462667-f2fb90a067ff?w=420&h=210&fit=crop&crop=center'
+    imageUrl: '/images/Artificial intelligence and psychotherapy.JPG'
   },
   {
     id: '5',
@@ -90,7 +90,7 @@ Results showed that AI interventions significantly reduced depressive symptoms i
 
 These findings indicate that AI-based psychotherapy can effectively complement traditional care for depression, providing an accessible tool to improve mental health outcomes. Continued research with long-term follow-up is needed to confirm these effects and explore strategies to enhance impact on anxiety and stress.`,
     link: 'https://onlinelibrary.wiley.com/doi/full/10.1155/da/8930012',
-    imageUrl: 'https://images.unsplash.com/photo-1758691463193-9d2b21fdb3ba?w=420&h=210&fit=crop&crop=center'
+    imageUrl: '/images/artificial intelligence based psychographic intervention.JPG'
   },
   {
     id: '6',
@@ -106,7 +106,7 @@ AI-based interventions include conversational chatbots that teach emotional copi
 
 Incorporating AI into psychiatric care offers the potential to complement human clinicians, enhance treatment accessibility, and provide personalized support. At the same time, careful consideration of ethical, privacy, and clinical implications is essential. These AI-driven tools represent a growing frontier in mental health care, with the potential to transform how support is delivered and experienced.`,
     link: 'https://pubmed.ncbi.nlm.nih.gov/35212940/',
-    imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=420&h=210&fit=crop&crop=center'
+    imageUrl: '/images/Artificial_intelligence and chatbots.JPG'
   }
 ]
 

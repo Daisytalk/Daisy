@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { User as UserIcon, Mail, Calendar, Shield, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
@@ -20,13 +20,9 @@ function ProfilePageContent() {
   const { user } = useAuth()
   const router = useRouter()
   const locale = useLocale()
-  const onboardingService = new OnboardingApiService()
+  const onboardingService = useMemo(() => new OnboardingApiService(), [])
 
-  useEffect(() => {
-    if (user) loadData()
-  }, [user])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!user) return
     try {
       const [data, sections] = await Promise.all([
@@ -40,7 +36,11 @@ function ProfilePageContent() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [user, onboardingService])
+
+  useEffect(() => {
+    if (user) loadData()
+  }, [user, loadData])
 
   const getQuestionText = (questionId: string) =>
     questions.find(q => q.id === questionId)?.question || questionId

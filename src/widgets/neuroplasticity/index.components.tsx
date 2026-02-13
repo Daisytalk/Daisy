@@ -5,18 +5,21 @@ import { useTranslations } from 'next-intl'
 
 export function NeuroplasticitySection() {
   const t = useTranslations('neuroplasticity')
-  
+
   return (
     <div className="bg-white py-16 sm:py-24">
       <div className="mx-auto max-w-8xl px-6 lg:px-8">
 
         <div className="relative isolate overflow-hidden transparent px-6 h-[600px] py-16 shadow-2xl rounded-3xl sm:px-16">
           <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&crop=center"
-              alt="Mountain landscape"
-              className="w-full h-full object-cover"
-            />
+            <video
+              src="videos/main.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover">
+            </video>
           </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
