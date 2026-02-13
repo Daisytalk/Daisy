@@ -23,9 +23,12 @@ export function TypewriterText({
   const onCompleteRef = useRef(onComplete)
   const onFirstCharRef = useRef(onFirstChar)
   const firstCharFiredRef = useRef(false)
-  onCompleteRef.current = onComplete
-  onFirstCharRef.current = onFirstChar
   const isComplete = visibleLength >= text.length
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+    onFirstCharRef.current = onFirstChar
+  }, [onComplete, onFirstChar])
 
   useEffect(() => {
     if (visibleLength >= 1 && text.length >= 1 && !firstCharFiredRef.current) {

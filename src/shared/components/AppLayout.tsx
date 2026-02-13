@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useState } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
@@ -45,10 +45,15 @@ export function AppLayout({ children }: AppLayoutProps) {
     router.push(`/${locale}/login`)
   }
 
+  const [now, setNow] = useState(() => typeof window !== 'undefined' ? Date.now() : 0)
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(t)
+  }, [])
   const trialEnded =
     user?.subscriptionStatus === 'trial' &&
     user?.trialEndsAt != null &&
-    new Date(user.trialEndsAt).getTime() < Date.now()
+    new Date(user.trialEndsAt).getTime() < now
 
   return (
     <div className="flex h-screen bg-[hsl(var(--app-bg))]">

@@ -12,7 +12,6 @@ import { OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/s
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
-import { Progress } from '@/shared/ui/progress'
 import { RadioGroup, RadioGroupItem } from '@/shared/ui/radio-group'
 
 const QuestionComponent = ({

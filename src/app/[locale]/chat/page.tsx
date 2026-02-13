@@ -253,14 +253,6 @@ function ChatPageContent() {
     await poll()
   }
 
-  const startNewChat = () => {
-    const tempId = `temp_${Date.now()}`
-    setSessionId(tempId)
-    setMessages([])
-    setInputValue('')
-    localStorage.setItem('active_chat_session', tempId)
-  }
-
   const suggestedPrompts = [
     "Мне тревожно сегодня",
     "Давай поговорим о стрессе",
