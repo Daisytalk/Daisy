@@ -29,7 +29,9 @@ ARG NEXT_PUBLIC_AI_API_URL
 ARG NEXT_PUBLIC_AI_API_KEY
 ENV NEXT_PUBLIC_AI_API_URL=$NEXT_PUBLIC_AI_API_URL
 ENV NEXT_PUBLIC_AI_API_KEY=$NEXT_PUBLIC_AI_API_KEY
-ENV DATABASE_URL="postgresql://daisyadmin:database1%21@daisy.postgres.database.azure.com:5432/postgres?sslmode=require"
+# Для сборки (prisma generate) реальный URL не нужен; в проде App Service передаёт DATABASE_URL в runtime
+ARG DATABASE_URL=postgresql://local:local@localhost:5432/local
+ENV DATABASE_URL=${DATABASE_URL}
 ENV DOCKER_BUILD=true
 
 # Build Next.js
@@ -40,7 +42,6 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV DATABASE_URL="postgresql://daisyadmin:database1%21@daisy.postgres.database.azure.com:5432/postgres?sslmode=require"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -52,6 +53,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
+# Startup: run migrations (DATABASE_URL from App Service), then start Next.js
+COPY scripts/docker-start.sh ./
+RUN chmod +x docker-start.sh
+
 USER nextjs
 
 EXPOSE 3000
@@ -59,5 +64,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# Start Next.js directly (not standalone server.js)
-CMD ["node_modules/.bin/next", "start"]
+# DATABASE_URL задаётся в Azure App Service → Configuration → Application settings
+CMD ["./docker-start.sh"]
