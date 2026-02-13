@@ -311,23 +311,24 @@ function OnboardingPageContent() {
   const progress = ((currentQuestionIndex + 1) / flatQuestions.length) * 100
 
   // Текст вопроса с учётом пола: мужчина → questionM, женщина → questionF, иначе нейтральный question
+  const isKeyLike = (s: string) => !s || s.includes('.questions.') || /^questions\./.test(s)
   const gender = answers['gender'] as string | undefined
   const questionBaseKey = `questions.${currentQuestion.id}`
   const questionTextKey = `${questionBaseKey}.question`
   let translatedQuestion = t(questionTextKey)
   if (gender === 'male') {
     const m = t(`${questionBaseKey}.questionM`)
-    if (m && !m.startsWith('questions.')) translatedQuestion = m
+    if (m && !isKeyLike(m)) translatedQuestion = m
   } else if (gender === 'female') {
     const f = t(`${questionBaseKey}.questionF`)
-    if (f && !f.startsWith('questions.')) translatedQuestion = f
+    if (f && !isKeyLike(f)) translatedQuestion = f
   }
   const commentLabelKey = `questions.${currentQuestion.id}.commentLabel`
   const translatedCommentLabel = t(commentLabelKey)
   const displayQuestion: OnboardingQuestion = {
     ...currentQuestion,
-    question: translatedQuestion && !translatedQuestion.startsWith('questions.') ? translatedQuestion : currentQuestion.question,
-    commentLabel: translatedCommentLabel && !translatedCommentLabel.startsWith('questions.') ? translatedCommentLabel : (currentQuestion.commentLabel ?? t('comment')),
+    question: translatedQuestion && !isKeyLike(translatedQuestion) ? translatedQuestion : currentQuestion.question,
+    commentLabel: translatedCommentLabel && !isKeyLike(translatedCommentLabel) ? translatedCommentLabel : (currentQuestion.commentLabel ?? t('comment')),
   }
 
   return (

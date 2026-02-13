@@ -70,10 +70,13 @@ export function BenefitsSection() {
                   className={`relative p-4 sm:p-6 lg:p-8 ${index < benefits.length - 1 ? 'border-b border-gray-300' : ''}`}
                 >
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 lg:gap-8">
+                    {/* width/height — для next/image; реальный размер и адаптив задаются className */}
                     <Image
                       className="h-20 w-32 sm:h-24 sm:w-40 flex-shrink-0 rounded-lg object-cover"
                       src={benefit.imageUrl}
                       alt={benefit.name}
+                      width={160}
+                      height={96}
                     />
                     <div className="flex-1">
                       <dt className="text-lg sm:text-xl lg:text-2xl font-semibold leading-6 sm:leading-7 text-gray-900">{benefit.name}</dt>

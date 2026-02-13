@@ -113,7 +113,7 @@ export function ScienceSection() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="relative flex flex-col overflow-hidden rounded-2xl bg-[#D1E2D3]/50 hover:bg-[#D1E2D3]/70 transition-colors cursor-pointer"
                 >
-                  <Image src={article.imageUrl} alt={article.title} className="h-56 w-full object-cover" />
+                  <Image src={article.imageUrl} alt={article.title} width={400} height={224} className="h-56 w-full object-cover" />
                   <div className="flex flex-1 flex-col justify-between p-6">
                     <div>
                       <div className="text-sm leading-6 text-gray-600">

@@ -57,6 +57,8 @@ export default async function ScienceArticlePage({ params }: PageProps) {
           <Image
             src={paper.imageUrl}
             alt={paper.title}
+            width={768}
+            height={256}
             className="w-full h-64 object-cover"
           />
         </div>

@@ -193,7 +193,27 @@
     "scaleBad": "Bad",
     "scaleNormal": "Okay",
     "scaleGood": "Good",
-    "scaleExcellent": "Great"
+    "scaleExcellent": "Great",
+    "sections": {
+      "basic-info": { "title": "I. Basic information" },
+      "life-areas": { "title": "II. Life areas (scale 1–5)" }
+    },
+    "questions": {
+      "gender": { "question": "Sex / Gender:" },
+      "family-history": { "question": "Family medical history / genetic conditions: e.g. schizophrenia, diabetes, cardiovascular diseases, etc." },
+      "physical-health": { "question": "Current physical health: e.g. asthma, migraines, digestive issues, hormonal imbalances, etc." },
+      "addictions": { "question": "Any addictions or dependencies? e.g. alcohol, smoking, drugs, gambling, internet/gaming, etc." },
+      "professional-life": { "question": "Work or studies: how do you feel in this area?", "commentLabel": "What would you like to improve? (interest, stress, productivity, relationships with colleagues/classmates)" },
+      "romantic-relationships": { "question": "Intimate / romantic relationships: how satisfied are you (if any)? (quality, stability, support, conflicts)", "commentLabel": "Comment" },
+      "family-relationships": { "question": "Family (parents, children, relatives): how are relationships? (support, conflicts, responsibilities)", "commentLabel": "Comment" },
+      "social-relationships": { "question": "Friends and social circle: do you have supportive people around?", "commentLabel": "Comment" },
+      "autonomy": { "question": "Being alone / autonomy: how comfortable are you spending time with yourself?", "commentLabel": "Comment" },
+      "physical-health-rating": { "question": "Physical health: how would you rate it? (sleep, nutrition, chronic conditions, energy)", "commentLabel": "Comment" },
+      "emotional-wellbeing": { "question": "Emotional well-being: how often do you feel discomfort? (anxiety, low mood, mood swings)", "commentLabel": "Comment" },
+      "leisure-hobbies": { "question": "Leisure and hobbies: do you have regular activities that bring joy and relaxation?", "commentLabel": "Comment" },
+      "living-conditions": { "question": "Living conditions and safety: do you feel safe and comfortable?", "commentLabel": "Comment" },
+      "financial-status": { "question": "Financial situation: how financially secure do you feel?", "commentLabel": "Comment" }
+    }
   },
   "helpTopics": {
     "howItWorks": "How It Works",
@@ -267,11 +287,11 @@
     "title": "See How Daisy Supports You",
     "subtitle": "Experience a real conversation with our AI-powered mental health assistant",
     "getHelp": "Get Help",
-    "message1User": "Hi! Lately I've been feeling down. I can't focus on work and constantly feel anxious...",
-    "message2Bot": "Hello! I understand how difficult it can be to deal with anxiety. Let's figure this out together. How long have you noticed these symptoms? Have you tried any relaxation techniques before?",
-    "message3User": "It started about a month ago. I tried breathing exercises, but I'm not sure if I'm doing them correctly. Can you suggest something simple to start with?",
-    "message4Bot": "Of course! Let's start with a simple meditation. I suggest trying the '5-5-5' technique: inhale for 5 seconds, hold for 5 seconds, exhale for 5 seconds. Practice this exercise for 5 minutes. Would you like to try it now?",
-    "message5User": "Yes, let's try! Honestly, I already feel better just being able to discuss this with someone.",
-    "message6Bot": "That's wonderful! Remember that you're not alone on this journey. Let's start the meditation, and afterward, I'll teach you some more useful techniques that will help you deal with stress in everyday life."
+    "message1User": "I'm 25, and I feel like everything is falling apart. Constant anxiety, I can't manage my emotions, complete burnout at work... I don't even know what to do about it.",
+    "message2Bot": "Thank you for trusting me with this. I understand how hard this is for you right now - that feeling when it seems like everything has piled on top of you and you're losing control. Anxiety, emotional exhaustion, burnout - these are very real and heavy states to carry. The fact that you reached out for support already shows your strength, even if you don't feel it right now. Tell me, how long have you been feeling this way? And what feels the hardest for you right now?",
+    "message3User": "Probably the last few months... It's especially hard at work. Deadlines, demands, I'm constantly on edge, and my boss is a really toxic person. Then I come home and I just can't do anything - can't rest, can't sleep normally, thoughts keep spinning, my heart races, I can't relax.",
+    "message4Bot": "What you're describing are classic signs of burnout and anxiety. Your body and mind are signaling that you've been running on overdrive for too long without enough recovery. Several months of constant stress - that's an enormous load on your nervous system. Racing heart, insomnia, spinning thoughts - these are all your body's reactions to burnout. Tell me, are there any moments in your life right now when you feel even a little bit calmer?",
+    "message5User": "Maybe when I go for walks... Or when I meet up with my friend, but that's rare. Mostly I'm just working or lying at home without energy, even on weekends.",
+    "message6Bot": "I see something really important here - walks and spending time with your friend bring you some relief, even if it's rare. These are clues from your body about what it needs. Right now you're living in survival mode: work - exhaustion - work. It's like a closed loop where you only give and nothing comes back, so your energy never gets restored. I want to remind you that you deserve to take care of yourself - not as a reward for being productive, but as part of your routine, where you actively care for yourself. Let's think together: what would be one small step you could take this week to give yourself even a little space to recover? No pressure, let's just look at what possibilities you have right now."
   }
 }

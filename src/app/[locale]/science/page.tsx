@@ -47,6 +47,8 @@ export default async function SciencePage({ params }: PageProps) {
                 <Image
                   src={paper.imageUrl}
                   alt={paper.title}
+                  width={480}
+                  height={192}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
