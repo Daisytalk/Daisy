@@ -30,6 +30,17 @@ jobs:
         with:
           version: 10
 
+      - name: Run database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -n "$DATABASE_URL" ]; then
+            pnpm install --frozen-lockfile
+            pnpm prisma migrate deploy
+          else
+            echo "DATABASE_URL not set, skipping migrations"
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

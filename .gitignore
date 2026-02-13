@@ -37,8 +37,8 @@ app-logs/
 next-env.d.ts
 .vscode/
 .kiro/
-# prisma
-/prisma/migrations
+# prisma (migrations are versioned; do not ignore)
+# /prisma/migrations — removed so migrations are pushed
 
 BuildError.txt
 
