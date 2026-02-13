@@ -32,25 +32,51 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const decoded = AuthService.verifyToken(token)
-
-    if (!decoded || !decoded.userId) {
+    let decoded: { userId?: string; subscriptionStatus?: string; trialEndsAt?: Date | null } | null = null
+    try {
+      decoded = AuthService.verifyToken(token)
+    } catch (verifyErr) {
+      const msg = verifyErr instanceof Error ? verifyErr.message : String(verifyErr)
+      console.error('Me endpoint: verifyToken threw', msg)
+      if (msg.includes('JWT_SECRET')) {
+        return NextResponse.json(
+          { message: 'Server configuration error' },
+          { status: 500 }
+        )
+      }
       return NextResponse.json(
         { message: 'Invalid or expired token' },
         { status: 401 }
       )
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-      }
-    })
+    const userId = decoded?.userId ?? (decoded as { id?: string })?.id
+    if (!userId) {
+      return NextResponse.json(
+        { message: 'Invalid or expired token' },
+        { status: 401 }
+      )
+    }
+
+    let user: { id: string; email: string; name: string | null; createdAt: Date; updatedAt: Date } | null = null
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          createdAt: true,
+          updatedAt: true,
+        }
+      })
+    } catch (dbErr) {
+      console.error('Me endpoint: database error', dbErr)
+      return NextResponse.json(
+        { message: 'Service temporarily unavailable' },
+        { status: 503 }
+      )
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -59,9 +85,15 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const onboardingData = await prisma.onboardingData.findUnique({
-      where: { userId: user.id },
-    })
+    let onboardingData: { completed: boolean } | null = null
+    try {
+      onboardingData = await prisma.onboardingData.findUnique({
+        where: { userId: user.id },
+        select: { completed: true },
+      })
+    } catch {
+      // не критично — вернём isOnboarded: false
+    }
 
     const responseUser: User = {
       id: user.id,
@@ -70,28 +102,27 @@ export async function GET(request: NextRequest) {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       isOnboarded: onboardingData?.completed ?? false,
-      subscriptionStatus: decoded.subscriptionStatus,
-      trialEndsAt: decoded.trialEndsAt,
+      subscriptionStatus: (decoded?.subscriptionStatus as User['subscriptionStatus']) ?? 'trial',
+      trialEndsAt: decoded?.trialEndsAt ?? null,
     }
 
     return NextResponse.json(responseUser)
 
   } catch (error) {
-    console.error('Me endpoint error:', error)
+    const err = error instanceof Error ? error : new Error(String(error))
+    console.error('Me endpoint error:', err.message, err.name, err.stack)
 
-    if (error instanceof Error) {
-      if (error.name === 'TokenExpiredError') {
-        return NextResponse.json(
-          { message: 'Token has expired' },
-          { status: 401 }
-        )
-      }
-      if (error.name === 'JsonWebTokenError') {
-        return NextResponse.json(
-          { message: 'Invalid token' },
-          { status: 401 }
-        )
-      }
+    if (err.name === 'TokenExpiredError') {
+      return NextResponse.json(
+        { message: 'Token has expired' },
+        { status: 401 }
+      )
+    }
+    if (err.name === 'JsonWebTokenError') {
+      return NextResponse.json(
+        { message: 'Invalid token' },
+        { status: 401 }
+      )
     }
 
     return NextResponse.json(

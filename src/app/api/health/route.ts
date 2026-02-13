@@ -28,7 +28,7 @@ export async function GET() {
       {
         status: 'db_error',
         error: dbError,
-        hint: 'Check connection string; if error mentions a column, run: npx prisma migrate deploy',
+        hint: 'Azure: проверьте DATABASE_URL в Configuration → Application settings; добавьте свой IP в Firewall правила PostgreSQL; миграции выполняются при старте контейнера (scripts/docker-start.sh).',
         timestamp: new Date().toISOString(),
       },
       { status: 503 }
@@ -38,8 +38,8 @@ export async function GET() {
   return NextResponse.json(
     {
       status: 'healthy',
+      database: 'connected',
       timestamp: new Date().toISOString(),
-      nextVersion: '16.0.7',
     },
     { status: 200 }
   );
