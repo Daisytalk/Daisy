@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
 import Image from 'next/image'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useLocale, useTranslations } from 'next-intl'
@@ -262,13 +262,20 @@ function ChatPageContent() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col h-full min-h-0 bg-[hsl(var(--app-bg))]">
-        <div className="flex-1 overflow-y-auto relative">
-          {/* Фон личного кабинета — вся область чата */}
-          <div className="absolute inset-0 pointer-events-none z-0">
-            <Image src="/images/cabinet.png" alt="" fill className="object-cover object-center opacity-[0.12]" priority />
-          </div>
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 relative z-10">
+      <div className="flex flex-col h-full min-h-0 relative bg-[hsl(var(--app-bg))]">
+        {/* Фон с ромашкой (cabinet.png): чуть уменьшен и прижат к правому низу, чтобы ромашка влезала */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          <Image
+            src="/images/cabinet.png"
+            alt=""
+            fill
+            className="object-cover object-right-bottom opacity-[0.22] min-w-[120%] min-h-[120%] w-[120%] h-[120%] -translate-x-[8%] -translate-y-[8%]"
+            priority
+            aria-hidden
+          />
+        </div>
+        <div className="flex-1 overflow-y-auto relative z-10">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
             {messages.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
@@ -427,7 +434,7 @@ function ChatPageContent() {
           </div>
         </div>
 
-        <div className="shrink-0 p-4 sm:p-6 bg-[hsl(var(--app-bg))]">
+        <div className="shrink-0 p-4 sm:p-6 relative z-10 bg-[hsl(var(--app-bg))]/60 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
             <div className="flex items-end gap-3 p-2 rounded-2xl bg-white border-2 border-[hsl(var(--app-border))] shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
               <Textarea
@@ -448,9 +455,9 @@ function ChatPageContent() {
               <Button
                 type="submit"
                 disabled={isLoading || !inputValue.trim()}
-                className="h-11 w-11 shrink-0 rounded-xl"
+                className="h-11 w-11 shrink-0 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all duration-200"
               >
-                <Send className="w-4 h-4" />
+                <ArrowUp className="w-4 h-4" />
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground text-center" role="note">
