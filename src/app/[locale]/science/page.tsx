@@ -9,9 +9,31 @@ interface PageProps {
   }>
 }
 
+const sciencePageText = {
+  ru: {
+    backToHome: 'На главную',
+    title: 'Наука за Daisy',
+    subtitle: 'Читай последние научные публикации о роли ИИ и цифровых решений в поддержке ментального благополучия.',
+    readMore: 'Читать далее',
+    ctaTitle: 'Попробуй поддержку на основе научных данных',
+    ctaDesc: 'Daisy сочетает последние исследования ИИ с проверенными терапевтическими методами для доступной и персонализированной поддержки.',
+    talkToDaisy: 'Поговорить с Daisy',
+  },
+  en: {
+    backToHome: 'Back to Home',
+    title: 'The Science Behind Daisy',
+    subtitle: 'Explore the latest scientific research on AI and digital solutions in supporting mental well-being.',
+    readMore: 'Read more',
+    ctaTitle: 'Experience Evidence-Based Mental Health Support',
+    ctaDesc: 'Daisy combines the latest AI research with proven therapeutic techniques for accessible, personalized support.',
+    talkToDaisy: 'Talk to Daisy',
+  },
+}
+
 export default async function SciencePage({ params }: PageProps) {
   const { locale } = await params
   const papers = getAllResearchPapers()
+  const t = sciencePageText[locale as keyof typeof sciencePageText] || sciencePageText.en
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -22,15 +44,14 @@ export default async function SciencePage({ params }: PageProps) {
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-8 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            {t.backToHome}
           </Link>
 
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            The Science Behind Daisy
+            {t.title}
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl">
-            Explore the latest scientific research on artificial intelligence and digital solutions 
-            in supporting mental health care.
+            {t.subtitle}
           </p>
         </div>
       </div>
@@ -43,13 +64,13 @@ export default async function SciencePage({ params }: PageProps) {
               href={`/${locale}/science/${paper.slug}`}
               className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-900 hover:shadow-lg transition-all"
             >
-              <div className="relative h-48 overflow-hidden bg-gray-100">
+              <div className="relative h-60 overflow-hidden">
                 <Image
                   src={paper.imageUrl}
                   alt={paper.title}
                   width={480}
-                  height={192}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  height={270}
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="p-6">
@@ -68,7 +89,7 @@ export default async function SciencePage({ params }: PageProps) {
                   {(locale === 'ru' ? paper.abstractRu : paper.abstract).split('\n\n')[0]}
                 </p>
                 <div className="mt-4 inline-flex items-center text-gray-900 text-sm font-semibold group-hover:gap-2 transition-all">
-                  <span>Read more</span>
+                  <span>{t.readMore}</span>
                   <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
                 </div>
               </div>
@@ -80,17 +101,16 @@ export default async function SciencePage({ params }: PageProps) {
       <div className="bg-gray-900 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">
-            Experience Evidence-Based Mental Health Support
+            {t.ctaTitle}
           </h2>
           <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-            Daisy combines the latest AI research with proven therapeutic techniques to provide 
-            accessible, personalized mental health care.
+            {t.ctaDesc}
           </p>
           <Link
             href={`/${locale}/onboarding`}
             className="inline-block px-8 py-4 bg-[#FFDC61] text-black font-semibold rounded-lg hover:bg-[#FFDC61]/90 transition-colors"
           >
-            Talk to Daisy
+            {t.talkToDaisy}
           </Link>
         </div>
       </div>

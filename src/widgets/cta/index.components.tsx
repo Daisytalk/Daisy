@@ -32,7 +32,7 @@ export function CTASection({ onGetStarted }: CTASectionProps) {
           viewport={{ once: true }}
           className="mx-auto max-w-2xl text-center"
         >
-          <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+          <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl whitespace-pre-line">
             {t('title')}
           </h2>
           <div className="mt-10 flex items-center justify-center gap-x-6">

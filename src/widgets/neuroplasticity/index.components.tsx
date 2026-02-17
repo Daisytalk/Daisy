@@ -32,10 +32,10 @@ export function NeuroplasticitySection() {
               {t('subtitle')}
             </p>
             <div>
-              <h2 className="mt-6 text-2xl font-semibold tracking-tight text-white sm:text-4xl">
+              <h2 className="mt-6 text-2xl font-semibold tracking-tight text-white sm:text-4xl whitespace-pre-line">
                 {t('title')}
               </h2>
-              <h4 className="mt-6 text-base leading-8 text-gray-300">
+              <h4 className="mt-6 text-base leading-8 text-gray-300 whitespace-pre-line">
                 {t('description')}
               </h4>
               <div className="mt-10">

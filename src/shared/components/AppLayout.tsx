@@ -35,8 +35,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     { name: t('history'), href: `/${locale}/history`, icon: History },
   ]
 
-  const isChatPage = pathname === `/${locale}/chat` || pathname === `/${locale}/chat/`
-
   const handleLogout = async () => {
     await logout()
     router.push(`/${locale}/login`)
@@ -90,16 +88,14 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
 
           <nav className="flex-1 p-3 space-y-1">
-            {isChatPage && (
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-3 h-12 rounded-2xl border-2"
-                onClick={() => { router.push(`/${locale}/chat?new=1`); setSidebarOpen(false) }}
-              >
-                <Plus className="w-5 h-5 shrink-0" />
-                <span className="font-medium">{tChat('newChat')}</span>
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-3 h-12 rounded-2xl border-2"
+              onClick={() => { router.push(`/${locale}/chat?new=1`); setSidebarOpen(false) }}
+            >
+              <Plus className="w-5 h-5 shrink-0" />
+              <span className="font-medium">{tChat('newChat')}</span>
+            </Button>
             {navigation.map((item) => (
               <Button
                 key={item.name}

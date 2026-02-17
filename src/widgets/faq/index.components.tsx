@@ -45,7 +45,7 @@ export function FAQSection() {
   }
 
   return (
-    <div className="bg-white py-16 sm:py-20">
+    <div id="faq" className="bg-white py-16 sm:py-20 scroll-mt-20">
       <div className="mx-auto max-w-8xl px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

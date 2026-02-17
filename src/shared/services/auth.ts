@@ -125,4 +125,52 @@ export class AuthApiService implements IAuthService {
 
     return response.json()
   }
+
+  async exportAccountData(): Promise<unknown> {
+    const headers: HeadersInit = {}
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token')
+      if (token) headers['Authorization'] = `Bearer ${token}`
+    }
+    const response = await fetch('/api/account/export', { credentials: 'include', headers })
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.error || 'Export failed')
+    }
+    return response.json()
+  }
+
+  async clearMemory(): Promise<void> {
+    const headers: HeadersInit = {}
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token')
+      if (token) headers['Authorization'] = `Bearer ${token}`
+    }
+    const response = await fetch('/api/account/memory', {
+      method: 'DELETE',
+      credentials: 'include',
+      headers,
+    })
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.error || 'Failed to clear memory')
+    }
+  }
+
+  async deleteAccount(): Promise<void> {
+    const headers: HeadersInit = {}
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token')
+      if (token) headers['Authorization'] = `Bearer ${token}`
+    }
+    const response = await fetch('/api/account/delete', {
+      method: 'DELETE',
+      credentials: 'include',
+      headers,
+    })
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.error || 'Failed to delete account')
+    }
+  }
 }

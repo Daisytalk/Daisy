@@ -21,7 +21,8 @@ export default function RegisterPage() {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    consentDataProcessing: false,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,6 +41,10 @@ export default function RegisterPage() {
     }
     if (formData.password.length < 8) {
       setError(t('passwordTooShort'))
+      return
+    }
+    if (!formData.consentDataProcessing) {
+      setError(t('consentRequired'))
       return
     }
     setIsLoading(true)
@@ -76,7 +81,11 @@ export default function RegisterPage() {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value, type, checked } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }))
   }
 
   const passwordStrength = formData.password.length > 0
@@ -218,6 +227,20 @@ export default function RegisterPage() {
                 </button>
               </div>
             </div>
+
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                name="consentDataProcessing"
+                checked={formData.consentDataProcessing}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="mt-1 rounded border-input"
+              />
+              <span className="text-sm text-muted-foreground group-hover:text-foreground">
+                {t('consentDataProcessing')}
+              </span>
+            </label>
 
             <Button type="submit" className="w-full h-12 rounded-2xl font-medium" disabled={isLoading}>
               {isLoading ? t('creatingAccount') : t('createAccount')}

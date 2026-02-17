@@ -11,6 +11,9 @@ export type PlanId = 'month_1' | 'month_3' | 'month_6'
 export interface PlanInfo {
   id: PlanId
   name: string
+  nameBold?: string
+  nameItalic?: string
+  priceDisplay?: string
   price: number
   /** Длительность в месяцах */
   durationMonths: number
@@ -34,15 +37,14 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
     {
       id: 'month_1',
       name: t('plan1Name'),
-      price: 15,
+      nameBold: t('plan1NameBold'),
+      nameItalic: t('plan1NameItalic'),
+      priceDisplay: t('plan1Price'),
+      price: 7500,
       durationMonths: 1,
       period: t('perMonth'),
       description: t('plan1Desc'),
-      features: [
-        t('feature1'),
-        t('feature2'),
-        t('feature3')
-      ],
+      features: [],
       popular: false,
       cta: t('plan1Cta'),
       savings: null
@@ -50,37 +52,31 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
     {
       id: 'month_3',
       name: t('plan2Name'),
-      price: 40,
+      nameBold: t('plan2NameBold'),
+      nameItalic: t('plan2NameItalic'),
+      priceDisplay: t('plan2Price'),
+      price: 20000,
       durationMonths: 3,
       period: t('for3Months'),
-      originalPrice: 45,
+      originalPrice: 22500,
       description: t('plan2Desc'),
-      features: [
-        t('feature4'),
-        t('feature5'),
-        t('feature6'),
-      ],
+      features: [],
       popular: true,
       cta: t('plan2Cta'),
-      savings: `${t('save')} $5`
+      savings: `${t('save')} 2 500 ₸`
     },
     {
       id: 'month_6',
       name: t('plan3Name'),
-      price: 75,
+      nameBold: t('plan3NameBold'),
+      nameItalic: t('plan3NameItalic'),
+      priceDisplay: t('plan3Price'),
+      price: 40000,
       durationMonths: 6,
       period: t('for6Months'),
-      originalPrice: 90,
+      originalPrice: 45000,
       description: t('plan3Desc'),
-      features: [
-        t('feature7'),
-        t('feature8'),
-        t('feature9'),
-        t('feature10'),
-        t('feature11'),
-        t('feature12'),
-        t('feature13')
-      ],
+      features: [],
       popular: false,
       cta: t('plan3Cta'),
       savings: t('oneMonthFree')
@@ -127,17 +123,23 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
               )}
               
               <div className="p-6 sm:p-8">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <p className="text-sm sm:text-base text-gray-600 mb-6">{plan.description}</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                  {plan.nameBold ? (
+                    <><span className="font-bold">{plan.nameBold}</span> — <span className="italic font-normal">{plan.nameItalic}</span></>
+                  ) : (
+                    plan.name
+                  )}
+                </h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-6 whitespace-pre-line">{plan.description}</p>
                 
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl sm:text-4xl font-bold text-gray-900">${plan.price}</span>
+                    <span className="text-3xl sm:text-4xl font-bold text-gray-900">{plan.priceDisplay ?? `$${plan.price}`}</span>
                     <span className="text-sm sm:text-base text-gray-600">{plan.period}</span>
                   </div>
-                  {plan.originalPrice && (
+                  {plan.originalPrice && plan.savings && (
                     <div className="mt-2 flex items-center gap-2">
-                      <span className="text-base sm:text-lg text-gray-500 line-through">${plan.originalPrice}</span>
+                      <span className="text-base sm:text-lg text-gray-500 line-through">{plan.originalPrice.toLocaleString('ru-KZ')} ₸</span>
                       <span className="text-xs sm:text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
                         {plan.savings}
                       </span>

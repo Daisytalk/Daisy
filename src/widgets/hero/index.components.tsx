@@ -23,6 +23,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
     { name: t('howItWorks'), href: '#how-it-works' },
     { name: t('whyDaisy'), href: '#about' },
     { name: t('pricing'), href: '#pricing' },
+    { name: t('faq'), href: '#faq' },
   ]
 
   const features = [
@@ -162,7 +163,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           transition={{ duration: 0.8 }}
           className="text-center mb-8 sm:mb-12 lg:mb-16 pt-16 sm:pt-20 lg:pt-0 px-2"
         >
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium tracking-tight text-white leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium tracking-tight text-white leading-tight whitespace-pre-line">
             {t('title')}
           </h1>
         </motion.div>
@@ -199,7 +200,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                       <div className="text-white">
                         <feature.icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" aria-hidden="true" />
                       </div>
-                      <div className="text-xs sm:text-sm font-semibold text-white text-center">{feature.name}</div>
+                      <div className="text-xs sm:text-sm font-semibold text-white text-center whitespace-pre-line">{feature.name}</div>
                       {index < features.length - 1 && <div className="hidden sm:block h-6 lg:h-8 w-px bg-white/50"></div>}
                     </div>
                   ))}

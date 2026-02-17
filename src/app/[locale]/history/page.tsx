@@ -101,18 +101,9 @@ function HistoryPageContent() {
     <AppLayout>
       <div className="h-full flex flex-col bg-[hsl(var(--app-bg))]">
         <div className="shrink-0 border-b border-[hsl(var(--app-border))] bg-white px-4 sm:px-6 py-4">
-          <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">{t('subtitle')}</p>
-            </div>
-            <button
-              onClick={startNewChat}
-              className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-2xl bg-primary text-primary-foreground font-medium hover:opacity-95 transition-opacity shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              {t('newChat')}
-            </button>
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">{t('subtitle')}</p>
           </div>
         </div>
 

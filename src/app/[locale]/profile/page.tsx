@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { User as UserIcon, Mail, Calendar, Shield, MessageCircle } from 'lucide-react'
+import { User as UserIcon, Mail, Calendar, Shield, MessageCircle, Download, Trash2, Brain, AlertTriangle } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
+import { AuthApiService } from '@/shared/services/auth'
 import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
@@ -17,7 +18,10 @@ function ProfilePageContent() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const { user } = useAuth()
+  const [accountAction, setAccountAction] = useState<'idle' | 'exporting' | 'clearing' | 'deleting'>('idle')
+  const [accountError, setAccountError] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const { user, logout } = useAuth()
   const router = useRouter()
   const locale = useLocale()
   const onboardingService = useMemo(() => new OnboardingApiService(), [])
@@ -176,6 +180,129 @@ function ProfilePageContent() {
                 <MessageCircle className="w-4 h-4" />
                 Открыть чат
               </button>
+            </section>
+
+            <section>
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Данные и приватность</h2>
+              <div className="rounded-2xl border border-[hsl(var(--app-border))] bg-white overflow-hidden divide-y divide-[hsl(var(--app-border))]">
+                {accountError && (
+                  <div className="flex items-center gap-3 p-4 bg-destructive/10 text-destructive">
+                    <AlertTriangle className="w-5 h-5 shrink-0" />
+                    <p className="text-sm">{accountError}</p>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-4 p-4">
+                  <div className="flex items-center gap-3">
+                    <Download className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <div>
+                      <p className="font-medium text-foreground">Экспорт данных</p>
+                      <p className="text-xs text-muted-foreground">Скачать все свои данные (GDPR)</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setAccountError(null)
+                      setAccountAction('exporting')
+                      try {
+                        const authService = new AuthApiService()
+                        const data = await authService.exportAccountData()
+                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = `daisy-export-${new Date().toISOString().slice(0, 10)}.json`
+                        a.click()
+                        URL.revokeObjectURL(url)
+                      } catch (e) {
+                        setAccountError(e instanceof Error ? e.message : 'Ошибка экспорта')
+                      } finally {
+                        setAccountAction('idle')
+                      }
+                    }}
+                    disabled={accountAction !== 'idle'}
+                    className="px-4 py-2 rounded-xl text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
+                  >
+                    {accountAction === 'exporting' ? 'Скачивание...' : 'Скачать'}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between gap-4 p-4">
+                  <div className="flex items-center gap-3">
+                    <Brain className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <div>
+                      <p className="font-medium text-foreground">Очистить память</p>
+                      <p className="text-xs text-muted-foreground">Удалить накопленные факты о тебе</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setAccountError(null)
+                      setAccountAction('clearing')
+                      try {
+                        const authService = new AuthApiService()
+                        await authService.clearMemory()
+                      } catch (e) {
+                        setAccountError(e instanceof Error ? e.message : 'Ошибка')
+                      } finally {
+                        setAccountAction('idle')
+                      }
+                    }}
+                    disabled={accountAction !== 'idle'}
+                    className="px-4 py-2 rounded-xl text-sm font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 disabled:opacity-50"
+                  >
+                    {accountAction === 'clearing' ? 'Очистка...' : 'Очистить'}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between gap-4 p-4">
+                  <div className="flex items-center gap-3">
+                    <Trash2 className="w-5 h-5 text-destructive shrink-0" />
+                    <div>
+                      <p className="font-medium text-foreground">Удалить аккаунт</p>
+                      <p className="text-xs text-muted-foreground">Безвозвратно удалить все данные</p>
+                    </div>
+                  </div>
+                  {showDeleteConfirm ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={async () => {
+                          setAccountError(null)
+                          setAccountAction('deleting')
+                          try {
+                            const authService = new AuthApiService()
+                            await authService.deleteAccount()
+                            localStorage.removeItem('auth_token')
+                            localStorage.removeItem('user')
+                            await logout()
+                            window.location.href = `/${locale}`
+                          } catch (e) {
+                            setAccountError(e instanceof Error ? e.message : 'Ошибка удаления')
+                          } finally {
+                            setAccountAction('idle')
+                            setShowDeleteConfirm(false)
+                          }
+                        }}
+                        disabled={accountAction !== 'idle'}
+                        className="px-4 py-2 rounded-xl text-sm font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+                      >
+                        {accountAction === 'deleting' ? 'Удаление...' : 'Подтвердить'}
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        disabled={accountAction !== 'idle'}
+                        className="px-4 py-2 rounded-xl text-sm font-medium border border-input hover:bg-muted disabled:opacity-50"
+                      >
+                        Отмена
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="px-4 py-2 rounded-xl text-sm font-medium text-destructive border border-destructive/50 hover:bg-destructive/10"
+                    >
+                      Удалить
+                    </button>
+                  )}
+                </div>
+              </div>
             </section>
           </div>
         </div>

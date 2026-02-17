@@ -2,7 +2,8 @@
 
 import { Mail, MapPin } from 'lucide-react'
 import { FaTiktok, FaInstagram } from 'react-icons/fa'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import Link from 'next/link'
 import { NewsletterForm } from '@/features/newsletter-signup'
 
 interface FooterSectionProps {
@@ -11,6 +12,7 @@ interface FooterSectionProps {
 
 export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
   const t = useTranslations('footer')
+  const locale = useLocale()
   return (
     <footer className="bg-white border-t border-gray-200">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
@@ -51,8 +53,8 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
             <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 lg:mb-6">{t('resources')}</h3>
             <ul className="space-y-2 sm:space-y-3">
               <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('crisisResources')}</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('faq')}</a></li>
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('supportCenter')}</a></li>
+              <li><Link href={`/${locale}#faq`} className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('faq')}</Link></li>
+              <li><Link href={`/${locale}/resources`} className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('trustSafetyTitle')}</Link></li>
             </ul>
           </div>
 
@@ -95,9 +97,12 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-end space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-3 text-xs sm:text-sm text-gray-600 text-center">
-              <span className="flex items-center whitespace-nowrap">{t('hipaaCompliant')}</span>
-              <span className="flex items-center whitespace-nowrap">{t('securePlatform')}</span>
+            <div className="flex flex-wrap items-center justify-center lg:justify-end gap-x-3 gap-y-2 text-[10px] sm:text-xs text-gray-600 text-center">
+              <span className="flex items-center whitespace-nowrap">🇪🇺 Соответствие GDPR</span>
+              <span className="flex items-center whitespace-nowrap">🔒 HIPAA-aligned</span>
+              <span className="flex items-center whitespace-nowrap">🛡 SOC 2 Type II</span>
+              <span className="flex items-center whitespace-nowrap">🧠 OECD/EU AI Act</span>
+              <span className="flex items-center whitespace-nowrap">🚫 Без передачи третьим лицам</span>
             </div>
           </div>
         </div>
