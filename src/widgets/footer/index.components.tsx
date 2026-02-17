@@ -5,6 +5,7 @@ import { FaTiktok, FaInstagram } from 'react-icons/fa'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { NewsletterForm } from '@/features/newsletter-signup'
+import Image from 'next/image'
 
 interface FooterSectionProps {
   onNewsletterSubmit?: (email: string) => Promise<void>
@@ -20,7 +21,7 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center space-x-2 mb-4 sm:mb-6">
-              <img src="/images/logo-dark.svg" className="h-10 sm:h-12 lg:h-16 w-auto" alt="Daisy logo" />
+              <Image src="/images/logo-dark.svg" className="h-10 sm:h-12 lg:h-16 w-auto" alt="Daisy logo" width={48} height={48} priority />
             </div>
             <p className="text-gray-600 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
               {t('tagline')}
@@ -52,7 +53,7 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
           <div className="sm:col-span-1">
             <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 lg:mb-6">{t('resources')}</h3>
             <ul className="space-y-2 sm:space-y-3">
-              <li><a href="#" className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('crisisResources')}</a></li>
+              <li><Link href={`/${locale}/crisis-resources`} className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('crisisResources')}</Link></li>
               <li><Link href={`/${locale}#faq`} className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('faq')}</Link></li>
               <li><Link href={`/${locale}/resources`} className="text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 transition-colors">{t('trustSafetyTitle')}</Link></li>
             </ul>

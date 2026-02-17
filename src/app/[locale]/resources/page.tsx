@@ -37,69 +37,77 @@ export default async function ResourcesPage({ params }: PageProps) {
   const { locale } = await params
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-[hsl(var(--app-bg))]">
+      <div className="border-b border-[hsl(var(--app-border))] bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <Link
             href={`/${locale}`}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-8 text-sm font-medium"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             На главную
           </Link>
-
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Доверие, безопасность и соответствие стандартам
           </h1>
-          <p className="text-lg text-gray-600 max-w-3xl">
+          <p className="mt-2 text-muted-foreground max-w-2xl">
             Daisy обеспечивает защиту ваших данных и соответствует международным стандартам безопасности.
           </p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Безопасность и конфиденциальность</h2>
-          <div className="space-y-4">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section className="mb-12">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Безопасность и конфиденциальность</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
             {complianceItems.map((item, i) => (
-              <div key={i} className="flex gap-4 p-4 rounded-xl bg-white border border-gray-200">
-                <span className="text-2xl">{item.icon}</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                  <p className="text-gray-600 text-sm mt-1">{item.desc}</p>
+              <div
+                key={i}
+                className="flex gap-4 p-4 rounded-2xl bg-white border border-[hsl(var(--app-border))] shadow-[var(--app-shadow)]"
+              >
+                <span className="text-2xl shrink-0">{item.icon}</span>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
+                  <p className="text-muted-foreground text-xs mt-1">{item.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Региональное законодательство</h2>
+        <section className="mb-12">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Региональное законодательство</h2>
           <ul className="space-y-3">
             {regionalLaws.map((item, i) => (
-              <li key={i} className="flex gap-3 items-start text-gray-700">
-                <span>{item.flag}</span>
+              <li
+                key={i}
+                className="flex gap-3 items-start p-4 rounded-2xl bg-white border border-[hsl(var(--app-border))] text-foreground text-sm"
+              >
+                <span className="shrink-0">{item.flag}</span>
                 <span>{item.text}</span>
               </li>
             ))}
           </ul>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Стандарты соответствия</h2>
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Стандарты соответствия</h2>
           <div className="flex flex-wrap gap-3">
             {standards.map((s, i) => (
-              <span key={i} className="px-4 py-2 rounded-lg bg-emerald-50 text-emerald-800 text-sm font-medium">
+              <span
+                key={i}
+                className="px-4 py-2 rounded-2xl bg-primary/10 text-primary text-sm font-medium"
+              >
                 {s}
               </span>
             ))}
           </div>
         </section>
 
-        <div className="mt-16 text-center">
+        <div>
           <Link
             href={`/${locale}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"
           >
             <ArrowLeft className="w-4 h-4" />
             На главную

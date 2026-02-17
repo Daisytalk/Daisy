@@ -84,7 +84,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
   ]
 
   return (
-    <section id="pricing" className="py-16 sm:py-20 lg:py-24 bg-white">
+    <section id="pricing" className="py-16 sm:py-20 lg:py-24 bg-white scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -148,7 +148,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
                 </div>
                 
                 <Button 
-                  className={`w-full mb-6 sm:mb-8 py-3 text-sm sm:text-base ${
+                  className={`w-full text-white mb-6 sm:mb-8 py-3 text-sm sm:text-base ${
                     plan.popular 
                       ? 'bg-emerald-600 hover:bg-emerald-700' 
                       : 'bg-gray-900 hover:bg-gray-800'

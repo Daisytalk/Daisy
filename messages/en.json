@@ -285,7 +285,7 @@
     "location": "London, UK",
     "newsletter": "Newsletter",
     "newsletterDesc": "Get mental health tips and updates delivered to your inbox.",
-    "copyright": "© 2025 Daisy. All rights reserved.",
+    "copyright": "© 2026 Daisy. All rights reserved.",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "hipaaNotice": "HIPAA Notice",
@@ -296,6 +296,17 @@
     "title": "Ready to Start Your Journey?",
     "subtitle": "Join thousands who have found support with Daisy",
     "getStarted": "Get Started Today"
+  },
+  "crisisResources": {
+    "title": "Crisis Resources",
+    "subtitle": "If you or someone you know needs immediate help, use these contacts. Daisy does not replace emergency services.",
+    "backToHome": "Back to Home",
+    "disclaimer": "If you are in immediate danger, call 911 or text HOME to 741741 for 24/7 crisis support.",
+    "globalTitle": "Hotlines & Services",
+    "textLineDesc": "24/7 text-based support. Free and confidential.",
+    "emergencyDesc": "If you or someone else is in immediate danger, call emergency services.",
+    "moreTitle": "Additional Support",
+    "moreDesc": "Reach out to a therapist, counselor, or local crisis line in your country. Daisy is for everyday support and does not replace in-person care in a crisis."
   },
   "chatDemo": {
     "title": "See How Daisy Supports You",

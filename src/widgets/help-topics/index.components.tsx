@@ -73,7 +73,7 @@ export function HelpTopicsSection() {
   }
 
   return (
-    <div className="relative py-24 sm:py-32">
+    <div id="how-it-works" className="relative py-24 sm:py-32 scroll-mt-20">
       <div className="absolute inset-0">
         <img
           src="https://images.unsplash.com/photo-1750650983022-874bab0db460?w=1920&h=1080&fit=crop&crop=center"

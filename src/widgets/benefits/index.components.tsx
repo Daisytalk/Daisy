@@ -27,7 +27,7 @@ export function BenefitsSection() {
   ]
 
   return (
-    <div className="bg-white py-16 sm:py-24 lg:py-32">
+    <div id="about" className="bg-white py-16 sm:py-24 lg:py-32 scroll-mt-20">
       <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-2xl grid-cols-1 items-start gap-x-8 gap-y-12 sm:gap-y-16 lg:gap-y-24 lg:mx-0 lg:max-w-none lg:grid-cols-2">
           <motion.div

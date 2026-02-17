@@ -67,9 +67,9 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           <div className="flex flex-1 justify-end items-center">
             <div className="hidden lg:flex lg:gap-x-6 xl:gap-x-8 mr-6 xl:mr-8">
               {navigation.map((item) => (
-                <a key={item.name} href={item.href} className="text-sm xl:text-base font-medium leading-6 text-white hover:text-gray-300 transition-colors whitespace-nowrap">
+                <Link key={item.name} href={`/${locale}${item.href}`} className="text-sm xl:text-base font-medium leading-6 text-white hover:text-gray-300 transition-colors whitespace-nowrap">
                   {item.name}
-                </a>
+                </Link>
               ))}
             </div>
             <div className="hidden lg:flex lg:justify-end lg:gap-x-2 xl:gap-x-3 lg:items-center">
@@ -123,14 +123,14 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                 <div className="-my-6 divide-y divide-gray-500/25">
                   <div className="space-y-3 py-6">
                     {navigation.map((item) => (
-                      <a
+                      <Link
                         key={item.name}
-                        href={item.href}
+                        href={`/${locale}${item.href}`}
                         className="-mx-3 block rounded-lg px-4 py-3 text-lg font-semibold leading-7 text-white hover:bg-gray-800 transition-colors"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                   <div className="py-6 space-y-4">
