@@ -176,7 +176,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="w-full lg:max-w-md text-center lg:text-left"
             >
-              <p className="text-sm sm:text-base lg:text-lg leading-5 sm:leading-6 lg:leading-7 text-white mb-4 sm:mb-6">
+              <p className="text-sm sm:text-base lg:text-lg leading-5 sm:leading-6 lg:leading-7 text-white mb-4 sm:mb-6 whitespace-pre-line">
                 {t('subtitle')}
               </p>
               <Button

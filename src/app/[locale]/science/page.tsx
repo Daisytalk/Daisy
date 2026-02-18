@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { getAllResearchPapers } from '@/shared/data/research-papers'
+import { localizeDate, localizeReadTime } from '@/shared/lib/research-i18n'
 import Image from 'next/image'
 
 interface PageProps {
@@ -75,12 +76,12 @@ export default async function SciencePage({ params }: PageProps) {
               </div>
               <div className="p-6">
                 <div className="text-xs text-gray-500 mb-3 font-medium">
-                  <time>{paper.date}</time>
+                  <time>{localizeDate(paper.date, locale)}</time>
                   <span className="mx-2">•</span>
-                  <span>{paper.readTime}</span>
+                  <span>{localizeReadTime(paper.readTime, locale)}</span>
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-gray-700 transition-colors line-clamp-2">
-                  {paper.title}
+                  {locale === 'ru' ? paper.titleRu : paper.title}
                 </h3>
                 <p className="text-sm text-gray-600 mb-3 font-medium">
                   {paper.authors} ({paper.year})

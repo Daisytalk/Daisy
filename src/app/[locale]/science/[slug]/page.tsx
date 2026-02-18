@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink, Calendar, Clock } from 'lucide-react'
 import { getResearchPaperBySlug } from '@/shared/data/research-papers'
+import { localizeDate, localizeReadTime } from '@/shared/lib/research-i18n'
 import Image from 'next/image'
 
 const articleText = {
@@ -11,7 +12,7 @@ const articleText = {
     viewFullPaper: 'Все публикации',
     viewFullPaperDesc: 'Доступ к полному исследованию и детальным результатам из оригинальной публикации.',
     aboutDaisy: 'О Daisy',
-    aboutDaisyDesc: 'Daisy — AI-ассистент для ментального благополучия, предоставляющий поддержку на основе научных данных. Наш подход основан на последних исследованиях в области ИИ и психотерапии.',
+    aboutDaisyDesc: 'Daisy - AI-ассистент для ментального благополучия, предоставляющий поддержку на основе научных данных. Наш подход основан на последних исследованиях в области ИИ и психотерапии.',
     learnMore: 'Узнать больше о Daisy',
     ctaTitle: 'Готовы попробовать поддержку на основе ИИ?',
     ctaDesc: 'Присоединяйтесь к тысячам тех, кто нашёл поддержку с Daisy.',
@@ -62,16 +63,16 @@ export default async function ScienceArticlePage({ params }: PageProps) {
           <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
             <div className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
-              <span>{paper.date}</span>
+              <span>{localizeDate(paper.date, locale)}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="w-4 h-4" />
-              <span>{paper.readTime}</span>
+              <span>{localizeReadTime(paper.readTime, locale)}</span>
             </div>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-            {paper.title}
+            {locale === 'ru' ? paper.titleRu : paper.title}
           </h1>
 
           <p className="text-lg text-gray-600">

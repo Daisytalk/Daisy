@@ -2,6 +2,8 @@ export interface ResearchPaper {
   id: string
   slug: string
   title: string
+  /** Заголовок на русском для локали ru */
+  titleRu: string
   authors: string
   year: number
   abstract: string
@@ -18,6 +20,7 @@ export const researchPapers: ResearchPaper[] = [
     id: '1',
     slug: 'ai-psychotherapy-review',
     title: 'Artificial Intelligence for Psychotherapy: A Review of the Current State and Future Directions',
+    titleRu: 'Искусственный интеллект в психотерапии: обзор современного состояния и перспективы развития',
     authors: 'Beg, M. J., Verma, M., & Verma, M. K.',
     year: 2024,
     date: 'June, 2024',
@@ -39,6 +42,7 @@ The review concludes that AI can complement human therapists and extend the reac
     id: '2',
     slug: 'digital-mental-health-ai-role',
     title: 'Digital Mental Health: Role of Artificial Intelligence in Psychotherapy',
+    titleRu: 'Цифровое психическое здоровье: роль искусственного интеллекта в психотерапии',
     authors: 'Bhatt, S.',
     year: 2024,
     date: 'March, 2024',
@@ -60,6 +64,7 @@ Findings support the integration of AI into traditional psychotherapy to expand 
     id: '3',
     slug: 'can-ai-replace-psychotherapists',
     title: 'Can AI Replace Psychotherapists? Exploring the Future of Mental Health Care',
+    titleRu: 'Может ли ИИ заменить психотерапевтов? Будущее психиатрической помощи',
     authors: 'Zhang, Z., & Wang, J.',
     year: 2024,
     date: 'October, 2024',
@@ -83,6 +88,7 @@ The review concludes that AI cannot replace psychotherapists but can significant
     id: '4',
     slug: 'ai-psychotherapy-counterpoint',
     title: 'Artificial Intelligence and Psychotherapy: A Counterpoint',
+    titleRu: 'Искусственный интеллект и психотерапия: контраргументы',
     authors: 'Richards, D.',
     year: 2024,
     date: 'May, 2024',
@@ -99,7 +105,8 @@ Research shows that AI can strengthen the impact of therapy by leveraging data f
   {
     id: '5',
     slug: 'ai-psychotherapeutic-intervention-outcomes',
-    title: 'Artificial Intelligence–Based Psychotherapeutic Intervention on Psychological Outcome',
+    title: 'Artificial Intelligence-Based Psychotherapeutic Intervention on Psychological Outcome',
+    titleRu: 'Психотерапевтические интервенции на основе ИИ и психологические исходы',
     authors: 'Lau, Y., Ang, W. H. D., Ang, W. W., Pang, P. C.-I., Wong, S. H., & Chan, K. S.',
     year: 2025,
     date: 'January, 2025',
@@ -121,6 +128,7 @@ These findings indicate that AI-based psychotherapy can effectively complement t
     id: '6',
     slug: 'ai-chatbots-psychiatry',
     title: 'Artificial Intelligence and Chatbots in Psychiatry',
+    titleRu: 'Искусственный интеллект и чат-боты в психиатрии',
     authors: 'Pham, K. T., Nabizadeh, A., & Selek, S.',
     year: 2022,
     date: 'February, 2022',

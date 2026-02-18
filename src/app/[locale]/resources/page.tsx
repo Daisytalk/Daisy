@@ -6,16 +6,16 @@ interface PageProps {
 }
 
 const complianceItems = [
-  { icon: '🔐', title: 'End-to-End Encryption', desc: 'Шифрование данных в передаче и хранении' },
-  { icon: '📁', title: 'Data Minimization Policy', desc: 'Храним только необходимое' },
-  { icon: '🧠', title: 'AI Safety Guardrails', desc: 'Защита от токсичных и опасных ответов' },
-  { icon: '👤', title: 'Privacy-by-Design Architecture', desc: 'Конфиденциальность встроена в архитектуру' },
-  { icon: '🧾', title: 'GDPR-ready', desc: 'Право на удаление и экспорт данных' },
-  { icon: '🚫', title: 'No Human Access to Conversations', desc: 'Диалоги не читаются людьми' },
-  { icon: '📊', title: 'Anonymized Behavioral Analytics', desc: 'Анализ только в обезличенном виде' },
-  { icon: '⏳', title: 'Auto-Delete Memory Controls', desc: 'Пользователь управляет памятью' },
-  { icon: '🧩', title: 'Secure Model Fine-Tuning Pipeline', desc: 'Без утечки пользовательских данных' },
-  { icon: '🧑‍⚕️', title: 'Not a Medical Device Disclaimer', desc: 'Не заменяет клиническую терапию' },
+  { icon: '🔐', title: 'Сквозное шифрование', desc: 'Шифрование данных в передаче и хранении' },
+  { icon: '📁', title: 'Минимизация данных', desc: 'Храним только необходимое' },
+  { icon: '🧠', title: 'Ограничители безопасности ИИ', desc: 'Защита от токсичных и опасных ответов' },
+  { icon: '👤', title: 'Архитектура Privacy-by-Design', desc: 'Конфиденциальность встроена в архитектуру' },
+  { icon: '🧾', title: 'Соответствие GDPR', desc: 'Право на удаление и экспорт данных' },
+  { icon: '🚫', title: 'Нет доступа людей к диалогам', desc: 'Диалоги не читаются сотрудниками' },
+  { icon: '📊', title: 'Обезличенная аналитика', desc: 'Анализ только в обезличенном виде' },
+  { icon: '⏳', title: 'Управление памятью и авто-удаление', desc: 'Пользователь управляет сроком хранения' },
+  { icon: '🧩', title: 'Безопасный конвейер дообучения', desc: 'Без утечки пользовательских данных' },
+  { icon: '🧑‍⚕️', title: 'Не медицинское устройство', desc: 'Не заменяет клиническую терапию' },
 ]
 
 const regionalLaws = [
@@ -96,7 +96,7 @@ export default async function ResourcesPage({ params }: PageProps) {
             {standards.map((s, i) => (
               <span
                 key={i}
-                className="px-4 py-2 rounded-2xl bg-primary/10 text-primary text-sm font-medium"
+                className="px-4 py-2 rounded-2xl bg-primary/15 text-foreground text-sm font-medium border border-primary/20"
               >
                 {s}
               </span>
@@ -104,15 +104,6 @@ export default async function ResourcesPage({ params }: PageProps) {
           </div>
         </section>
 
-        <div>
-          <Link
-            href={`/${locale}`}
-            className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            На главную
-          </Link>
-        </div>
       </div>
     </div>
   )

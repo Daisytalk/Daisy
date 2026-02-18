@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button, Input } from '@/shared/ui'
 import { Mail } from 'lucide-react'
+import { useLocale } from 'next-intl'
 
 interface NewsletterFormProps {
   onSubmit?: (email: string) => Promise<void>
@@ -13,6 +14,8 @@ export function NewsletterForm({ onSubmit, className }: NewsletterFormProps) {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const locale = useLocale()
+  const isRu = locale === 'ru'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,10 +40,10 @@ export function NewsletterForm({ onSubmit, className }: NewsletterFormProps) {
           <Mail className="w-6 h-6 text-green-600" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Thanks for subscribing!
+          {isRu ? 'Вы подписаны!' : 'Thanks for subscribing!'}
         </h3>
         <p className="text-gray-600">
-          We&apos;ll keep you updated with our latest news and features.
+          {isRu ? 'Будем держать вас в курсе наших новостей.' : "We'll keep you updated with our latest news and features."}
         </p>
       </div>
     )
@@ -51,14 +54,14 @@ export function NewsletterForm({ onSubmit, className }: NewsletterFormProps) {
       <div className="flex flex-col sm:flex-row gap-3">
         <Input
           type="email"
-          placeholder="Enter your email"
+          placeholder={isRu ? 'Ваш email' : 'Enter your email'}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           className="flex-1"
         />
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Subscribing...' : 'Subscribe'}
+          {isLoading ? (isRu ? 'Подписка...' : 'Subscribing...') : (isRu ? 'Подписаться' : 'Subscribe')}
         </Button>
       </div>
     </form>

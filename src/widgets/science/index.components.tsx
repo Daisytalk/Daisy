@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { getAllResearchPapers, type ResearchPaper } from '@/shared/data/research-papers'
+import { localizeDate, localizeReadTime } from '@/shared/lib/research-i18n'
 import Image from 'next/image'
 
 // Group papers into sets of 3 for carousel
@@ -119,14 +120,14 @@ export function ScienceSection() {
                   <div className="flex flex-1 flex-col justify-between p-6">
                     <div>
                       <div className="text-sm leading-6 text-gray-600">
-                        <time>{article.date}</time>
+                        <time>{localizeDate(article.date, locale)}</time>
                         <span className="mx-2">•</span>
-                        <span>{article.readTime}</span>
+                        <span>{localizeReadTime(article.readTime, locale)}</span>
                       </div>
                       <h3 className="mt-2 text-xl font-semibold leading-6 text-gray-900">
                         <Link href={`/${locale}/science/${article.slug}`}>
                           <span className="absolute inset-0" />
-                          {article.title}
+                          {locale === 'ru' ? article.titleRu : article.title}
                         </Link>
                       </h3>
                       <p className="mt-2 text-sm text-gray-600">

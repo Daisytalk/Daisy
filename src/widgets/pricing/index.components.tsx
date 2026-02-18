@@ -123,13 +123,16 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
               )}
               
               <div className="p-6 sm:p-8">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                <div className="mb-2">
                   {plan.nameBold ? (
-                    <><span className="font-bold">{plan.nameBold}</span> — <span className="italic font-normal">{plan.nameItalic}</span></>
+                    <>
+                      <p className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">{plan.nameBold}</p>
+                      <p className="text-base sm:text-lg font-normal italic text-gray-600 leading-tight">{plan.nameItalic}</p>
+                    </>
                   ) : (
-                    plan.name
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{plan.name}</p>
                   )}
-                </h3>
+                </div>
                 <p className="text-sm sm:text-base text-gray-600 mb-6 whitespace-pre-line">{plan.description}</p>
                 
                 <div className="mb-6">
