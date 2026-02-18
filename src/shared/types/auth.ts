@@ -14,7 +14,11 @@ export type OnboardingQuestionType =
   | 'date'
   | 'single-choice'
   | 'scale-with-comment'
-  | 'text';
+  | 'text'
+  | 'yes-no-conditional-text'
+  | 'yes-no-conditional-multiselect'
+  | 'yes-no-conditional-scale'
+  | 'style-selection';
 
 export interface OnboardingQuestion {
   id: string;
@@ -24,6 +28,7 @@ export interface OnboardingQuestion {
   required: boolean;
   options?: string[]; // For single-choice
   commentLabel?: string; // For scale-with-comment
+  conditionalOptions?: string[]; // For yes-no-conditional-multiselect
 }
 
 export interface OnboardingSection {
@@ -32,7 +37,7 @@ export interface OnboardingSection {
   questions: OnboardingQuestion[];
 }
 
-export type OnboardingAnswerValue = string | number | boolean | string[] | { rating: number; comment: string } | null;
+export type OnboardingAnswerValue = string | number | boolean | string[] | Record<string, unknown> | null;
 
 export interface OnboardingAnswer {
   questionId: string

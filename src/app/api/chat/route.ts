@@ -171,17 +171,27 @@ export async function POST(request: NextRequest) {
 
     // Create new conversation if not found
     if (!conversation) {
+      const userWithProfile = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { aiProfile: true },
+      })
+      const ap = userWithProfile?.aiProfile as Record<string, unknown> | null
+      const styles = Array.isArray(ap?.communication_style)
+        ? (ap.communication_style as string[]).filter((s): s is string => typeof s === 'string')
+        : []
+      const initialPersona = styles.length > 0 ? styles[0] : 'active_listener'
+
       conversation = await prisma.cbtConversation.create({
         data: {
           userId: user.id,
-          persona: 'active_listener', // Initial persona, will be determined by CBT API
+          persona: initialPersona,
           sessionId: sessionId || undefined,
         },
         include: {
           messages: true
         }
       })
-      console.log('Created new CBT conversation:', conversation.id)
+      console.log('Created new CBT conversation:', conversation.id, 'persona:', initialPersona)
     } else {
       console.log('Using existing CBT conversation:', conversation.id)
     }

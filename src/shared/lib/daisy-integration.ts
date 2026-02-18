@@ -35,7 +35,7 @@ interface BuildDaisyRequestInput {
  * - onboarding_summary: OnboardingData.responses + User.aiProfile (кто пользователь, цели, проблемы)
  * - user_context: User.conversationMemory (накопленные факты)
  * - history: CbtMessage последние 30
- * - persona: CbtConversation.persona
+ * - persona: User.aiProfile.communication_style[0] (приоритет) или CbtConversation.persona
  * - locale: настройки пользователя или "ru"
  */
 export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<DaisyRequestPayload> {
@@ -73,13 +73,20 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
   if (onboardingData?.responses != null && typeof onboardingData.responses === 'object') {
     onboardingSummary = onboardingData.responses
   }
+  // communication_style: массив ['warm_friend', 'practical_helper'] или строка
+  let userCommunicationStyles: string[] = []
   if (user?.aiProfile != null && typeof user.aiProfile === 'object' && !Array.isArray(user.aiProfile)) {
     const ap = user.aiProfile as Record<string, unknown>
+    if (Array.isArray(ap.communication_style) && ap.communication_style.length > 0) {
+      userCommunicationStyles = ap.communication_style.filter((s): s is string => typeof s === 'string')
+    } else if (typeof ap.communication_style === 'string' && ap.communication_style) {
+      userCommunicationStyles = [ap.communication_style]
+    }
     const aiProfilePart = {
       ...(typeof ap.summary === 'string' && { summary: ap.summary }),
       ...(Array.isArray(ap.goals) && ap.goals.length && { goals: ap.goals }),
       ...(Array.isArray(ap.concerns) && ap.concerns.length && { concerns: ap.concerns }),
-      ...(typeof ap.communication_style === 'string' && { communication_style: ap.communication_style }),
+      ...(userCommunicationStyles.length > 0 && { communication_style: userCommunicationStyles }),
     }
     if (Object.keys(aiProfilePart).length > 0) {
       onboardingSummary =
@@ -98,7 +105,11 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
     userContext = memoryArr.join('. ')
   }
 
-  const persona = conversation?.persona ?? 'active_listener'
+  // persona: приоритет — выбор пользователя (первый стиль), иначе persona из диалога
+  const persona =
+    userCommunicationStyles.length > 0
+      ? userCommunicationStyles[0]
+      : (conversation?.persona ?? 'active_listener')
 
   const payload: DaisyRequestPayload = {
     message: userMessage,

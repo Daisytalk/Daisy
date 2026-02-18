@@ -10,9 +10,125 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import { OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
 import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
-import { RadioGroup, RadioGroupItem } from '@/shared/ui/radio-group'
+
+// ─── Communication style definitions ────────────────────────────────────────
+
+const COMMUNICATION_STYLES = [
+  {
+    id: 'warm_friend',
+    name: 'Тёплая подруга',
+    keywords: 'душевная, понимающая, мягкая',
+    example: '"Я вижу, как тебе сейчас непросто. Давай вместе разберёмся. Ты не одна в этом."',
+  },
+  {
+    id: 'practical_helper',
+    name: 'Практичный помощник',
+    keywords: 'конкретный, структурированный, честный',
+    example: '"Хорошо, что конкретно можно сделать сегодня, чтобы приблизиться к решению?"',
+  },
+  {
+    id: 'gentle_explorer',
+    name: 'Мягкий исследователь',
+    keywords: 'любопытный, рефлексивный, глубокий',
+    example: '"Как вы думаете, откуда может идти это чувство? Что оно пытается вам сказать?"',
+  },
+  {
+    id: 'calm_mentor',
+    name: 'Спокойный наставник',
+    keywords: 'уравновешенный, принимающий, терпеливый',
+    example: '"Всё, что вы чувствуете, имеет право быть. Давайте понаблюдаем без спешки."',
+  },
+  {
+    id: 'wise_teacher',
+    name: 'Мудрый учитель',
+    keywords: 'информативный, научный, обучающий',
+    example: '"То, что вы описываете, называется когнитивным искажением. Вот как это работает…"',
+  },
+  {
+    id: 'flexible_companion',
+    name: 'Гибкая собеседница',
+    keywords: 'чуткий, ситуативный, настраиваемый',
+    example: 'Дэйзи подстраивается под потребность — иногда поддержит, иногда направит.',
+  },
+]
+
+// ─── Scale labels per question ───────────────────────────────────────────────
+
+const SCALE_LABELS: Record<string, string[]> = {
+  'professional-life': [
+    '😞 Очень тяжело, выгорание',
+    '😕 Много стресса',
+    '😐 Справляюсь, но без удовольствия',
+    '🙂 В целом доволен(а)',
+    '😊 Всё отлично, чувствую смысл',
+  ],
+  'family-relationships': [
+    '😞 Много конфликтов, нет поддержки',
+    '😕 Скорее напряжённо',
+    '😐 Нейтрально, без близости',
+    '🙂 Скорее поддерживающая',
+    '😊 Тепло и стабильно',
+  ],
+  'social-relationships': [
+    '😞 Совсем нет поддержки',
+    '😕 Скорее одиноко',
+    '😐 Есть люди, но без близости',
+    '🙂 Есть близкие люди',
+    '😊 Сильный круг поддержки',
+  ],
+  'autonomy': [
+    '😞 Одиночество вызывает тревогу',
+    '😕 Скорее тревожно',
+    '😐 Нейтрально, терплю',
+    '🙂 Скорее комфортно',
+    '😊 Полностью комфортно',
+  ],
+  'physical-health-rating': [
+    '😞 Плохой сон, нет энергии',
+    '😕 Часто усталость',
+    '😐 В целом терпимо',
+    '🙂 Большинство дней хорошо',
+    '😊 Сон, питание и энергия в порядке',
+  ],
+  'emotional-wellbeing': [
+    '😞 Постоянная тревога, трудно функционировать',
+    '😕 Часто дискомфортно',
+    '😐 Бывает по-разному',
+    '🙂 В основном стабильно',
+    '😊 Чувствую себя в ресурсе',
+  ],
+  'leisure-hobbies': [
+    '😞 Ничего не приносит радости',
+    '😕 Редко и без удовольствия',
+    '😐 Иногда есть, но нерегулярно',
+    '🙂 Есть приятные занятия',
+    '😊 Досуг — важная часть жизни',
+  ],
+  'living-conditions': [
+    '😞 Небезопасно, влияет на состояние',
+    '😕 Скорее дискомфортно',
+    '😐 Терпимо, базовые потребности закрыты',
+    '🙂 Скорее комфортно',
+    '😊 Безопасно и уютно',
+  ],
+  'financial-status': [
+    '😞 Постоянный стресс, не хватает на базовое',
+    '😕 Скорее нестабильно',
+    '😐 Хватает, но без запаса',
+    '🙂 Есть небольшая подушка',
+    '😊 Финансово спокоен(а)',
+  ],
+  'romantic-relationships': [
+    '😞 Много конфликтов, токсично',
+    '😕 Скорее нестабильно',
+    '😐 Спокойно, но нет глубины',
+    '🙂 Чувствую поддержку',
+    '😊 Стабильно, тепло и взаимно',
+  ],
+}
+
+// ─── QuestionComponent ───────────────────────────────────────────────────────
 
 const QuestionComponent = ({
   question,
@@ -25,15 +141,15 @@ const QuestionComponent = ({
   onChange: (value: OnboardingAnswerValue) => void
   t: (key: string) => string
 }) => {
-  if (question.id === 'gender' || /gender|sex/i.test(question.id)) {
+  // Gender card selector
+  if (question.id === 'gender') {
     const options = [
-      { id: 'male', label: t('male'), icon: '♂' },
-      { id: 'female', label: t('female'), icon: '♀' },
-      { id: 'prefer_not_to_say', label: t('preferNotToSay'), icon: '✕' },
-      { id: 'other', label: t('other'), icon: '…' },
+      { id: 'Мужской', label: 'Мужской', icon: '♂' },
+      { id: 'Женский', label: 'Женский', icon: '♀' },
+      { id: 'Другое', label: 'Другое', icon: '…' },
+      { id: 'Предпочитаю не указывать', label: 'Не указывать', icon: '✕' },
     ]
-
-            return (
+    return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {options.map((opt) => {
           const selected = answer === opt.id
@@ -60,77 +176,179 @@ const QuestionComponent = ({
   }
 
   switch (question.type) {
-    case 'date':
+    case 'yes-no-conditional-text': {
+      const val: { yes?: boolean; detail?: string } = (answer as { yes?: boolean; detail?: string }) ?? {}
+      const isYes = val.yes === true
+      const isNo = val.yes === false
       return (
-        <Input
-          type="date"
-          value={(answer as string) || ''}
-          onChange={(e) => onChange(e.target.value)}
-          required={question.required}
-          className="h-12 rounded-2xl border-2"
-        />
-      )
-    case 'single-choice':
-      return (
-        <RadioGroup value={answer as string} onValueChange={onChange}>
-          <div className="space-y-2">
-            {question.options?.map((option) => (
-              <label
-                key={option}
-                className={`flex items-center gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                  answer === option ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40 hover:bg-muted/50'
-                }`}
-              >
-                <RadioGroupItem value={option} id={option} />
-                <span className="font-medium">{option}</span>
-              </label>
-            ))}
+        <div className="space-y-4">
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => onChange({ yes: true, detail: val.detail ?? '' })}
+              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
+                isYes ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+              }`}
+            >
+              Да
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange({ yes: false })}
+              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
+                isNo ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+              }`}
+            >
+              Нет
+            </button>
           </div>
-        </RadioGroup>
+          {isYes && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+              <Textarea
+                value={val.detail ?? ''}
+                onChange={(e) => onChange({ yes: true, detail: e.target.value })}
+                placeholder="Опишите подробнее..."
+                rows={3}
+                className="rounded-2xl border-2 min-h-[90px]"
+              />
+            </motion.div>
+          )}
+        </div>
       )
-    case 'text':
+    }
+
+    case 'yes-no-conditional-multiselect': {
+      const val: { yes?: boolean; selected?: string[] } = (answer as { yes?: boolean; selected?: string[] }) ?? {}
+      const isYes = val.yes === true
+      const isNo = val.yes === false
+      const selected = val.selected ?? []
+      const toggleOption = (opt: string) => {
+        const next = selected.includes(opt) ? selected.filter((s: string) => s !== opt) : [...selected, opt]
+        onChange({ yes: true, selected: next })
+      }
       return (
-        <Textarea
-          value={(answer as string) || ''}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={t('typeYourAnswer')}
-          required={question.required}
-          rows={4}
-          className="rounded-2xl border-2 min-h-[120px]"
-        />
+        <div className="space-y-4">
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => onChange({ yes: true, selected: val.selected ?? [] })}
+              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
+                isYes ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+              }`}
+            >
+              Да
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange({ yes: false })}
+              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
+                isNo ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+              }`}
+            >
+              Нет
+            </button>
+          </div>
+          {isYes && question.conditionalOptions && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-2">
+              {question.conditionalOptions.map((opt) => {
+                const checked = selected.includes(opt)
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => toggleOption(opt)}
+                    className={`px-4 py-2 rounded-2xl border-2 text-sm font-medium transition-all ${
+                      checked ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                )
+              })}
+            </motion.div>
+          )}
+        </div>
       )
+    }
+
+    case 'yes-no-conditional-scale': {
+      const val: { hasRelationship?: boolean; rating?: number } = (answer as { hasRelationship?: boolean; rating?: number }) ?? {}
+      const hasRel = val.hasRelationship === true
+      const noRel = val.hasRelationship === false
+      const rating = val.rating ?? 0
+      const labels = SCALE_LABELS[question.id] ?? []
+      return (
+        <div className="space-y-4">
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => onChange({ hasRelationship: true, rating: val.rating })}
+              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
+                hasRel ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+              }`}
+            >
+              Да
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange({ hasRelationship: false })}
+              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
+                noRel ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+              }`}
+            >
+              Нет
+            </button>
+          </div>
+          {hasRel && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-3">
+              {[1, 2, 3, 4, 5].map((v) => {
+                const sel = rating === v
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => onChange({ hasRelationship: true, rating: v })}
+                    className={`flex flex-col items-center justify-center gap-2 w-24 min-h-[5.5rem] p-3 rounded-2xl border-2 transition-all ${
+                      sel ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] bg-white hover:border-primary/40'
+                    }`}
+                  >
+                    <span className="text-2xl font-bold text-foreground/70">{v}</span>
+                    <span className="text-[11px] text-center text-foreground/80 leading-tight">
+                      {labels[v - 1] ?? ''}
+                    </span>
+                  </button>
+                )
+              })}
+            </motion.div>
+          )}
+        </div>
+      )
+    }
+
     case 'scale-with-comment': {
       const scaleAnswer = (answer as { rating?: number; comment?: string } | null) ?? {}
       const rating = scaleAnswer.rating ?? 0
       const comment = scaleAnswer.comment ?? ''
-      const scaleOptions: { value: number; emoji: string; labelKey: string }[] = [
-        { value: 1, emoji: '😥', labelKey: 'scaleVeryBad' },
-        { value: 2, emoji: '☹️', labelKey: 'scaleBad' },
-        { value: 3, emoji: '😐', labelKey: 'scaleNormal' },
-        { value: 4, emoji: '🙂', labelKey: 'scaleGood' },
-        { value: 5, emoji: '😊', labelKey: 'scaleExcellent' },
-      ]
+      const labels = SCALE_LABELS[question.id] ?? []
       return (
         <div className="space-y-6">
-          <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
-            {scaleOptions.map((opt) => {
-              const selected = rating === opt.value
+          <div className="flex flex-wrap gap-3">
+            {[1, 2, 3, 4, 5].map((v) => {
+              const selected = rating === v
               return (
                 <button
-                  key={opt.value}
+                  key={v}
                   type="button"
-                  onClick={() => onChange({ ...scaleAnswer, rating: opt.value, comment })}
-                  className={`flex flex-col items-center justify-center gap-2 w-24 min-h-[5.5rem] p-4 rounded-2xl border-2 transition-all shadow-sm ${
+                  onClick={() => onChange({ ...scaleAnswer, rating: v, comment })}
+                  className={`flex flex-col items-center justify-center gap-2 w-24 min-h-[5.5rem] p-3 rounded-2xl border-2 transition-all shadow-sm ${
                     selected
                       ? 'border-primary bg-primary/10 shadow-primary/10'
                       : 'border-[hsl(var(--app-border))] bg-white hover:border-primary/40 hover:bg-muted/30'
                   }`}
                 >
-                  <span className="text-3xl sm:text-4xl leading-none shrink-0" role="img" aria-hidden>
-                    {opt.emoji}
-                  </span>
-                  <span className="text-xs font-medium text-center text-foreground/90 leading-tight min-h-[2rem] flex items-center justify-center">
-                    {t(opt.labelKey)}
+                  <span className="text-2xl font-bold text-foreground/70">{v}</span>
+                  <span className="text-[11px] font-medium text-center text-foreground/80 leading-tight min-h-[2.5rem] flex items-center justify-center">
+                    {labels[v - 1] ?? t(v === 1 ? 'scaleVeryBad' : v === 2 ? 'scaleBad' : v === 3 ? 'scaleNormal' : v === 4 ? 'scaleGood' : 'scaleExcellent')}
                   </span>
                 </button>
               )
@@ -153,19 +371,109 @@ const QuestionComponent = ({
         </div>
       )
     }
-    default:
+
+    case 'style-selection': {
+      const selected = (answer as string[] | null) ?? []
+      const toggle = (id: string) => {
+        if (selected.includes(id)) {
+          onChange(selected.filter((s) => s !== id))
+        } else if (selected.length < 2) {
+          onChange([...selected, id])
+        }
+      }
       return (
-        <Input
-          type="text"
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">Выберите 1-2 стиля, которые вам наиболее близки</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {COMMUNICATION_STYLES.map((style) => {
+              const isSelected = selected.includes(style.id)
+              const isDisabled = !isSelected && selected.length >= 2
+              return (
+                <button
+                  key={style.id}
+                  type="button"
+                  disabled={isDisabled}
+                  onClick={() => toggle(style.id)}
+                  className={`text-left p-4 rounded-2xl border-2 transition-all ${
+                    isSelected
+                      ? 'border-primary bg-primary/10'
+                      : isDisabled
+                        ? 'border-[hsl(var(--app-border))] opacity-40 cursor-not-allowed'
+                        : 'border-[hsl(var(--app-border))] hover:border-primary/40 hover:bg-muted/50'
+                  }`}
+                >
+                  <p className="font-semibold text-foreground mb-1">{style.name}</p>
+                  <p className="text-xs text-muted-foreground mb-2">{style.keywords}</p>
+                  <p className="text-xs text-foreground/70 italic leading-snug">{style.example}</p>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )
+    }
+
+    case 'single-choice':
+      return (
+        <div className="space-y-2">
+          {question.options?.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(option)}
+              className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left cursor-pointer transition-all ${
+                answer === option ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40 hover:bg-muted/50'
+              }`}
+            >
+              <span className="font-medium">{option}</span>
+            </button>
+          ))}
+        </div>
+      )
+
+    case 'text':
+      return (
+        <Textarea
           value={(answer as string) || ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder={t('typeYourAnswer')}
           required={question.required}
-          className="h-12 rounded-2xl border-2"
+          rows={4}
+          className="rounded-2xl border-2 min-h-[120px]"
         />
       )
+
+    default:
+      return null
   }
 }
+
+// ─── isAnswerEmpty ────────────────────────────────────────────────────────────
+
+function isAnswerEmpty(q: OnboardingQuestion, value: OnboardingAnswerValue): boolean {
+  if (!q.required) return false
+  if (value == null) return true
+
+  switch (q.type) {
+    case 'scale-with-comment': {
+      const o = value as { rating?: number } | null
+      return !o || typeof o.rating !== 'number' || o.rating < 1
+    }
+    case 'yes-no-conditional-text':
+    case 'yes-no-conditional-multiselect':
+    case 'yes-no-conditional-scale': {
+      const o = value as Record<string, unknown>
+      return o.yes === undefined && o.hasRelationship === undefined
+    }
+    case 'style-selection': {
+      return !Array.isArray(value) || (value as string[]).length === 0
+    }
+    default:
+      return value === ''
+  }
+}
+
+// ─── OnboardingPageContent ────────────────────────────────────────────────────
 
 function OnboardingPageContent() {
   const router = useRouter()
@@ -193,8 +501,8 @@ function OnboardingPageContent() {
         const data = await onboardingService.getQuestions()
         const flat = data.flatMap((s) => s.questions.map((q) => ({ ...q })))
         setFlatQuestions(flat)
-      } catch (error) {
-        console.error('Failed to load onboarding questions', error)
+      } catch (err) {
+        console.error('Failed to load onboarding questions', err)
         setError('Failed to load questions. Please refresh the page.')
       } finally {
         setIsLoading(false)
@@ -208,22 +516,12 @@ function OnboardingPageContent() {
     setError(null)
   }
 
-  const isAnswerEmpty = (q: OnboardingQuestion, value: OnboardingAnswerValue) => {
-    if (q.type === 'scale-with-comment') {
-      const o = value as { rating?: number } | null
-      return !o || typeof o.rating !== 'number' || o.rating < 1 || o.rating > 5
-    }
-    return value == null || value === ''
-  }
-
   const nextQuestion = () => {
     const currentQuestion = flatQuestions[currentQuestionIndex]
-
     if (currentQuestion.required && isAnswerEmpty(currentQuestion, answers[currentQuestion.id])) {
       setError(t('required'))
       return
     }
-
     if (currentQuestionIndex < flatQuestions.length - 1) {
       setCurrentQuestionIndex((i) => i + 1)
       setError(null)
@@ -239,19 +537,18 @@ function OnboardingPageContent() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    
+
     const unansweredRequired = flatQuestions.filter(
-      q => q.required && isAnswerEmpty(q, answers[q.id])
+      (q) => q.required && isAnswerEmpty(q, answers[q.id])
     )
-    
     if (unansweredRequired.length > 0) {
       setError(t('answerAllRequired'))
       return
     }
-    
+
     setIsSubmitting(true)
     setError(null)
-    
+
     const finalAnswers: OnboardingAnswer[] = Object.entries(answers).map(([questionId, answer]) => ({
       questionId,
       answer,
@@ -260,6 +557,21 @@ function OnboardingPageContent() {
     try {
       if (user) {
         await onboardingService.submitAnswers(finalAnswers)
+
+        // Also save communication style to User.aiProfile
+        const styleAnswer = answers['communication-style']
+        if (styleAnswer && Array.isArray(styleAnswer) && styleAnswer.length > 0) {
+          const token = localStorage.getItem('auth_token')
+          await fetch('/api/account/style', {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ styles: styleAnswer }),
+          })
+        }
+
         setSubmitSuccess(true)
         setTimeout(() => {
           router.push(`/${locale}/chat`)
@@ -268,8 +580,8 @@ function OnboardingPageContent() {
         localStorage.setItem('pending_onboarding', JSON.stringify(finalAnswers))
         router.push(`/${locale}/register`)
       }
-    } catch (error) {
-      console.error('Onboarding submission error:', error)
+    } catch (err) {
+      console.error('Onboarding submission error:', err)
       setError('Failed to submit. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -278,7 +590,7 @@ function OnboardingPageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-app-bg flex items-center justify-center">
+      <div className="min-h-screen bg-[hsl(var(--app-bg))] flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 rounded-[var(--app-radius-lg)] bg-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Sparkles className="w-8 h-8 text-primary-foreground" />
@@ -291,7 +603,7 @@ function OnboardingPageContent() {
 
   if (submitSuccess) {
     return (
-      <div className="min-h-screen bg-app-bg flex items-center justify-center">
+      <div className="min-h-screen bg-[hsl(var(--app-bg))] flex items-center justify-center">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -307,29 +619,10 @@ function OnboardingPageContent() {
     )
   }
 
+  if (flatQuestions.length === 0) return null
+
   const currentQuestion = flatQuestions[currentQuestionIndex]
   const progress = ((currentQuestionIndex + 1) / flatQuestions.length) * 100
-
-  // Текст вопроса с учётом пола: мужчина → questionM, женщина → questionF, иначе нейтральный question
-  const isKeyLike = (s: string) => !s || s.includes('.questions.') || /^questions\./.test(s)
-  const gender = answers['gender'] as string | undefined
-  const questionBaseKey = `questions.${currentQuestion.id}`
-  const questionTextKey = `${questionBaseKey}.question`
-  let translatedQuestion = t(questionTextKey)
-  if (gender === 'male') {
-    const m = t(`${questionBaseKey}.questionM`)
-    if (m && !isKeyLike(m)) translatedQuestion = m
-  } else if (gender === 'female') {
-    const f = t(`${questionBaseKey}.questionF`)
-    if (f && !isKeyLike(f)) translatedQuestion = f
-  }
-  const commentLabelKey = `questions.${currentQuestion.id}.commentLabel`
-  const translatedCommentLabel = t(commentLabelKey)
-  const displayQuestion: OnboardingQuestion = {
-    ...currentQuestion,
-    question: translatedQuestion && !isKeyLike(translatedQuestion) ? translatedQuestion : currentQuestion.question,
-    commentLabel: translatedCommentLabel && !isKeyLike(translatedCommentLabel) ? translatedCommentLabel : (currentQuestion.commentLabel ?? t('comment')),
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[hsl(var(--app-bg))]">
@@ -358,12 +651,12 @@ function OnboardingPageContent() {
                 className="space-y-8"
               >
                 <h2 className="text-2xl sm:text-3xl font-semibold text-foreground leading-tight">
-                  {displayQuestion.question}
+                  {currentQuestion.question}
                   {currentQuestion.required && <span className="text-destructive ml-1">*</span>}
                 </h2>
 
                 <QuestionComponent
-                  question={displayQuestion}
+                  question={currentQuestion}
                   answer={answers[currentQuestion.id]}
                   onChange={(value) => handleAnswerChange(currentQuestion.id, value)}
                   t={t}

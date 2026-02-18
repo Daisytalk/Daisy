@@ -41,19 +41,21 @@ export async function GET(request: NextRequest, props: { params: Promise<{ userI
     })
     
     if (!dbData) {
-      return NextResponse.json(
-        { message: apiMessages.onboardingDataNotFound },
-        { status: 404 }
-      )
+      // Return empty state so profile can show "not completed" rather than hiding section
+      const emptyData: OnboardingData = {
+        userId,
+        answers: [],
+        completedAt: null as unknown as Date,
+      }
+      return NextResponse.json(emptyData)
     }
 
     // Format the response to match the OnboardingData type expected by the frontend
     const responseData: OnboardingData = {
       userId: dbData.userId,
-      // FIX: Cast to 'unknown' first to resolve the type error.
-      // Prisma's JSON type is generic, but we know the structure from the submit endpoint.
-      answers: dbData.responses as unknown as OnboardingAnswer[],
-      completedAt: dbData.updatedAt, // Use updatedAt as a substitute for completedAt
+      // Cast to 'unknown' first to resolve the type error.
+      answers: Array.isArray(dbData.responses) ? dbData.responses as unknown as OnboardingAnswer[] : [],
+      completedAt: dbData.completed ? dbData.updatedAt : null as unknown as Date,
     };
 
     return NextResponse.json(responseData)
