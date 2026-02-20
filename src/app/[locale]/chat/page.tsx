@@ -120,7 +120,19 @@ function ChatPageContent() {
         }),
       })
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) {
+        if (response.status === 402) {
+          const errData = await response.json().catch(() => ({}))
+          setMessages(prev => [...prev, {
+            id: `trial_${Date.now()}`,
+            role: 'assistant',
+            content: (errData.error as string) || 'Пробный период истёк. Выберите план для продолжения.',
+            timestamp: new Date(),
+          }])
+          return
+        }
+        throw new Error(`HTTP ${response.status}`)
+      }
 
       const data = await response.json()
       
@@ -221,7 +233,7 @@ function ChatPageContent() {
             stream: true,
           }
           setMessages(prev => [...prev, assistantMessage])
-          setStreamingRevealedId(assistantMessage.id)
+          // Не ставим streamingRevealedId здесь — покажем «думает» до первого символа typewriter
           return
         }
 
@@ -347,8 +359,13 @@ function ChatPageContent() {
                                 <TypewriterText
                                   text={message.content}
                                   speedMs={10}
-                                  onFirstChar={() => setIsLoading(false)}
+                                  onFirstChar={() => {
+                                    setStreamingRevealedId(message.id)
+                                    setIsLoading(false)
+                                  }}
                                   onComplete={() => {
+                                    setStreamingRevealedId(mid => mid ?? message.id)
+                                    setIsLoading(false)
                                     setMessages(prev => prev.map(m => m.id === message.id ? { ...m, stream: false } : m))
                                   }}
                                 />
@@ -365,15 +382,14 @@ function ChatPageContent() {
                                   aria-live="polite"
                                   aria-label={t('thinking')}
                                 >
-                                  <motion.span
-                                    className="text-2xl leading-none"
-                                    animate={{ rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.1, 1] }}
-                                    transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.3 }}
-                                    role="img"
+                                  <Image
+                                    src="/images/daisy_morph_spin.svg"
+                                    alt=""
+                                    width={32}
+                                    height={32}
+                                    className="shrink-0 w-8 h-8"
                                     aria-hidden
-                                  >
-                                    🤔
-                                  </motion.span>
+                                  />
                                   <span className="text-sm text-muted-foreground">{t('thinking')}</span>
                                 </motion.div>
                               )}
@@ -414,15 +430,14 @@ function ChatPageContent() {
                         <AvatarFallback className="bg-primary/90 text-primary-foreground rounded-full text-xs">D</AvatarFallback>
                       </Avatar>
                       <div className="rounded-2xl rounded-bl-md bg-white border border-[hsl(var(--app-border))] shadow-sm px-4 py-3 flex items-center gap-3">
-                        <motion.span
-                          className="text-2xl leading-none"
-                          animate={{ rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.1, 1] }}
-                          transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.3 }}
-                          role="img"
+                        <Image
+                          src="/images/daisy_morph_spin.svg"
+                          alt=""
+                          width={32}
+                          height={32}
+                          className="shrink-0 w-8 h-8"
                           aria-hidden
-                        >
-                          🤔
-                        </motion.span>
+                        />
                         <span className="text-sm text-muted-foreground">{t('thinking')}</span>
                       </div>
                     </motion.div>

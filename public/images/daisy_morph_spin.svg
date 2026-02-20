@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<defs>
+<style>
+@keyframes spinFlower{
+0%{transform:rotate(0deg)}
+14.9%{transform:rotate(0deg);animation-timing-function:cubic-bezier(.4,0,.6,1)}
+80%{transform:rotate(360deg)}
+100%{transform:rotate(360deg)}
+}
+@keyframes mRx{0%,16%,82%,100%{rx:21px}42%,58%{rx:36px}}
+@keyframes mRy{0%,16%,82%,100%{ry:36px}42%,58%{ry:25px}}
+.flower{transform-origin:100px 100px;animation:spinFlower 5s linear infinite}
+.petal{animation:mRx 5s ease-in-out infinite,mRy 5s ease-in-out infinite}
+</style>
+<radialGradient id="pg" cx="46%" cy="25%" r="75%">
+<stop offset="0%" stop-color="#FDFCFA"/>
+<stop offset="100%" stop-color="#E9E2DC"/>
+</radialGradient>
+<radialGradient id="cg" cx="36%" cy="30%" r="70%">
+<stop offset="0%" stop-color="#F2DF96"/>
+<stop offset="100%" stop-color="#C49520"/>
+</radialGradient>
+<filter id="ps" x="-25%" y="-25%" width="150%" height="150%">
+<feDropShadow dx="0" dy="1.5" stdDeviation="3.5" flood-color="#00000018"/>
+</filter>
+</defs>
+<g class="flower" filter="url(#ps)">
+<ellipse class="petal" cx="100" cy="62" rx="21" ry="36" fill="url(#pg)" transform="rotate(0,100,100)"/>
+<ellipse class="petal" cx="100" cy="62" rx="21" ry="36" fill="url(#pg)" transform="rotate(72,100,100)"/>
+<ellipse class="petal" cx="100" cy="62" rx="21" ry="36" fill="url(#pg)" transform="rotate(144,100,100)"/>
+<ellipse class="petal" cx="100" cy="62" rx="21" ry="36" fill="url(#pg)" transform="rotate(216,100,100)"/>
+<ellipse class="petal" cx="100" cy="62" rx="21" ry="36" fill="url(#pg)" transform="rotate(288,100,100)"/>
+<circle cx="100" cy="100" r="22" fill="url(#cg)"/>
+<ellipse cx="93.5" cy="92.5" rx="7" ry="4.5" fill="white" opacity="0.28"/>
+</g>
+</svg>

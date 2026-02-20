@@ -64,6 +64,9 @@ export const apiMessages = {
   textRequired: 'Текст сообщения обязателен',
   failedToGetAiResponse: 'Не удалось получить ответ от модели',
 
+  // Subscription
+  trialExpired: 'Пробный период истёк. Выберите план для продолжения.',
+
   // Newsletter
   emailRequired: 'Укажите email',
   invalidEmail: 'Неверный формат email',

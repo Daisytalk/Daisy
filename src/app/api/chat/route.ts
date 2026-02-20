@@ -140,6 +140,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
     }
 
+    // Проверка подписки: блокировать чат при истёкшем trial (данные из JWT)
+    const now = Date.now()
+    const trialEnded =
+      decoded.subscriptionStatus === 'trial' &&
+      decoded.trialEndsAt != null &&
+      new Date(decoded.trialEndsAt).getTime() < now
+    if (trialEnded) {
+      return NextResponse.json(
+        { error: apiMessages.trialExpired, code: 'TRIAL_EXPIRED' },
+        { status: 402 }
+      )
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: { id: true },
