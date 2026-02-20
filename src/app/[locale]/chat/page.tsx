@@ -174,18 +174,7 @@ function ChatPageContent() {
     const maxAttempts = 45 // ~2.25 min at 3s
     let attempts = 0
 
-    const poll = async (): Promise<void> => {
-      if (attempts >= maxAttempts) {
-        const errorMessage: Message = {
-          id: `error_${Date.now()}`,
-          role: 'assistant',
-          content: 'The response is taking longer than expected. Please try again in a moment.',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, errorMessage])
-        return
-      }
-
+    while (attempts < maxAttempts) {
       attempts++
 
       try {
@@ -248,21 +237,28 @@ function ChatPageContent() {
           return
         }
 
-        // Still processing; poll again after a short interval
-        setTimeout(poll, POLL_INTERVAL_MS)
+        // Still processing; wait before polling again
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS))
       } catch (error) {
         console.error('Polling error:', error)
-        // Don't throw: add error to thread so user message stays visible
         setMessages(prev => [...prev, {
           id: `error_${Date.now()}`,
           role: 'assistant',
           content: "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service.",
           timestamp: new Date(),
         }])
+        return
       }
     }
 
-    await poll()
+    // Max attempts reached
+    const errorMessage: Message = {
+      id: `error_${Date.now()}`,
+      role: 'assistant',
+      content: 'The response is taking longer than expected. Please try again in a moment.',
+      timestamp: new Date(),
+    }
+    setMessages(prev => [...prev, errorMessage])
   }
 
   const suggestedPrompts = [
