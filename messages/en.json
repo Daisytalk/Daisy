@@ -107,6 +107,10 @@
     "signIn": "Sign in",
     "signUp": "Sign up",
     "createAccount": "Create Account",
+    "registerPageTitle": "I'm Daisy, and I'm glad you're here",
+    "registerPageDesc": "Start discovering yourself deeper and open up what your life can be - light, mindful and fulfilling. Create an account - it takes a couple of minutes and the journey starts right now",
+    "loginPageTitle": "Welcome back to Daisy!\nGlad to see you!",
+    "loginPageDesc": "Good that you're here again. Let's continue your journey to yourself - to know yourself deeper, live calmer and more fulfilled. I'm already waiting for you.",
     "welcomeBack": "Welcome back to",
     "startJourney": "Start your journey with",
     "enterCredentials": "Enter your credentials to access your account",
@@ -156,7 +160,13 @@
     "safeSpaceQuote": "A safe space to reflect and grow.",
     "badgeCompanion": "Companion",
     "badgePrivate": "Private & safe",
-    "badge24_7": "24/7"
+    "badge24_7": "24/7",
+    "accountDeactivated": "Account deactivated",
+    "accountDeactivatedDesc": "Your account is scheduled for deletion. You can restore it within 30 days.",
+    "restoreAccount": "Restore account",
+    "restoring": "Restoring...",
+    "deleteAccountDeactivate": "Deactivate account",
+    "deleteAccountDeactivateDesc": "Account will be deactivated for 30 days. You can restore it by logging in again before the deadline."
   },
   "dashboard": {
     "welcome": "Welcome back",

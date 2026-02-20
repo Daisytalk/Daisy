@@ -100,20 +100,20 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left: Brand / Visual */}
-      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between bg-gradient-to-br from-primary/90 via-primary to-primary/80 p-12 xl:p-16 text-primary-foreground">
+      {/* Left: Brand / Visual — голубой фон */}
+      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between bg-gradient-to-br from-sky-100 via-blue-50 to-sky-100 p-12 xl:p-16 text-sky-900">
         <div>
-          <span className="text-primary-foreground/90 font-medium tracking-wide">Daisy</span>
+          <span className="text-sky-900/90 font-medium tracking-wide">Daisy</span>
         </div>
         <div className="space-y-6">
           <h2 className="text-3xl xl:text-4xl font-semibold leading-tight max-w-sm">
-            {t('createAccount')}
+            {t('registerPageTitle')}
           </h2>
-          <p className="text-primary-foreground/85 text-lg max-w-sm">
-            {t('startJourneyDesc')}
+          <p className="text-sky-900/85 text-lg max-w-sm leading-relaxed">
+            {t('registerPageDesc')}
           </p>
         </div>
-        <div className="flex gap-6 text-sm text-primary-foreground/75">
+        <div className="flex gap-6 text-sm text-sky-800/75">
           <span>Next: quick onboarding</span>
           <span>·</span>
           <span>Then start chatting</span>
@@ -125,7 +125,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-[400px] mx-auto lg:mx-0">
           <div className="lg:hidden mb-10">
             <h1 className="text-2xl font-semibold text-foreground">Daisy</h1>
-            <p className="text-muted-foreground mt-1">{t('startJourneyDesc')}</p>
+            <p className="text-muted-foreground mt-1">{t('registerPageDesc')}</p>
           </div>
 
           <h2 className="text-2xl font-semibold text-foreground mb-1">{t('signUp')}</h2>
@@ -265,9 +265,9 @@ export default function RegisterPage() {
 
             <p className="text-xs text-muted-foreground text-center">
               {t('agreeToTerms')}{' '}
-              <Link href="/terms" className="underline hover:text-foreground">{t('termsOfService')}</Link>
+              <Link href={`/${locale}/terms`} className="underline hover:text-foreground">{t('termsOfService')}</Link>
               {' '}{t('and')}{' '}
-              <Link href="/privacy" className="underline hover:text-foreground">{t('privacyPolicy')}</Link>
+              <Link href={`/${locale}/privacy`} className="underline hover:text-foreground">{t('privacyPolicy')}</Link>
             </p>
           </form>
 

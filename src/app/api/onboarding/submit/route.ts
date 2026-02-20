@@ -3,6 +3,7 @@ import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import type { OnboardingAnswer } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
+import { computePsychProfile } from '@/shared/lib/scoring'
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,15 +34,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await prisma.onboardingData.update({
-      where: {
-        userId: decoded.userId,
-      },
-      data: {
-        responses: answers,
-        completed: true,
-      }
-    });
+    await prisma.$transaction(async (tx) => {
+      await tx.onboardingData.update({
+        where: { userId: decoded.userId },
+        data: { responses: answers, completed: true },
+      })
+
+      const profile = computePsychProfile(answers)
+      await tx.psychProfileSnapshot.create({
+        data: {
+          userId: decoded.userId,
+          ESI: profile.ESI,
+          BSI: profile.BSI,
+          SSI: profile.SSI,
+          PVI: profile.PVI,
+          MRI: profile.MRI,
+          riskLevel: profile.riskLevel,
+          cluster: profile.cluster ?? null,
+          flags: profile.flags ?? undefined,
+        },
+      })
+    })
 
     return NextResponse.json({ message: apiMessages.onboardingCompletedSuccess })
   } catch (error) {

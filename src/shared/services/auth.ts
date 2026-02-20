@@ -173,4 +173,21 @@ export class AuthApiService implements IAuthService {
       throw new Error(err.error || 'Failed to delete account')
     }
   }
+
+  async restoreAccount(): Promise<void> {
+    const headers: HeadersInit = {}
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token')
+      if (token) headers['Authorization'] = `Bearer ${token}`
+    }
+    const response = await fetch('/api/account/restore', {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+    })
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.error || 'Failed to restore account')
+    }
+  }
 }

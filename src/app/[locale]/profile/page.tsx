@@ -28,25 +28,26 @@ const COMMUNICATION_STYLES = [
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatAnswer(answer: unknown): string {
-  if (answer === null || answer === undefined) return '—'
+  if (answer === null || answer === undefined) return '-'
   if (Array.isArray(answer)) return answer.join(', ')
   if (typeof answer === 'boolean') return answer ? 'Да' : 'Нет'
+  if (typeof answer === 'number') return `Оценка: ${answer}/5`
   if (typeof answer === 'object') {
     const o = answer as Record<string, unknown>
-    // scale
+    // scale (rating)
     if (typeof o.rating === 'number') {
-      return `Оценка: ${o.rating}/5${o.comment ? ` — ${o.comment}` : ''}`
+      return `Оценка: ${o.rating}/5${o.comment ? ` - ${o.comment}` : ''}`
     }
+    // relationships
+    if (o.value === 'yes') return typeof o.rel_quality === 'number' ? `Да, оценка: ${o.rel_quality}/5` : 'Да'
+    if (o.value === 'no') return 'Нет'
+    if (o.value === 'unsure') return o.other ? `Сложно сказать: ${o.other}` : 'Сложно сказать'
     // yes-no-conditional-text
-    if (o.yes === true) {
-      return o.detail ? `Да — ${o.detail}` : 'Да'
-    }
+    if (o.yes === true) return o.detail ? `Да - ${o.detail}` : 'Да'
     if (o.yes === false) return 'Нет'
     // yes-no-conditional-multiselect
     if (o.hasRelationship === false) return 'Нет отношений'
-    if (o.hasRelationship === true) {
-      return typeof o.rating === 'number' ? `Оценка: ${o.rating}/5` : 'Да'
-    }
+    if (o.hasRelationship === true) return typeof o.rating === 'number' ? `Оценка: ${o.rating}/5` : 'Да'
     return JSON.stringify(answer)
   }
   return String(answer)
@@ -97,8 +98,20 @@ function ProfilePageContent() {
     if (user) loadData()
   }, [user, loadData])
 
+  const QUESTION_LABELS: Record<string, string> = {
+    mood_today: 'Как ты себя чувствуешь сегодня?',
+    support_needs: 'Где тебе нужна поддержка?',
+    support_needs_other: 'Другое (поддержка)',
+    communication_style: 'Стиль общения',
+    work_state: 'Работа / учёба',
+    relationships: 'Отношения',
+    family_support: 'Поддержка близких',
+    solo_comfort: 'Комфорт наедине с собой',
+    physical_state: 'Физическое самочувствие',
+    emo_state: 'Эмоциональное состояние',
+  }
   const getQuestionText = (questionId: string) =>
-    questions.find((q) => q.id === questionId)?.question || questionId
+    QUESTION_LABELS[questionId] ?? questions.find((q) => q.id === questionId)?.question ?? questionId
 
   const trialDaysLeft = user?.trialEndsAt
     ? Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -331,12 +344,27 @@ function ProfilePageContent() {
               {onboardingData?.answers && onboardingData.answers.length > 0 ? (
                 <>
                   <div className="rounded-2xl border border-[hsl(var(--app-border))] bg-white overflow-hidden divide-y divide-[hsl(var(--app-border))]">
-                    {onboardingData.answers.filter((a) => a.questionId !== 'communication-style').map((answer, index) => (
-                      <div key={index} className="p-4">
-                        <p className="text-xs text-muted-foreground mb-1">{getQuestionText(answer.questionId)}</p>
-                        <p className="text-foreground">{formatAnswer(answer.answer)}</p>
-                      </div>
-                    ))}
+                    {onboardingData.answers
+                      .filter((a) => a.questionId !== 'communication_style' && a.questionId !== 'communication-style')
+                      .map((answer, index) => {
+                        if (answer.questionId.endsWith('_other')) return null
+                        const otherAnswer = answer.questionId === 'support_needs'
+                          ? onboardingData.answers.find((a) => a.questionId === 'support_needs_other')
+                          : null
+                        let displayAnswer = formatAnswer(answer.answer)
+                        if (answer.questionId === 'support_needs' && otherAnswer?.answer) {
+                          const needs = (answer.answer as string[]) ?? []
+                          const parts = needs.filter((n) => n !== 'Другое')
+                          if (needs.includes('Другое')) parts.push(`Другое: ${otherAnswer.answer}`)
+                          displayAnswer = parts.join(', ')
+                        }
+                        return (
+                          <div key={index} className="p-4">
+                            <p className="text-xs text-muted-foreground mb-1">{getQuestionText(answer.questionId)}</p>
+                            <p className="text-foreground">{displayAnswer}</p>
+                          </div>
+                        )
+                      })}
                   </div>
                   <p className="mt-3 text-sm text-muted-foreground">
                     Эти ответы помогают Daisy адаптировать поддержку под вас.
@@ -430,8 +458,8 @@ function ProfilePageContent() {
                   <div className="flex items-center gap-3">
                     <Trash2 className="w-5 h-5 text-destructive shrink-0" />
                     <div>
-                      <p className="font-medium text-foreground">Удалить аккаунт</p>
-                      <p className="text-xs text-muted-foreground">Безвозвратно удалить все данные</p>
+                      <p className="font-medium text-foreground">Деактивировать аккаунт</p>
+                      <p className="text-xs text-muted-foreground">Аккаунт будет деактивирован на 30 дней. Ты сможешь восстановить его, войдя снова до истечения срока.</p>
                     </div>
                   </div>
                   {showDeleteConfirm ? (

@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    let user: { id: string; email: string; name: string | null; createdAt: Date; updatedAt: Date } | null = null
+    let user: { id: string; email: string; name: string | null; createdAt: Date; updatedAt: Date; deactivatedAt: Date | null } | null = null
     try {
       user = await prisma.user.findUnique({
         where: { id: userId },
@@ -69,6 +69,7 @@ export async function GET(request: NextRequest) {
           name: true,
           createdAt: true,
           updatedAt: true,
+          deactivatedAt: true,
         }
       })
     } catch (dbErr) {
@@ -83,6 +84,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { message: apiMessages.userNotFound },
         { status: 404 }
+      )
+    }
+
+    if (user.deactivatedAt) {
+      return NextResponse.json(
+        { message: 'Account deactivated', requiresRestore: true },
+        { status: 403 }
       )
     }
 

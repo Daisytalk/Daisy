@@ -148,7 +148,7 @@ function ChatPageContent() {
       setMessages(prev => [...prev, {
         id: `error_${Date.now()}`,
         role: 'assistant',
-        content: "Something went wrong on our side. Please try sending your message again—if it keeps happening, we're likely fixing the service.",
+        content: "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service.",
         timestamp: new Date(),
       }])
     } finally {
@@ -188,7 +188,7 @@ function ChatPageContent() {
           setMessages(prev => [...prev, {
             id: `error_${Date.now()}`,
             role: 'assistant',
-            content: "Something went wrong on our side. Please try sending your message again—if it keeps happening, we're likely fixing the service.",
+            content: "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service.",
             timestamp: new Date(),
           }])
           return
@@ -211,7 +211,7 @@ function ChatPageContent() {
           let content = data.response ?? ''
           const isBackendError = data.protocol === 'error'
           if (isBackendError) {
-            content = "Something went wrong on our side. Please try sending your message again—if it keeps happening, we're likely fixing the service."
+            content = "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service."
           }
           const assistantMessage: Message = {
             id: `assistant_${Date.now()}`,
@@ -244,7 +244,7 @@ function ChatPageContent() {
         setMessages(prev => [...prev, {
           id: `error_${Date.now()}`,
           role: 'assistant',
-          content: "Something went wrong on our side. Please try sending your message again—if it keeps happening, we're likely fixing the service.",
+          content: "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service.",
           timestamp: new Date(),
         }])
       }

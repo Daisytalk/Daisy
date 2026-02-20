@@ -27,7 +27,7 @@ const testimonials = [
     imageUrl: "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=600&h=360&fit=crop&crop=center",
   },
   {
-    quote: "What stands out is the simplicity. It doesn’t overwhelm you with features—you just get exactly what you need to calm down and reset. A real gem for mental wellness.",
+    quote: "What stands out is the simplicity. It doesn’t overwhelm you with features-you just get exactly what you need to calm down and reset. A real gem for mental wellness.",
     author: "David Patel",
     date: "1/07/24",
     avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=faces&facepad=3",

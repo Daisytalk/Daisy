@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { computePsychProfile } from '@/shared/lib/scoring'
 
 export async function POST(request: NextRequest) {
   if (!process.env.JWT_SECRET) {
@@ -75,6 +76,35 @@ export async function POST(request: NextRequest) {
           completed: isOnboarded,
         }
       })
+
+      // Save communication_style to aiProfile if present
+      const styles = Array.isArray((onboardingAnswers as Record<string, unknown>)?.communication_style)
+        ? (onboardingAnswers as Record<string, unknown>).communication_style as string[]
+        : []
+      if (styles.length > 0) {
+        await tx.user.update({
+          where: { id: user.id },
+          data: { aiProfile: { communication_style: styles } },
+        })
+      }
+
+      // Scoring: create psych profile snapshot from onboarding answers
+      if (isOnboarded && onboardingAnswers && Object.keys(onboardingAnswers).length > 0) {
+        const profile = computePsychProfile(onboardingAnswers)
+        await tx.psychProfileSnapshot.create({
+          data: {
+            userId: user.id,
+            ESI: profile.ESI,
+            BSI: profile.BSI,
+            SSI: profile.SSI,
+            PVI: profile.PVI,
+            MRI: profile.MRI,
+            riskLevel: profile.riskLevel,
+            cluster: profile.cluster ?? null,
+            flags: profile.flags ?? undefined,
+          },
+        })
+      }
 
       await tx.aiSession.create({
         data: {

@@ -21,9 +21,11 @@ model User {
   conversationMemory   Json?             @map("conversation_memory")
   passwordResetToken   String?           @unique @map("password_reset_token")
   passwordResetExpires DateTime?         @map("password_reset_expires")
-  aiSessions           AiSession[]
-  cbtConversations   CbtConversation[]
-  onboarding         OnboardingData?
+  deactivatedAt        DateTime?         @map("deactivated_at")
+  aiSessions             AiSession[]
+  cbtConversations       CbtConversation[]
+  onboarding             OnboardingData?
+  psychProfileSnapshots  PsychProfileSnapshot[]
 
   @@map("users")
 }
@@ -38,6 +40,24 @@ model OnboardingData {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("onboarding_data")
+}
+
+model PsychProfileSnapshot {
+  id         String   @id @default(cuid())
+  userId     String
+  ESI        Float    // Emotional Stability Index 0-100
+  BSI        Float    // Burnout & Stress Index 0-100
+  SSI        Float    // Social Support Index 0-100
+  PVI        Float    // Physical Vulnerability Index 0-100
+  MRI        Float    // Meaning & Resource Index 0-100
+  riskLevel  String   @map("risk_level") // critical | high | medium | low
+  cluster    String?  // психотип/архетип
+  flags      Json?    // high_anxiety, sleep_issues, etc.
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("psych_profile_snapshots")
 }
 
 model AiSession {

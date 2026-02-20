@@ -11,10 +11,12 @@ function getToken(request: NextRequest): string | null {
   return null
 }
 
+const DEACTIVATION_DAYS = 30
+
 /**
  * DELETE /api/account/delete
- * GDPR: полное удаление аккаунта и всех связанных данных
- * Cascade в Prisma удалит: OnboardingData, AiSession, CbtConversation (+ CbtMessage)
+ * Деактивация на 30 дней. Пользователь может восстановить до истечения срока.
+ * После 30 дней аккаунт удаляется безвозвратно.
  */
 export async function DELETE(request: NextRequest) {
   try {
@@ -26,20 +28,19 @@ export async function DELETE(request: NextRequest) {
 
     const userId = decoded.userId
 
-    // Blacklist token (если таблица используется при проверке)
+    // Blacklist token
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 7)
     await prisma.tokenBlacklist.upsert({
       where: { token },
       create: { token, userId, expiresAt },
       update: { expiresAt },
-    }).catch(() => {
-      // Игнорируем, если таблица не настроена или дубликат
-    })
+    }).catch(() => {})
 
-    // Удаление пользователя — cascade удалит связанные данные
-    await prisma.user.delete({
+    // Деактивация вместо удаления
+    await prisma.user.update({
       where: { id: userId },
+      data: { deactivatedAt: new Date() },
     })
 
     const response = NextResponse.json({ success: true })

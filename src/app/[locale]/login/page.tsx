@@ -27,13 +27,13 @@ export default function LoginPage() {
 
     try {
       const authService = new AuthApiService()
-      const data = await authService.login({ email, password })
+      const data = await authService.login({ email, password }) as { user: unknown; token: string; requiresRestore?: boolean }
 
       localStorage.setItem('auth_token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
 
-      window.location.href = `/${locale}/dashboard`
+      window.location.href = data.requiresRestore ? `/${locale}/restore-account` : `/${locale}/dashboard`
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loginFailed'))
     } finally {
@@ -43,41 +43,28 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-[hsl(var(--app-bg))]">
-      {/* Left: Brand / Visual (hidden on small screens) */}
-      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 p-12 xl:p-16 text-primary-foreground">
-        {/* Decorative shapes */}
+      {/* Left: Brand / Visual — голубой фон */}
+      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between relative overflow-hidden bg-gradient-to-br from-sky-100 via-blue-50 to-sky-100 p-12 xl:p-16 text-sky-900">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute top-1/2 -left-20 w-72 h-72 rounded-full bg-white/5 blur-2xl" />
-          <div className="absolute bottom-32 right-20 w-40 h-40 rounded-full bg-white/10 blur-xl" />
-          <svg className="absolute inset-0 w-full h-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-                <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-sky-200/30 blur-3xl" />
+          <div className="absolute top-1/2 -left-20 w-72 h-72 rounded-full bg-blue-100/50 blur-2xl" />
         </div>
 
         <div className="relative z-10">
-          <span className="inline-flex items-center gap-2 text-primary-foreground/90 font-medium tracking-wide">
-            <span className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
+          <span className="inline-flex items-center gap-2 text-sky-900/90 font-medium tracking-wide">
+            <span className="w-2 h-2 rounded-full bg-sky-600/80 animate-pulse" />
             Daisy
           </span>
         </div>
         <div className="relative z-10 space-y-8">
-          <h2 className="text-3xl xl:text-4xl font-semibold leading-tight max-w-sm">
-            {t('welcomeBack')}
+          <h2 className="text-3xl xl:text-4xl font-semibold leading-tight max-w-sm whitespace-pre-line">
+            {t('loginPageTitle')}
           </h2>
-          <p className="text-primary-foreground/90 text-lg max-w-sm leading-relaxed">
-            {t('continueJourney')}
+          <p className="text-sky-900/90 text-lg max-w-sm leading-relaxed">
+            {t('loginPageDesc')}
           </p>
-          <blockquote className="border-l-4 border-white/30 pl-5 text-primary-foreground/80 italic text-sm max-w-xs">
-            {t('safeSpaceQuote')}
-          </blockquote>
         </div>
-        <div className="relative z-10 flex flex-wrap gap-x-6 gap-y-1 text-sm text-primary-foreground/75">
+        <div className="relative z-10 flex flex-wrap gap-x-6 gap-y-1 text-sm text-sky-800/75">
           <span>{t('badgeCompanion')}</span>
           <span>·</span>
           <span>{t('badgePrivate')}</span>
@@ -94,7 +81,7 @@ export default function LoginPage() {
         <div className="w-full max-w-[400px] mx-auto lg:mx-0 relative z-10">
           <div className="lg:hidden mb-10">
             <h1 className="text-2xl font-semibold text-foreground">Daisy</h1>
-            <p className="text-muted-foreground mt-1">{t('continueJourney')}</p>
+            <p className="text-muted-foreground mt-1">{t('loginPageDesc')}</p>
           </div>
 
           <h2 className="text-2xl font-semibold text-foreground mb-1">{t('signIn')}</h2>

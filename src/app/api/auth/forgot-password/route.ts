@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     const safeLocale = typeof locale === 'string' && /^[a-z]{2}$/.test(locale) ? locale : 'ru'
     const resetUrl = `${origin}/${safeLocale}/reset-password?token=${resetToken}`
 
-    const subject = 'Daisy — сброс пароля'
+    const subject = 'Daisy - сброс пароля'
     const text = `Здравствуйте${user.name ? `, ${user.name}` : ''}!\n\nВы запросили сброс пароля. Перейдите по ссылке (действует 1 час):\n\n${resetUrl}\n\nЕсли вы не запрашивали сброс, проигнорируйте это письмо.`
     const html = `<!DOCTYPE html><html><body style="font-family:sans-serif;line-height:1.6;color:#333;"><p>Здравствуйте${user.name ? `, ${user.name}` : ''}!</p><p>Вы запросили сброс пароля. Нажмите на ссылку (действует 1 час):</p><p><a href="${resetUrl}" style="color:#0ea5e9;">Сбросить пароль</a></p><p>Или скопируйте в браузер:</p><p style="word-break:break-all;font-size:12px;">${resetUrl}</p><p>Если вы не запрашивали сброс, проигнорируйте это письмо.</p></body></html>`
 

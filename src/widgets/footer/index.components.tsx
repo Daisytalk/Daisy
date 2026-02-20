@@ -92,7 +92,7 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
                 {t('copyright')}
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 lg:gap-6">
-                <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('privacyPolicy')}</a>
+                <a href="privacy" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('privacyPolicy')}</a>
                 <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('termsOfService')}</a>
                 <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('hipaaNotice')}</a>
               </div>

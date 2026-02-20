@@ -80,7 +80,7 @@ The review concludes that AI cannot replace psychotherapists but can significant
 
 Развитие машинного обучения и обработки естественного языка позволяет системам вроде ChatGPT имитировать эмоционально значимые диалоги и проводить структурированные интервенции (например, КПТ). Ранние исследования показывают, что ИИ может способствовать снижению симптомов и вовлечённости при депрессии и тревоге.
 
-Однако ИИ ограничен отсутствием подлинного эмоционального понимания, узкой доказательной базой и этическими рисками (конфиденциальность, предвзятость, ответственность). Вывод: ИИ не заменит психотерапевтов, но может существенно расширить доступ к помощи; будущее — в гибридной модели, где ИИ дополняет экспертизу человека.`,
+Однако ИИ ограничен отсутствием подлинного эмоционального понимания, узкой доказательной базой и этическими рисками (конфиденциальность, предвзятость, ответственность). Вывод: ИИ не заменит психотерапевтов, но может существенно расширить доступ к помощи; будущее - в гибридной модели, где ИИ дополняет экспертизу человека.`,
     link: 'https://www.frontiersin.org/journals/psychiatry/articles/10.3389/fpsyt.2024.1444382/full?trk=public_post_comment-text',
     imageUrl: '/images/Can Ai replace psychotherapists.JPG'
   },
@@ -118,7 +118,7 @@ Results showed that AI interventions significantly reduced depressive symptoms i
 These findings indicate that AI-based psychotherapy can effectively complement traditional care for depression, providing an accessible tool to improve mental health outcomes. Continued research with long-term follow-up is needed to confirm these effects and explore strategies to enhance impact on anxiety and stress.`,
     abstractRu: `Психотерапевтические интервенции на основе ИИ становятся перспективным направлением поддержки психического здоровья. В исследовании оценивалась их эффективность в снижении депрессивных, тревожных и стрессовых симптомов в 30 РКИ с более чем 6100 участниками из девяти стран.
 
-Результаты: интервенции с ИИ достоверно снижали депрессивные симптомы сразу после лечения (средний размер эффекта) и сохраняли меньший, но значимый эффект через 6–12 месяцев. Наибольшая польза — у участников с депрессией; влияние на тревогу и стресс менее выражено.
+Результаты: интервенции с ИИ достоверно снижали депрессивные симптомы сразу после лечения (средний размер эффекта) и сохраняли меньший, но значимый эффект через 6–12 месяцев. Наибольшая польза - у участников с депрессией; влияние на тревогу и стресс менее выражено.
 
 Вывод: ИИ-психотерапия может эффективно дополнять традиционную помощь при депрессии. Необходимы долгосрочные исследования и стратегии усиления эффекта при тревоге и стрессе.`,
     link: 'https://onlinelibrary.wiley.com/doi/full/10.1155/da/8930012',
@@ -133,7 +133,7 @@ These findings indicate that AI-based psychotherapy can effectively complement t
     year: 2022,
     date: 'February, 2022',
     readTime: '9 min read',
-    abstract: `The demand for mental health care continues to rise, and shortages of providers—exacerbated by the COVID-19 pandemic have increased the need for innovative solutions. Artificial intelligence (AI) is emerging as a tool to support psychiatry by assisting with diagnosis, symptom monitoring, disease prediction, and patient education.
+    abstract: `The demand for mental health care continues to rise, and shortages of providers-exacerbated by the COVID-19 pandemic have increased the need for innovative solutions. Artificial intelligence (AI) is emerging as a tool to support psychiatry by assisting with diagnosis, symptom monitoring, disease prediction, and patient education.
 
 AI-based interventions include conversational chatbots that teach emotional coping skills, avatar therapy using computer-generated faces, and intelligent animal-like robots that provide interactive support. These technologies can help individuals with communication difficulties and expand access to mental health support through the internet, smartphone apps, and digital platforms.
 

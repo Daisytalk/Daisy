@@ -10,7 +10,7 @@ import { ContextualProviders } from '../ContextualProviders'
 const inter = Inter({ subsets: ['latin'] })
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://talktodaisy.com'
-const SITE_TITLE = 'Daisy — качественные разговоры о ментальном здоровье'
+const SITE_TITLE = 'Daisy - качественные разговоры о ментальном здоровье'
 const SITE_DESCRIPTION = 'Безопасное пространство без осуждения: поддержка и ясные шаги к внутреннему балансу. На основе научных подходов, 24/7.'
 
 export const metadata: Metadata = {

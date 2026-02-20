@@ -3,491 +3,273 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
+import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
-import { OnboardingAnswer, OnboardingAnswerValue, OnboardingQuestion } from '@/shared/types/auth'
+import { OnboardingAnswer, OnboardingAnswerValue } from '@/shared/types/auth'
 import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
+import {
+  ONBOARDING_STEPS,
+  SECTION_LABELS,
+  SCALE_LABELS,
+  SCALE_LABELS_WORK,
+  SCALE_LABELS_REL,
+  SCALE_LABELS_FAMILY,
+  SCALE_LABELS_SOLO,
+  SCALE_LABELS_PHYSICAL,
+  SCALE_LABELS_EMO,
+  SCALE_ICONS,
+  type OnboardingStep,
+} from './steps'
 
-// ─── Communication style definitions ────────────────────────────────────────
+// ─── Communication styles ─────────────────────────────────────────────────────
 
 const COMMUNICATION_STYLES = [
-  {
-    id: 'warm_friend',
-    name: 'Тёплая подруга',
-    keywords: 'душевная, понимающая, мягкая',
-    example: '"Я вижу, как тебе сейчас непросто. Давай вместе разберёмся. Ты не одна в этом."',
-  },
-  {
-    id: 'practical_helper',
-    name: 'Практичный помощник',
-    keywords: 'конкретный, структурированный, честный',
-    example: '"Хорошо, что конкретно можно сделать сегодня, чтобы приблизиться к решению?"',
-  },
-  {
-    id: 'gentle_explorer',
-    name: 'Мягкий исследователь',
-    keywords: 'любопытный, рефлексивный, глубокий',
-    example: '"Как вы думаете, откуда может идти это чувство? Что оно пытается вам сказать?"',
-  },
-  {
-    id: 'calm_mentor',
-    name: 'Спокойный наставник',
-    keywords: 'уравновешенный, принимающий, терпеливый',
-    example: '"Всё, что вы чувствуете, имеет право быть. Давайте понаблюдаем без спешки."',
-  },
-  {
-    id: 'wise_teacher',
-    name: 'Мудрый учитель',
-    keywords: 'информативный, научный, обучающий',
-    example: '"То, что вы описываете, называется когнитивным искажением. Вот как это работает…"',
-  },
-  {
-    id: 'flexible_companion',
-    name: 'Гибкая собеседница',
-    keywords: 'чуткий, ситуативный, настраиваемый',
-    example: 'Дэйзи подстраивается под потребность — иногда поддержит, иногда направит.',
-  },
+  { id: 'warm_friend', name: 'Тёплая подруга', keywords: 'душевная, понимающая, мягкая' },
+  { id: 'practical_helper', name: 'Практичный помощник', keywords: 'конкретный, структурированный, честный' },
+  { id: 'gentle_explorer', name: 'Мягкий исследователь', keywords: 'любопытный, рефлексивный, глубокий' },
+  { id: 'calm_mentor', name: 'Спокойный наставник', keywords: 'уравновешенный, принимающий, терпеливый' },
+  { id: 'wise_teacher', name: 'Мудрый учитель', keywords: 'информативный, научный, обучающий' },
+  { id: 'flexible_companion', name: 'Гибкая собеседница', keywords: 'чуткий, ситуативный, настраиваемый' },
 ]
 
-// ─── Scale labels per question ───────────────────────────────────────────────
-
-const SCALE_LABELS: Record<string, string[]> = {
-  'professional-life': [
-    '😞 Очень тяжело, выгорание',
-    '😕 Много стресса',
-    '😐 Справляюсь, но без удовольствия',
-    '🙂 В целом доволен(а)',
-    '😊 Всё отлично, чувствую смысл',
-  ],
-  'family-relationships': [
-    '😞 Много конфликтов, нет поддержки',
-    '😕 Скорее напряжённо',
-    '😐 Нейтрально, без близости',
-    '🙂 Скорее поддерживающая',
-    '😊 Тепло и стабильно',
-  ],
-  'social-relationships': [
-    '😞 Совсем нет поддержки',
-    '😕 Скорее одиноко',
-    '😐 Есть люди, но без близости',
-    '🙂 Есть близкие люди',
-    '😊 Сильный круг поддержки',
-  ],
-  'autonomy': [
-    '😞 Одиночество вызывает тревогу',
-    '😕 Скорее тревожно',
-    '😐 Нейтрально, терплю',
-    '🙂 Скорее комфортно',
-    '😊 Полностью комфортно',
-  ],
-  'physical-health-rating': [
-    '😞 Плохой сон, нет энергии',
-    '😕 Часто усталость',
-    '😐 В целом терпимо',
-    '🙂 Большинство дней хорошо',
-    '😊 Сон, питание и энергия в порядке',
-  ],
-  'emotional-wellbeing': [
-    '😞 Постоянная тревога, трудно функционировать',
-    '😕 Часто дискомфортно',
-    '😐 Бывает по-разному',
-    '🙂 В основном стабильно',
-    '😊 Чувствую себя в ресурсе',
-  ],
-  'leisure-hobbies': [
-    '😞 Ничего не приносит радости',
-    '😕 Редко и без удовольствия',
-    '😐 Иногда есть, но нерегулярно',
-    '🙂 Есть приятные занятия',
-    '😊 Досуг — важная часть жизни',
-  ],
-  'living-conditions': [
-    '😞 Небезопасно, влияет на состояние',
-    '😕 Скорее дискомфортно',
-    '😐 Терпимо, базовые потребности закрыты',
-    '🙂 Скорее комфортно',
-    '😊 Безопасно и уютно',
-  ],
-  'financial-status': [
-    '😞 Постоянный стресс, не хватает на базовое',
-    '😕 Скорее нестабильно',
-    '😐 Хватает, но без запаса',
-    '🙂 Есть небольшая подушка',
-    '😊 Финансово спокоен(а)',
-  ],
-  'romantic-relationships': [
-    '😞 Много конфликтов, токсично',
-    '😕 Скорее нестабильно',
-    '😐 Спокойно, но нет глубины',
-    '🙂 Чувствую поддержку',
-    '😊 Стабильно, тепло и взаимно',
-  ],
+const SCALE_MAP: Record<string, string[]> = {
+  mood_today: SCALE_LABELS,
+  work_state: SCALE_LABELS_WORK,
+  rel_quality: SCALE_LABELS_REL,
+  family_support: SCALE_LABELS_FAMILY,
+  solo_comfort: SCALE_LABELS_SOLO,
+  physical_state: SCALE_LABELS_PHYSICAL,
+  emo_state: SCALE_LABELS_EMO,
 }
 
-// ─── QuestionComponent ───────────────────────────────────────────────────────
+// ─── Step renderer ───────────────────────────────────────────────────────────
 
-const QuestionComponent = ({
-  question,
-  answer,
+function StepContent({
+  step,
+  answers,
   onChange,
-  t,
+  onNext,
+  autoAdvance,
 }: {
-  question: OnboardingQuestion
-  answer: OnboardingAnswerValue
-  onChange: (value: OnboardingAnswerValue) => void
-  t: (key: string) => string
-}) => {
-  // Gender card selector
-  if (question.id === 'gender') {
-    const options = [
-      { id: 'Мужской', label: 'Мужской', icon: '♂' },
-      { id: 'Женский', label: 'Женский', icon: '♀' },
-      { id: 'Другое', label: 'Другое', icon: '…' },
-      { id: 'Предпочитаю не указывать', label: 'Не указывать', icon: '✕' },
-    ]
+  step: OnboardingStep
+  answers: Record<string, OnboardingAnswerValue>
+  onChange: (id: string, value: OnboardingAnswerValue) => void
+  onNext: () => void
+  autoAdvance: boolean
+}) {
+  const handleScale = (value: number) => {
+    onChange(step.questionId!, value)
+    if (autoAdvance) setTimeout(onNext, 300)
+  }
+
+  const handleMultiselect = (opt: string) => {
+    const current = (answers[step.questionId!] as string[] | null) ?? []
+    const next = current.includes(opt) ? current.filter((s) => s !== opt) : current.length < (step.maxSelect ?? 2) ? [...current, opt] : current
+    onChange(step.questionId!, next)
+  }
+
+  const handleStyleSelect = (id: string) => {
+    const current = (answers[step.questionId!] as string[] | null) ?? []
+    const next = current.includes(id) ? current.filter((s) => s !== id) : current.length < (step.maxSelect ?? 2) ? [...current, id] : current
+    onChange(step.questionId!, next)
+  }
+
+  const handleRelationship = (value: 'yes' | 'no' | 'unsure') => {
+    onChange(step.questionId!, { value, rel_quality: value === 'yes' ? undefined : undefined, other: value === 'unsure' ? '' : undefined })
+    if (autoAdvance && value !== 'yes') setTimeout(onNext, 300)
+  }
+
+  const handleRelQuality = (rating: number) => {
+    const current = answers[step.questionId!] as { value: string; rel_quality?: number; other?: string } | null
+    onChange(step.questionId!, { ...current, value: 'yes', rel_quality: rating })
+    if (autoAdvance) setTimeout(onNext, 300)
+  }
+
+  if (step.type === 'welcome' || step.type === 'transition') {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {options.map((opt) => {
-          const selected = answer === opt.id
-          return (
-            <button
-              key={opt.id}
-              type="button"
-              className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
-                selected ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40 hover:bg-muted/50'
-              }`}
-              onClick={() => onChange(opt.id)}
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${
-                selected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}>
-                {opt.icon}
-              </div>
-              <span className="font-medium">{opt.label}</span>
-            </button>
-          )
-        })}
+      <div className="space-y-8">
+        <p className="text-lg sm:text-xl text-foreground whitespace-pre-line leading-relaxed">{step.content}</p>
       </div>
     )
   }
 
-  switch (question.type) {
-    case 'yes-no-conditional-text': {
-      const val: { yes?: boolean; detail?: string } = (answer as { yes?: boolean; detail?: string }) ?? {}
-      const isYes = val.yes === true
-      const isNo = val.yes === false
+  if (step.type === 'final') {
+    return null
+  }
+
+  if (step.type === 'question') {
+    if (step.questionType === 'scale') {
+      const labels = SCALE_MAP[step.questionId!] ?? SCALE_LABELS
+      const rating = (answers[step.questionId!] as number) ?? 0
       return (
-        <div className="space-y-4">
-          <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+          {[1, 2, 3, 4, 5].map((v) => (
             <button
+              key={v}
               type="button"
-              onClick={() => onChange({ yes: true, detail: val.detail ?? '' })}
-              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
-                isYes ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+              onClick={() => handleScale(v)}
+              className={`flex flex-col items-center justify-center gap-2 w-28 min-h-[6rem] p-3 rounded-2xl border-2 transition-all ${
+                rating === v ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40 hover:bg-muted/50'
               }`}
             >
-              Да
+              <Image src={SCALE_ICONS[v - 1]} alt="" width={48} height={48} className="shrink-0" />
+              <span className="text-[11px] text-center text-foreground/80 leading-tight">{labels[v - 1] ?? ''}</span>
             </button>
-            <button
-              type="button"
-              onClick={() => onChange({ yes: false })}
-              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
-                isNo ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
-              }`}
-            >
-              Нет
-            </button>
-          </div>
-          {isYes && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-              <Textarea
-                value={val.detail ?? ''}
-                onChange={(e) => onChange({ yes: true, detail: e.target.value })}
-                placeholder="Опишите подробнее..."
-                rows={3}
-                className="rounded-2xl border-2 min-h-[90px]"
-              />
-            </motion.div>
-          )}
+          ))}
         </div>
       )
     }
 
-    case 'yes-no-conditional-multiselect': {
-      const val: { yes?: boolean; selected?: string[] } = (answer as { yes?: boolean; selected?: string[] }) ?? {}
-      const isYes = val.yes === true
-      const isNo = val.yes === false
-      const selected = val.selected ?? []
-      const toggleOption = (opt: string) => {
-        const next = selected.includes(opt) ? selected.filter((s: string) => s !== opt) : [...selected, opt]
-        onChange({ yes: true, selected: next })
-      }
+    if (step.questionType === 'multiselect') {
+      const selected = (answers[step.questionId!] as string[] | null) ?? []
+      const otherText = (answers[`${step.questionId!}_other`] as string) ?? ''
       return (
         <div className="space-y-4">
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => onChange({ yes: true, selected: val.selected ?? [] })}
-              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
-                isYes ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
-              }`}
-            >
-              Да
-            </button>
-            <button
-              type="button"
-              onClick={() => onChange({ yes: false })}
-              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
-                isNo ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
-              }`}
-            >
-              Нет
-            </button>
-          </div>
-          {isYes && question.conditionalOptions && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-2">
-              {question.conditionalOptions.map((opt) => {
-                const checked = selected.includes(opt)
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => toggleOption(opt)}
-                    className={`px-4 py-2 rounded-2xl border-2 text-sm font-medium transition-all ${
-                      checked ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                )
-              })}
-            </motion.div>
-          )}
-        </div>
-      )
-    }
-
-    case 'yes-no-conditional-scale': {
-      const val: { hasRelationship?: boolean; rating?: number } = (answer as { hasRelationship?: boolean; rating?: number }) ?? {}
-      const hasRel = val.hasRelationship === true
-      const noRel = val.hasRelationship === false
-      const rating = val.rating ?? 0
-      const labels = SCALE_LABELS[question.id] ?? []
-      return (
-        <div className="space-y-4">
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => onChange({ hasRelationship: true, rating: val.rating })}
-              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
-                hasRel ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
-              }`}
-            >
-              Да
-            </button>
-            <button
-              type="button"
-              onClick={() => onChange({ hasRelationship: false })}
-              className={`flex-1 py-3 rounded-2xl border-2 font-medium transition-all ${
-                noRel ? 'border-primary bg-primary/10 text-primary' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
-              }`}
-            >
-              Нет
-            </button>
-          </div>
-          {hasRel && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-3">
-              {[1, 2, 3, 4, 5].map((v) => {
-                const sel = rating === v
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => onChange({ hasRelationship: true, rating: v })}
-                    className={`flex flex-col items-center justify-center gap-2 w-24 min-h-[5.5rem] p-3 rounded-2xl border-2 transition-all ${
-                      sel ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] bg-white hover:border-primary/40'
-                    }`}
-                  >
-                    <span className="text-2xl font-bold text-foreground/70">{v}</span>
-                    <span className="text-[11px] text-center text-foreground/80 leading-tight">
-                      {labels[v - 1] ?? ''}
-                    </span>
-                  </button>
-                )
-              })}
-            </motion.div>
-          )}
-        </div>
-      )
-    }
-
-    case 'scale-with-comment': {
-      const scaleAnswer = (answer as { rating?: number; comment?: string } | null) ?? {}
-      const rating = scaleAnswer.rating ?? 0
-      const comment = scaleAnswer.comment ?? ''
-      const labels = SCALE_LABELS[question.id] ?? []
-      return (
-        <div className="space-y-6">
-          <div className="flex flex-wrap gap-3">
-            {[1, 2, 3, 4, 5].map((v) => {
-              const selected = rating === v
+          <div className="flex flex-wrap gap-2">
+            {(step.options ?? []).map((opt) => {
+              const isSelected = selected.includes(opt)
+              const isDisabled = !isSelected && selected.length >= (step.maxSelect ?? 2)
               return (
                 <button
-                  key={v}
+                  key={opt}
                   type="button"
-                  onClick={() => onChange({ ...scaleAnswer, rating: v, comment })}
-                  className={`flex flex-col items-center justify-center gap-2 w-24 min-h-[5.5rem] p-3 rounded-2xl border-2 transition-all shadow-sm ${
-                    selected
-                      ? 'border-primary bg-primary/10 shadow-primary/10'
-                      : 'border-[hsl(var(--app-border))] bg-white hover:border-primary/40 hover:bg-muted/30'
+                  disabled={isDisabled}
+                  onClick={() => handleMultiselect(opt)}
+                  className={`px-4 py-2.5 rounded-2xl border-2 text-sm font-medium transition-all ${
+                    isSelected ? 'border-primary bg-primary/10' : isDisabled ? 'opacity-40 cursor-not-allowed border-[hsl(var(--app-border))]' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
                   }`}
                 >
-                  <span className="text-2xl font-bold text-foreground/70">{v}</span>
-                  <span className="text-[11px] font-medium text-center text-foreground/80 leading-tight min-h-[2.5rem] flex items-center justify-center">
-                    {labels[v - 1] ?? t(v === 1 ? 'scaleVeryBad' : v === 2 ? 'scaleBad' : v === 3 ? 'scaleNormal' : v === 4 ? 'scaleGood' : 'scaleExcellent')}
-                  </span>
+                  {opt}
                 </button>
               )
             })}
           </div>
-          {question.commentLabel && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">
-                {question.commentLabel}
-              </label>
+          <div className="pt-2">
+            <label className="block text-sm text-muted-foreground mb-1">Другое:</label>
+            <Input
+              value={otherText}
+              onChange={(e) => onChange(`${step.questionId!}_other`, e.target.value)}
+              placeholder="Добавить свой ответ"
+              className="rounded-2xl border-2"
+            />
+          </div>
+        </div>
+      )
+    }
+
+    if (step.questionType === 'style-selection') {
+      const selected = (answers[step.questionId!] as string[] | null) ?? []
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {COMMUNICATION_STYLES.map((style) => {
+            const isSelected = selected.includes(style.id)
+            const isDisabled = !isSelected && selected.length >= (step.maxSelect ?? 2)
+            return (
+              <button
+                key={style.id}
+                type="button"
+                disabled={isDisabled}
+                onClick={() => handleStyleSelect(style.id)}
+                className={`text-left p-4 rounded-2xl border-2 transition-all ${
+                  isSelected ? 'border-primary bg-primary/10' : isDisabled ? 'opacity-40 cursor-not-allowed border-[hsl(var(--app-border))]' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+                }`}
+              >
+                <p className="font-semibold text-foreground mb-1">{style.name}</p>
+                <p className="text-xs text-muted-foreground">{style.keywords}</p>
+              </button>
+            )
+          })}
+        </div>
+      )
+    }
+
+    if (step.questionType === 'relationship') {
+      const val = answers[step.questionId!] as { value?: string; rel_quality?: number; other?: string } | null
+      const relVal = val?.value
+      const relQuality = val?.rel_quality ?? 0
+      const otherText = val?.other ?? ''
+      const labels = SCALE_LABELS_REL
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-3">
+            {(['yes', 'no', 'unsure'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => handleRelationship(v)}
+                className={`px-6 py-3 rounded-2xl border-2 font-medium transition-all ${
+                  relVal === v ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+                }`}
+              >
+                {v === 'yes' ? 'Да' : v === 'no' ? 'Нет' : 'Сложно сказать'}
+              </button>
+            ))}
+          </div>
+          {relVal === 'yes' && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">Как ощущаются твои отношения прямо сейчас?</p>
+              <div className="flex flex-wrap gap-3">
+                {[1, 2, 3, 4, 5].map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => handleRelQuality(v)}
+                    className={`flex flex-col items-center justify-center gap-2 w-28 min-h-[6rem] p-3 rounded-2xl border-2 transition-all ${
+                      relQuality === v ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+                    }`}
+                  >
+                    <Image src={SCALE_ICONS[v - 1]} alt="" width={48} height={48} className="shrink-0" />
+                    <span className="text-[10px] text-center leading-tight">{labels[v - 1] ?? ''}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {relVal === 'unsure' && (
+            <div>
+              <label className="block text-sm text-muted-foreground mb-1">Добавить свой ответ:</label>
               <Textarea
-                value={comment}
-                onChange={(e) => onChange({ ...scaleAnswer, rating, comment: e.target.value })}
-                placeholder={t('typeYourAnswer')}
+                value={otherText}
+                onChange={(e) => onChange(step.questionId!, { ...val, value: 'unsure', other: e.target.value })}
+                placeholder="Опишите..."
                 rows={3}
-                className="rounded-2xl border-2 min-h-[80px]"
+                className="rounded-2xl border-2"
               />
             </div>
           )}
         </div>
       )
     }
-
-    case 'style-selection': {
-      const selected = (answer as string[] | null) ?? []
-      const toggle = (id: string) => {
-        if (selected.includes(id)) {
-          onChange(selected.filter((s) => s !== id))
-        } else if (selected.length < 2) {
-          onChange([...selected, id])
-        }
-      }
-      return (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Выберите 1-2 стиля, которые вам наиболее близки</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {COMMUNICATION_STYLES.map((style) => {
-              const isSelected = selected.includes(style.id)
-              const isDisabled = !isSelected && selected.length >= 2
-              return (
-                <button
-                  key={style.id}
-                  type="button"
-                  disabled={isDisabled}
-                  onClick={() => toggle(style.id)}
-                  className={`text-left p-4 rounded-2xl border-2 transition-all ${
-                    isSelected
-                      ? 'border-primary bg-primary/10'
-                      : isDisabled
-                        ? 'border-[hsl(var(--app-border))] opacity-40 cursor-not-allowed'
-                        : 'border-[hsl(var(--app-border))] hover:border-primary/40 hover:bg-muted/50'
-                  }`}
-                >
-                  <p className="font-semibold text-foreground mb-1">{style.name}</p>
-                  <p className="text-xs text-muted-foreground mb-2">{style.keywords}</p>
-                  <p className="text-xs text-foreground/70 italic leading-snug">{style.example}</p>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )
-    }
-
-    case 'single-choice':
-      return (
-        <div className="space-y-2">
-          {question.options?.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => onChange(option)}
-              className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left cursor-pointer transition-all ${
-                answer === option ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40 hover:bg-muted/50'
-              }`}
-            >
-              <span className="font-medium">{option}</span>
-            </button>
-          ))}
-        </div>
-      )
-
-    case 'text':
-      return (
-        <Textarea
-          value={(answer as string) || ''}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={t('typeYourAnswer')}
-          required={question.required}
-          rows={4}
-          className="rounded-2xl border-2 min-h-[120px]"
-        />
-      )
-
-    default:
-      return null
   }
+
+  return null
 }
 
-// ─── isAnswerEmpty ────────────────────────────────────────────────────────────
-
-function isAnswerEmpty(q: OnboardingQuestion, value: OnboardingAnswerValue): boolean {
-  if (!q.required) return false
-  if (value == null) return true
-
-  switch (q.type) {
-    case 'scale-with-comment': {
-      const o = value as { rating?: number } | null
-      return !o || typeof o.rating !== 'number' || o.rating < 1
-    }
-    case 'yes-no-conditional-text':
-    case 'yes-no-conditional-multiselect':
-    case 'yes-no-conditional-scale': {
-      const o = value as Record<string, unknown>
-      return o.yes === undefined && o.hasRelationship === undefined
-    }
-    case 'style-selection': {
-      return !Array.isArray(value) || (value as string[]).length === 0
-    }
-    default:
-      return value === ''
-  }
-}
-
-// ─── OnboardingPageContent ────────────────────────────────────────────────────
+// ─── Main ───────────────────────────────────────────────────────────────────
 
 function OnboardingPageContent() {
   const router = useRouter()
   const locale = useLocale()
   const t = useTranslations('onboarding')
+  const tAuth = useTranslations('auth')
   const { user, isLoading: isAuthLoading } = useAuth()
-  const [flatQuestions, setFlatQuestions] = useState<OnboardingQuestion[]>([])
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [stepIndex, setStepIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, OnboardingAnswerValue>>({})
-  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const onboardingService = new OnboardingApiService()
+
+  const steps = ONBOARDING_STEPS
+  const currentStep = steps[stepIndex]
+  const autoAdvance = true // "Сам переключается кликом"
 
   useEffect(() => {
     if (!isAuthLoading && user?.isOnboarded) {
@@ -495,108 +277,107 @@ function OnboardingPageContent() {
     }
   }, [user, isAuthLoading, router, locale])
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const data = await onboardingService.getQuestions()
-        const flat = data.flatMap((s) => s.questions.map((q) => ({ ...q })))
-        setFlatQuestions(flat)
-      } catch (err) {
-        console.error('Failed to load onboarding questions', err)
-        setError('Failed to load questions. Please refresh the page.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchQuestions()
-  }, [])
-
-  const handleAnswerChange = (questionId: string, value: OnboardingAnswerValue) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }))
+  const handleAnswerChange = (id: string, value: OnboardingAnswerValue) => {
+    setAnswers((prev) => ({ ...prev, [id]: value }))
     setError(null)
   }
 
-  const nextQuestion = () => {
-    const currentQuestion = flatQuestions[currentQuestionIndex]
-    if (currentQuestion.required && isAnswerEmpty(currentQuestion, answers[currentQuestion.id])) {
-      setError(t('required'))
-      return
+  const nextStep = () => {
+    if (currentStep?.type === 'question' && currentStep.required) {
+      const val = answers[currentStep.questionId!]
+      if (currentStep.questionType === 'scale' && (val == null || (typeof val === 'number' && (val < 1 || val > 5)))) return
+      if (currentStep.questionType === 'multiselect' && (!Array.isArray(val) || val.length === 0)) return
+      if (currentStep.questionType === 'style-selection' && (!Array.isArray(val) || val.length === 0)) return
+      if (currentStep.questionType === 'relationship') {
+        const rel = val as { value?: string; rel_quality?: number } | null
+        if (!rel?.value) return
+        if (rel.value === 'yes' && (rel.rel_quality == null || rel.rel_quality < 1)) return
+      }
     }
-    if (currentQuestionIndex < flatQuestions.length - 1) {
-      setCurrentQuestionIndex((i) => i + 1)
+    if (stepIndex < steps.length - 1) {
+      setStepIndex((i) => i + 1)
       setError(null)
     }
   }
 
-  const prevQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((i) => i - 1)
+  const prevStep = () => {
+    if (stepIndex > 0) {
+      setStepIndex((i) => i - 1)
       setError(null)
     }
   }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-
-    const unansweredRequired = flatQuestions.filter(
-      (q) => q.required && isAnswerEmpty(q, answers[q.id])
-    )
-    if (unansweredRequired.length > 0) {
-      setError(t('answerAllRequired'))
-      return
-    }
-
     setIsSubmitting(true)
     setError(null)
 
-    const finalAnswers: OnboardingAnswer[] = Object.entries(answers).map(([questionId, answer]) => ({
-      questionId,
-      answer,
-    }))
+    const finalAnswers: OnboardingAnswer[] = []
+    for (const [id, answer] of Object.entries(answers)) {
+      if (id.endsWith('_other')) continue
+      if (answer != null && answer !== '') finalAnswers.push({ questionId: id, answer })
+    }
+    if ((answers.support_needs as string[] | null)?.length) {
+      const other = answers.support_needs_other
+      if (other && typeof other === 'string' && other.trim()) {
+        finalAnswers.push({ questionId: 'support_needs_other', answer: other })
+      }
+    }
 
     try {
       if (user) {
         await onboardingService.submitAnswers(finalAnswers)
-
-        // Also save communication style to User.aiProfile
-        const styleAnswer = answers['communication-style']
+        const styleAnswer = answers.communication_style
         if (styleAnswer && Array.isArray(styleAnswer) && styleAnswer.length > 0) {
           const token = localStorage.getItem('auth_token')
           await fetch('/api/account/style', {
             method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ styles: styleAnswer }),
           })
         }
-
         setSubmitSuccess(true)
-        setTimeout(() => {
-          router.push(`/${locale}/chat`)
-        }, 1500)
+        setTimeout(() => router.push(`/${locale}/chat`), 1500)
       } else {
         localStorage.setItem('pending_onboarding', JSON.stringify(finalAnswers))
         router.push(`/${locale}/register`)
       }
     } catch (err) {
       console.error('Onboarding submission error:', err)
-      setError('Failed to submit. Please try again.')
+      setError('Не удалось отправить. Попробуйте снова.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  if (isLoading) {
+  if (isAuthLoading) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--app-bg))] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-[var(--app-radius-lg)] bg-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <Sparkles className="w-8 h-8 text-primary-foreground" />
+      <div className="min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-sky-50/80 via-[hsl(var(--app-bg))] to-amber-50/50">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="flex flex-col items-center"
+        >
+          <motion.div
+            animate={{ scale: [1, 1.04, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 shadow-lg shadow-sky-200/50 flex items-center justify-center mb-6"
+          >
+            <Sparkles className="w-10 h-10 text-white" strokeWidth={1.5} />
+          </motion.div>
+          <p className="text-base font-medium text-foreground/90 mb-3">{t('loading')}</p>
+          <div className="flex gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                className="w-1.5 h-1.5 rounded-full bg-sky-500/70"
+                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
+              />
+            ))}
           </div>
-          <p className="text-muted-foreground">{t('loading')}</p>
-        </div>
+        </motion.div>
       </div>
     )
   }
@@ -604,11 +385,7 @@ function OnboardingPageContent() {
   if (submitSuccess) {
     return (
       <div className="min-h-screen bg-[hsl(var(--app-bg))] flex items-center justify-center">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-center"
-        >
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
           <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-10 h-10 text-primary" />
           </div>
@@ -619,84 +396,141 @@ function OnboardingPageContent() {
     )
   }
 
-  if (flatQuestions.length === 0) return null
-
-  const currentQuestion = flatQuestions[currentQuestionIndex]
-  const progress = ((currentQuestionIndex + 1) / flatQuestions.length) * 100
+  const sectionLabel = currentStep ? SECTION_LABELS[currentStep.section] : ''
+  const isWelcome = currentStep?.type === 'welcome'
+  const isTransition = currentStep?.type === 'transition'
+  const isFinal = currentStep?.type === 'final'
+  const questionCount = steps.filter((s) => s.type === 'question').length
+  const currentQuestionNum = steps.slice(0, stepIndex + 1).filter((s) => s.type === 'question').length
+  const progress = ((stepIndex + 1) / steps.length) * 100
 
   return (
     <div className="min-h-screen flex flex-col bg-[hsl(var(--app-bg))]">
+      {/* Progress bar */}
       <div className="shrink-0 h-1.5 w-full bg-muted overflow-hidden">
-        <motion.div
-          className="h-full bg-primary"
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.3 }}
-        />
+        <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.3 }} />
       </div>
 
-      <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 py-8 max-w-2xl mx-auto w-full">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground mb-2">
-            {t('questionOf', { current: currentQuestionIndex + 1, total: flatQuestions.length })}
-          </p>
+      <div className="flex-1 flex flex-col px-4 sm:px-6 py-6 max-w-2xl mx-auto w-full">
+        {/* Logo + section block */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-white/95 border border-[hsl(var(--app-border))]">
+            <Image src="/images/daisy-icon.png" alt="Daisy" width={48} height={48} className="object-contain" />
+          </div>
+          <div className="flex-1">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{sectionLabel}</span>
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-between">
           <form onSubmit={handleSubmit} id="onboarding-form">
             <AnimatePresence mode="wait">
               <motion.div
-                key={currentQuestionIndex}
+                key={stepIndex}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.25 }}
                 className="space-y-8"
               >
-                <h2 className="text-2xl sm:text-3xl font-semibold text-foreground leading-tight">
-                  {currentQuestion.question}
-                  {currentQuestion.required && <span className="text-destructive ml-1">*</span>}
-                </h2>
+                {isWelcome && (
+                  <>
+                    <h1 className="text-2xl sm:text-3xl font-semibold text-foreground leading-tight whitespace-pre-line">{currentStep?.content}</h1>
+                    <div className="pt-4">
+                      <p className="text-xs text-muted-foreground">
+                        Продолжая, вы соглашаетесь с нашими{' '}
+                        <Link href={`/${locale}/terms`} className="underline hover:text-foreground">
+                          {tAuth('termsOfService')}
+                        </Link>{' '}
+                        и{' '}
+                        <Link href={`/${locale}/privacy`} className="underline hover:text-foreground">
+                          {tAuth('privacyPolicy')}
+                        </Link>
+                        . Ознакомьтесь перед продолжением.
+                      </p>
+                    </div>
+                  </>
+                )}
 
-                <QuestionComponent
-                  question={currentQuestion}
-                  answer={answers[currentQuestion.id]}
-                  onChange={(value) => handleAnswerChange(currentQuestion.id, value)}
-                  t={t}
-                />
+                {isTransition && <h2 className="text-xl sm:text-2xl font-semibold text-foreground whitespace-pre-line leading-relaxed">{currentStep?.content}</h2>}
+
+                {currentStep?.type === 'question' && (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Вопрос {currentQuestionNum} из {questionCount}
+                    </p>
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-foreground leading-tight">
+                      {currentStep.question}
+                      {currentStep.required && <span className="text-destructive ml-1">*</span>}
+                    </h2>
+                    <StepContent
+                      step={currentStep}
+                      answers={answers}
+                      onChange={handleAnswerChange}
+                      onNext={nextStep}
+                      autoAdvance={autoAdvance}
+                    />
+                  </>
+                )}
+
+                {isFinal && (
+                  <>
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-foreground whitespace-pre-line leading-relaxed">{currentStep?.content}</h2>
+                    <p className="text-lg text-foreground/80">
+                      Будем работать над{' '}
+                      <span className="font-medium text-primary">
+                        {(() => {
+                          const needs = (answers.support_needs as string[] | null) ?? []
+                          const other = answers.support_needs_other as string | undefined
+                          const parts = needs.filter((n) => n !== 'Другое')
+                          if (needs.includes('Другое') && other?.trim()) parts.push(other.trim())
+                          return parts.length ? parts.join(', ') : 'твоими целями'
+                        })()}
+                      </span>{' '}
+                      вместе, шаг за шагом, в твоём ритме.
+                    </p>
+                  </>
+                )}
 
                 {error && (
-                  <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-sm text-destructive">
-                    {error}
-                  </div>
+                  <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-sm text-destructive">{error}</div>
                 )}
               </motion.div>
             </AnimatePresence>
           </form>
-        </div>
 
-        <div className="flex items-center justify-between gap-4 pt-8 mt-8 border-t border-[hsl(var(--app-border))]">
-          <Button
-            type="button"
-            variant="ghost"
-            className="rounded-2xl text-muted-foreground hover:text-foreground"
-            onClick={prevQuestion}
-            disabled={currentQuestionIndex === 0}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t('previous')}
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {currentQuestionIndex + 1} / {flatQuestions.length}
-          </span>
-          {currentQuestionIndex < flatQuestions.length - 1 ? (
-            <Button type="button" className="rounded-2xl" onClick={nextQuestion}>
-              {t('next')}
-              <ArrowRight className="w-4 h-4 ml-2" />
+          {/* Navigation */}
+          <div className="flex items-center justify-between gap-4 pt-8 mt-8 border-t border-[hsl(var(--app-border))]">
+            <Button
+              type="button"
+              variant="ghost"
+              className="rounded-2xl text-muted-foreground hover:text-foreground"
+              onClick={prevStep}
+              disabled={stepIndex === 0}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('previous')}
             </Button>
-          ) : (
-            <Button type="submit" form="onboarding-form" className="rounded-2xl" disabled={isSubmitting}>
-              {isSubmitting ? t('submitting') : t('complete')}
-              <CheckCircle className="w-4 h-4 ml-2" />
-            </Button>
-          )}
+            <span className="text-sm text-muted-foreground">
+              {stepIndex + 1} / {steps.length}
+            </span>
+            {isWelcome || isTransition ? (
+              <Button type="button" className="rounded-2xl" onClick={nextStep}>
+                {currentStep?.buttonLabel ?? 'Далее'}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            ) : isFinal ? (
+              <Button type="submit" form="onboarding-form" className="rounded-2xl" disabled={isSubmitting}>
+                {isSubmitting ? t('submitting') : (currentStep?.buttonLabel ?? t('complete'))}
+                <CheckCircle className="w-4 h-4 ml-2" />
+              </Button>
+            ) : (
+              <Button type="button" className="rounded-2xl" onClick={nextStep}>
+                {t('next')}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

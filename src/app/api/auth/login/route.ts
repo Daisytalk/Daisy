@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
         password: true,
         createdAt: true,
         updatedAt: true,
+        deactivatedAt: true,
       },
     })
 
@@ -54,6 +55,19 @@ export async function POST(request: NextRequest) {
         { message: apiMessages.invalidEmailOrPassword },
         { status: 401 }
       )
+    }
+
+    // Деактивированный аккаунт: > 30 дней — удаляем, иначе — requiresRestore
+    if (user.deactivatedAt) {
+      const daysSince = (Date.now() - user.deactivatedAt.getTime()) / (1000 * 60 * 60 * 24)
+      if (daysSince > 30) {
+        await prisma.user.delete({ where: { id: user.id } })
+        return NextResponse.json(
+          { message: 'Аккаунт был безвозвратно удалён после 30 дней деактивации' },
+          { status: 410 }
+        )
+      }
+      // В течение 30 дней — выдаём токен и флаг для восстановления
     }
 
     const onboardingData = await prisma.onboardingData.findUnique({
@@ -82,7 +96,8 @@ export async function POST(request: NextRequest) {
         subscriptionStatus: 'active',
         trialEndsAt: null,
       },
-      token, // Still return token for backwards compatibility
+      token,
+      requiresRestore: !!user.deactivatedAt,
     })
 
     // Set HttpOnly cookie (secure: true для HTTPS; учитываем прокси Azure)

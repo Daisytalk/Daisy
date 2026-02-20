@@ -87,7 +87,7 @@ function HomeContent() {
           planId: plan.id,
           amount: plan.price * 100, // в центах
           currency: 'USD',
-          description: `Daisy — ${plan.name}`,
+          description: `Daisy - ${plan.name}`,
           durationMonths: plan.durationMonths,
           returnUrl: `${window.location.origin}/${locale}/chat`,
         }),

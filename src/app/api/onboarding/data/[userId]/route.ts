@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
-import type { OnboardingData, OnboardingAnswer } from '@/shared/types/auth'
+import type { OnboardingData, OnboardingAnswer, OnboardingAnswerValue } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
 
 export async function GET(request: NextRequest, props: { params: Promise<{ userId: string }> }) {
@@ -50,11 +50,19 @@ export async function GET(request: NextRequest, props: { params: Promise<{ userI
       return NextResponse.json(emptyData)
     }
 
-    // Format the response to match the OnboardingData type expected by the frontend
+    // Format: support both array [{questionId, answer}] and object {questionId: answer}
+    let answers: OnboardingAnswer[]
+    if (Array.isArray(dbData.responses)) {
+      answers = dbData.responses as unknown as OnboardingAnswer[]
+    } else if (dbData.responses && typeof dbData.responses === 'object' && !Array.isArray(dbData.responses)) {
+      answers = Object.entries(dbData.responses as Record<string, unknown>).map(([questionId, answer]) => ({ questionId, answer: answer as OnboardingAnswerValue }))
+    } else {
+      answers = []
+    }
+
     const responseData: OnboardingData = {
       userId: dbData.userId,
-      // Cast to 'unknown' first to resolve the type error.
-      answers: Array.isArray(dbData.responses) ? dbData.responses as unknown as OnboardingAnswer[] : [],
+      answers,
       completedAt: dbData.completed ? dbData.updatedAt : null as unknown as Date,
     };
 
