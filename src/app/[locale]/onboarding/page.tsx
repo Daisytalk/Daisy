@@ -86,7 +86,8 @@ function StepContent({
 
   const handleRelationship = (value: 'yes' | 'no' | 'unsure') => {
     onChange(step.questionId!, { value, rel_quality: value === 'yes' ? undefined : undefined, other: value === 'unsure' ? '' : undefined })
-    if (autoAdvance && value !== 'yes') setTimeout(onNext, 300)
+    // Автопереход только для "нет". "Да" → выбор rel_quality (авто при выборе). "Затрудняюсь" → открытый текст, кнопка Далее
+    if (autoAdvance && value === 'no') setTimeout(onNext, 300)
   }
 
   const handleRelQuality = (rating: number) => {
@@ -320,7 +321,14 @@ function OnboardingPageContent() {
 
   const steps = ONBOARDING_STEPS
   const currentStep = steps[stepIndex]
-  const autoAdvance = true // "Сам переключается кликом"
+  // Автопереход при одиночном выборе. Мультивыбор и открытые — через кнопку Далее
+  const q = currentStep?.type === 'question' ? answers[currentStep.questionId!] as { value?: string } | null : null
+  const isSingleChoiceStep =
+    currentStep?.type === 'question' &&
+    (currentStep?.questionType === 'scale' ||
+      (currentStep?.questionType === 'relationship' && q?.value !== 'unsure') ||
+      (currentStep?.questionType === 'yes-no-text' && q?.value !== 'yes'))
+  const autoAdvance = !!isSingleChoiceStep
 
   useEffect(() => {
     if (!isAuthLoading && user?.isOnboarded) {
@@ -586,6 +594,8 @@ function OnboardingPageContent() {
                 {isSubmitting ? t('submitting') : (currentStep?.buttonLabel ?? t('complete'))}
                 <CheckCircle className="w-4 h-4 ml-2" />
               </Button>
+            ) : isSingleChoiceStep ? (
+              <div className="w-24" aria-hidden />
             ) : (
               <Button type="button" className="rounded-2xl" onClick={nextStep}>
                 {t('next')}
