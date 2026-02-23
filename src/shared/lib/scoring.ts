@@ -41,17 +41,24 @@ function clamp01(x: number): number {
   return Math.max(0, Math.min(1, x))
 }
 
+/** Извлекает yes/no из ответа yes-no-text (value: 'yes' | 'no') */
+function yesNo(responses: OnboardingResponses, questionId: string): 0 | 1 {
+  const a = getAnswer(responses, questionId)
+  if (!a || typeof a !== 'object' || Array.isArray(a)) return 0
+  const v = (a as Record<string, unknown>).value
+  return v === 'yes' || v === 'Да' ? 1 : 0
+}
+
 /**
  * Вычисляет психопрофиль из ответов онбординга.
- * Адаптировано под текущие вопросы: mood_today, work_state, relationships,
- * family_support, solo_comfort, physical_state, emo_state.
+ * Формулы по PDF: ESI, SSI, BSI, PVI, MRI, risk_level.
  */
 export function computePsychProfile(responses: OnboardingResponses): PsychProfileResult {
-  const num = (q: string): number => {
+  const num = (q: string, defaultVal = 3): number => {
     const a = getAnswer(responses, q)
     if (typeof a === 'number') return a
     if (typeof a === 'string' && /^\d+$/.test(a)) return parseInt(a, 10)
-    return 3 // default middle
+    return defaultVal
   }
 
   const mood_today = num('mood_today')
@@ -60,6 +67,13 @@ export function computePsychProfile(responses: OnboardingResponses): PsychProfil
   const solo_comfort = num('solo_comfort')
   const physical_state = num('physical_state')
   const emo_state = num('emo_state')
+  const leisure = num('leisure')
+  const housing = num('housing')
+  const finance = num('finance')
+
+  const family_history_yes = yesNo(responses, 'family_history')
+  const chronic_yes = yesNo(responses, 'chronic')
+  const addiction_yes = yesNo(responses, 'addiction')
 
   const relRaw = getAnswer(responses, 'relationships')
   let rel_quality: number | null = null
@@ -70,37 +84,38 @@ export function computePsychProfile(responses: OnboardingResponses): PsychProfil
     }
   }
 
+  const rel = rel_quality != null ? norm(rel_quality) : 0
+  const social_support = norm(family_support) // family_support как proxy для social_support
+
   const flags: Record<string, boolean> = {}
   if (physical_state <= 2) flags.sleep_issues = true
   if (emo_state <= 2) flags.high_anxiety = true
 
-  // ESI: эмоциональная стабильность (выше лучше)
-  const esiWeight = 0.2 * norm(mood_today) + 0.3 * norm(emo_state) + 0.2 * norm(solo_comfort)
-    + 0.05 * norm(family_support)
-    + (rel_quality != null ? 0.05 * norm(rel_quality) : 0)
-  const esiDenom = rel_quality != null ? 0.8 : 0.75
-  const ESI = 100 * clamp01(esiWeight / esiDenom)
+  // ESI = 0.20×mood + 0.30×emo + 0.20×solo_comfort + 0.05×rel + 0.05×family + 0.05×social − 0.05×addiction_yes
+  const ESI_raw = 0.20 * norm(mood_today) + 0.30 * norm(emo_state) + 0.20 * norm(solo_comfort)
+    + 0.05 * rel + 0.05 * norm(family_support) + 0.05 * social_support - 0.05 * addiction_yes
+  const ESI = 100 * clamp01(ESI_raw)
 
-  // SSI: социальная поддержка (выше лучше)
-  const ssiParts = [0.2 * norm(family_support)]
-  if (rel_quality != null) ssiParts.push(0.2 * norm(rel_quality))
-  const ssiSum = ssiParts.reduce((a, b) => a + b, 0)
-  const ssiDenom = rel_quality != null ? 0.4 : 0.2
-  const SSI = 100 * clamp01(ssiSum / ssiDenom)
+  // SSI = 0.20×rel + 0.20×family_support + 0.30×social_support (normalize)
+  const ssiSum = 0.20 * rel + 0.20 * norm(family_support) + 0.30 * social_support
+  const SSI = 100 * clamp01(ssiSum / 0.7)
 
-  // BSI: стресс/выгорание (выше хуже)
-  const bsiRaw = 0.3 * inv(work_state) + 0.2 * inv(emo_state) + 0.1 * inv(mood_today) + 0.1 * inv(physical_state)
-  const BSI = 100 * clamp01(bsiRaw / 0.7)
+  // BSI = 0.30×inv(work) + 0.20×inv(emo) + 0.10×inv(mood) + 0.10×inv(physical) + 0.10×inv(leisure) + 0.15×inv(finance) + 0.05×inv(housing) + 0.05×addiction_yes
+  const bsiRaw = 0.30 * inv(work_state) + 0.20 * inv(emo_state) + 0.10 * inv(mood_today) + 0.10 * inv(physical_state)
+    + 0.10 * inv(leisure) + 0.15 * inv(finance) + 0.05 * inv(housing) + 0.05 * addiction_yes
+  const BSI = 100 * clamp01(bsiRaw / 1.05)
 
-  // PVI: физическая уязвимость (выше хуже) — только physical_state
-  const PVI = 100 * clamp01(inv(physical_state))
+  // PVI = 0.20×inv(physical) + 0.35×chronic_yes + 0.20×family_history_yes + 0.45×addiction_yes
+  const pviRaw = 0.20 * inv(physical_state) + 0.35 * chronic_yes + 0.20 * family_history_yes + 0.45 * addiction_yes
+  const PVI = 100 * clamp01(pviRaw / 1.2)
 
-  // MRI: ресурс/смыслы (выше лучше) — work_state + mood_today
-  const MRI = 100 * clamp01(0.6 * norm(work_state) + 0.4 * norm(mood_today))
+  // MRI = 0.35×leisure + 0.20×finance + 0.15×housing + 0.10×work + 0.20×mood_today
+  const mriRaw = 0.35 * norm(leisure) + 0.20 * norm(finance) + 0.15 * norm(housing) + 0.10 * norm(work_state) + 0.20 * norm(mood_today)
+  const MRI = 100 * clamp01(mriRaw)
 
-  // risk_level
+  // risk_level: critical (BSI≥80 или ESI≤25 или addiction_yes && ESI≤35), high, medium, low
   let riskLevel: RiskLevel = 'low'
-  if (BSI >= 80 || ESI <= 25) riskLevel = 'critical'
+  if (BSI >= 80 || ESI <= 25 || (addiction_yes === 1 && ESI <= 35)) riskLevel = 'critical'
   else if (BSI >= 65 || ESI <= 40) riskLevel = 'high'
   else if (BSI >= 45 || ESI <= 55) riskLevel = 'medium'
 

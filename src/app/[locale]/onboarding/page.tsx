@@ -47,6 +47,9 @@ const SCALE_MAP: Record<string, string[]> = {
   solo_comfort: SCALE_LABELS_SOLO,
   physical_state: SCALE_LABELS_PHYSICAL,
   emo_state: SCALE_LABELS_EMO,
+  leisure: SCALE_LABELS,
+  housing: SCALE_LABELS,
+  finance: SCALE_LABELS,
 }
 
 // ─── Step renderer ───────────────────────────────────────────────────────────
@@ -90,6 +93,12 @@ function StepContent({
     const current = answers[step.questionId!] as { value: string; rel_quality?: number; other?: string } | null
     onChange(step.questionId!, { ...current, value: 'yes', rel_quality: rating })
     if (autoAdvance) setTimeout(onNext, 300)
+  }
+
+  const handleYesNoText = (value: 'yes' | 'no') => {
+    const current = answers[step.questionId!] as { value?: string; text?: string } | null
+    onChange(step.questionId!, { ...current, value, text: value === 'yes' ? (current?.text ?? '') : undefined })
+    if (autoAdvance && value === 'no') setTimeout(onNext, 300)
   }
 
   if (step.type === 'welcome' || step.type === 'transition') {
@@ -253,6 +262,42 @@ function StepContent({
         </div>
       )
     }
+
+    if (step.questionType === 'yes-no-text') {
+      const val = answers[step.questionId!] as { value?: string; text?: string } | null
+      const ynVal = val?.value
+      const textVal = val?.text ?? ''
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-3">
+            {(['yes', 'no'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => handleYesNoText(v)}
+                className={`px-6 py-3 rounded-2xl border-2 font-medium transition-all ${
+                  ynVal === v ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
+                }`}
+              >
+                {v === 'yes' ? 'Да' : 'Нет'}
+              </button>
+            ))}
+          </div>
+          {ynVal === 'yes' && (
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Можешь рассказать подробнее (по желанию):</label>
+              <Textarea
+                value={textVal}
+                onChange={(e) => onChange(step.questionId!, { ...val, value: 'yes', text: e.target.value })}
+                placeholder="Опишите..."
+                rows={3}
+                className="rounded-2xl border-2"
+              />
+            </div>
+          )}
+        </div>
+      )
+    }
   }
 
   return null
@@ -298,6 +343,10 @@ function OnboardingPageContent() {
         const rel = val as { value?: string; rel_quality?: number } | null
         if (!rel?.value) return
         if (rel.value === 'yes' && (rel.rel_quality == null || rel.rel_quality < 1)) return
+      }
+      if (currentStep.questionType === 'yes-no-text' && currentStep.required) {
+        const yn = val as { value?: string } | null
+        if (!yn?.value) return
       }
     }
     if (stepIndex < steps.length - 1) {

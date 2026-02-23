@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
@@ -43,28 +44,34 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-[hsl(var(--app-bg))]">
-      {/* Left: Brand / Visual — голубой фон */}
-      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between relative overflow-hidden bg-gradient-to-br from-sky-100 via-blue-50 to-sky-100 p-12 xl:p-16 text-sky-900">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-sky-200/30 blur-3xl" />
-          <div className="absolute top-1/2 -left-20 w-72 h-72 rounded-full bg-blue-100/50 blur-2xl" />
-        </div>
+      {/* Left: Brand / Visual — фото + оверлей */}
+      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between relative overflow-hidden p-12 xl:p-16 text-sky-900">
+        <Image
+          src="/images/log-reg-photo.jpg"
+          alt=""
+          fill
+          className="object-cover object-center"
+          priority
+          sizes="(max-width: 1024px) 0vw, 52vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-sky-900/70 via-sky-900/30 to-transparent" />
+        <div className="absolute inset-0 bg-sky-100/20" />
 
         <div className="relative z-10">
-          <span className="inline-flex items-center gap-2 text-sky-900/90 font-medium tracking-wide">
-            <span className="w-2 h-2 rounded-full bg-sky-600/80 animate-pulse" />
+          <span className="inline-flex items-center gap-2 text-white/95 font-medium tracking-wide drop-shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-white/90 animate-pulse" />
             Daisy
           </span>
         </div>
         <div className="relative z-10 space-y-8">
-          <h2 className="text-3xl xl:text-4xl font-semibold leading-tight max-w-sm whitespace-pre-line">
+          <h2 className="text-3xl xl:text-4xl font-semibold leading-tight max-w-sm whitespace-pre-line text-white drop-shadow-md">
             {t('loginPageTitle')}
           </h2>
-          <p className="text-sky-900/90 text-lg max-w-sm leading-relaxed">
+          <p className="text-white/95 text-lg max-w-sm leading-relaxed drop-shadow-sm">
             {t('loginPageDesc')}
           </p>
         </div>
-        <div className="relative z-10 flex flex-wrap gap-x-6 gap-y-1 text-sm text-sky-800/75">
+        <div className="relative z-10 flex flex-wrap gap-x-6 gap-y-1 text-sm text-white/85">
           <span>{t('badgeCompanion')}</span>
           <span>·</span>
           <span>{t('badgePrivate')}</span>

@@ -11,6 +11,17 @@ import type { AIApiResponse } from '@/shared/lib/ai-api'
 const HISTORY_LIMIT = 30
 export type DaisyLocale = 'ru' | 'kk' | 'en'
 
+export interface PsychProfilePayload {
+  ESI: number
+  BSI: number
+  SSI: number
+  PVI: number
+  MRI: number
+  riskLevel: string
+  cluster?: string
+  flags?: Record<string, boolean>
+}
+
 export interface DaisyRequestPayload {
   message: string
   user_id: string
@@ -20,6 +31,7 @@ export interface DaisyRequestPayload {
   persona?: string
   locale?: DaisyLocale
   request_ai_profile?: boolean
+  psych_profile?: PsychProfilePayload
 }
 
 interface BuildDaisyRequestInput {
@@ -41,7 +53,7 @@ interface BuildDaisyRequestInput {
 export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<DaisyRequestPayload> {
   const { userId, conversationId, userMessage, locale = 'ru' } = input
 
-  const [conversation, user, onboardingData] = await Promise.all([
+  const [conversation, user, onboardingData, psychSnapshot] = await Promise.all([
     prisma.cbtConversation.findUnique({
       where: { id: conversationId },
       include: {
@@ -58,6 +70,10 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
     prisma.onboardingData.findUnique({
       where: { userId },
       select: { responses: true },
+    }),
+    prisma.psychProfileSnapshot.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
     }),
   ])
 
@@ -124,6 +140,18 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
   }
   if (userContext != null && userContext !== '') {
     payload.user_context = userContext
+  }
+  if (psychSnapshot != null) {
+    payload.psych_profile = {
+      ESI: psychSnapshot.ESI,
+      BSI: psychSnapshot.BSI,
+      SSI: psychSnapshot.SSI,
+      PVI: psychSnapshot.PVI,
+      MRI: psychSnapshot.MRI,
+      riskLevel: psychSnapshot.riskLevel,
+      cluster: psychSnapshot.cluster ?? undefined,
+      flags: (psychSnapshot.flags as Record<string, boolean>) ?? undefined,
+    }
   }
 
   return payload

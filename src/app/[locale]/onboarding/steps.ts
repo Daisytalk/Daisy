@@ -12,7 +12,7 @@ export interface OnboardingStep {
   /** Для question: id вопроса (mood_today, support_needs, etc.) */
   questionId?: string
   question?: string
-  questionType?: 'scale' | 'multiselect' | 'style-selection' | 'relationship'
+  questionType?: 'scale' | 'multiselect' | 'style-selection' | 'relationship' | 'yes-no-text'
   options?: string[]
   maxSelect?: number
   required?: boolean
@@ -139,6 +139,60 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     question: 'Что происходит внутри в последнее время: как твоё эмоциональное состояние? 🤍',
     questionType: 'scale',
     required: true,
+  },
+  {
+    id: 'leisure',
+    type: 'question',
+    section: 'life-areas',
+    questionId: 'leisure',
+    question: 'Как тебе удаётся отдыхать и получать удовольствие от досуга? 🤍',
+    questionType: 'scale',
+    required: false,
+  },
+  {
+    id: 'housing',
+    type: 'question',
+    section: 'life-areas',
+    questionId: 'housing',
+    question: 'Как ты себя чувствуешь в своём жилье? 🤍',
+    questionType: 'scale',
+    required: false,
+  },
+  {
+    id: 'finance',
+    type: 'question',
+    section: 'life-areas',
+    questionId: 'finance',
+    question: 'Как обстоят дела с финансами в последнее время? 🤍',
+    questionType: 'scale',
+    required: false,
+  },
+  {
+    id: 'family_history',
+    type: 'question',
+    section: 'life-areas',
+    questionId: 'family_history',
+    question: 'Есть ли в семье наследственная предрасположенность к психическим или эмоциональным расстройствам? (можно не отвечать)',
+    questionType: 'yes-no-text',
+    required: false,
+  },
+  {
+    id: 'chronic',
+    type: 'question',
+    section: 'life-areas',
+    questionId: 'chronic',
+    question: 'Есть ли у тебя хронические заболевания, которые влияют на самочувствие? (можно не отвечать)',
+    questionType: 'yes-no-text',
+    required: false,
+  },
+  {
+    id: 'addiction',
+    type: 'question',
+    section: 'life-areas',
+    questionId: 'addiction',
+    question: 'Есть ли зависимости (алкоголь, курение, другое), которые тебя беспокоят? (можно не отвечать)',
+    questionType: 'yes-no-text',
+    required: false,
   },
   // ─── Завершение опроса ────────────────────────────────────────────────────
   {

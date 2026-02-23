@@ -47,6 +47,7 @@ async function processAsyncChat(
         user_context: payload.user_context,
         persona: payload.persona,
         locale: payload.locale,
+        psych_profile: payload.psych_profile,
       }
     )
 

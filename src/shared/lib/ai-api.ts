@@ -173,6 +173,7 @@ function _buildConversationPrompt(
  * @param options.user_context - User.conversationMemory (накопленные факты)
  * @param options.persona - CbtConversation.persona
  * @param options.locale - "ru" | "kk" | "en"
+ * @param options.psych_profile - ESI, BSI, SSI, PVI, MRI, riskLevel, cluster для персонализации
  */
 export async function sendChatMessage(
   text: string,
@@ -185,6 +186,16 @@ export async function sendChatMessage(
     user_context?: string;
     persona?: string;
     locale?: string;
+    psych_profile?: {
+      ESI: number;
+      BSI: number;
+      SSI: number;
+      PVI: number;
+      MRI: number;
+      riskLevel: string;
+      cluster?: string;
+      flags?: Record<string, boolean>;
+    };
   }
 ): Promise<AIApiResponse> {
   const endpoint = getApiBaseUrl();
@@ -210,6 +221,9 @@ export async function sendChatMessage(
   }
   if (options?.locale != null && options.locale !== '') {
     requestBody.locale = options.locale;
+  }
+  if (options?.psych_profile != null) {
+    requestBody.psych_profile = options.psych_profile;
   }
 
   const historyArr = (requestBody.history as Array<{ role: string; content: string }>) || []
