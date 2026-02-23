@@ -31,12 +31,12 @@ import {
 // ─── Communication styles ─────────────────────────────────────────────────────
 
 const COMMUNICATION_STYLES = [
-  { id: 'warm_friend', name: 'Тёплая подруга', keywords: 'душевная, понимающая, мягкая' },
-  { id: 'practical_helper', name: 'Практичный помощник', keywords: 'конкретный, структурированный, честный' },
-  { id: 'gentle_explorer', name: 'Мягкий исследователь', keywords: 'любопытный, рефлексивный, глубокий' },
-  { id: 'calm_mentor', name: 'Спокойный наставник', keywords: 'уравновешенный, принимающий, терпеливый' },
-  { id: 'wise_teacher', name: 'Мудрый учитель', keywords: 'информативный, научный, обучающий' },
-  { id: 'flexible_companion', name: 'Гибкая собеседница', keywords: 'чуткий, ситуативный, настраиваемый' },
+  { id: 'warm_friend', name: 'Тёплая подруга', keywords: 'душевная · понимающая · мягкая', tooltip: '«Я вижу, как тебе сейчас непросто. Давай вместе разберёмся. Ты не одна в этом.»' },
+  { id: 'practical_helper', name: 'Практичный помощник', keywords: 'конкретный · честный · мотивирующий', tooltip: '«Хорошо, давай посмотрим на факты. Что можно сделать уже сегодня?»' },
+  { id: 'gentle_explorer', name: 'Мягкий исследователь', keywords: 'любопытный · глубокий · рефлексивный', tooltip: '«Интересно… А откуда, как думаешь, это чувство? Что оно пытается сказать?»' },
+  { id: 'calm_mentor', name: 'Спокойный наставник', keywords: 'уравновешенный · принимающий · терпеливый', tooltip: '«Всё, что ты чувствуешь - имеет право быть. Просто понаблюдаем вместе, без спешки.»' },
+  { id: 'wise_teacher', name: 'Мудрый учитель', keywords: 'информативный · научный · объясняющий', tooltip: '«То, что ты описываешь - это когнитивное искажение "катастрофизация". Вот как это работает…»' },
+  { id: 'flexible_companion', name: 'Гибкая собеседница', keywords: 'чуткая · ситуативная · настраиваемая', tooltip: '«Подстроюсь под то, что тебе нужно прямо сейчас — иногда поддержу, иногда направлю, иногда просто побуду рядом.»' },
 ]
 
 const SCALE_MAP: Record<string, string[]> = {
@@ -177,12 +177,18 @@ function StepContent({
                 type="button"
                 disabled={isDisabled}
                 onClick={() => handleStyleSelect(style.id)}
-                className={`text-left p-4 rounded-2xl border-2 transition-all ${
+                title={style.tooltip}
+                className={`text-left p-4 rounded-2xl border-2 transition-all group ${
                   isSelected ? 'border-primary bg-primary/10' : isDisabled ? 'opacity-40 cursor-not-allowed border-[hsl(var(--app-border))]' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
                 }`}
               >
                 <p className="font-semibold text-foreground mb-1">{style.name}</p>
                 <p className="text-xs text-muted-foreground">{style.keywords}</p>
+                {style.tooltip && (
+                  <p className="text-xs text-muted-foreground/70 mt-2 italic opacity-0 group-hover:opacity-100 transition-opacity line-clamp-2" title={style.tooltip}>
+                    {style.tooltip}
+                  </p>
+                )}
               </button>
             )
           })}
@@ -208,13 +214,13 @@ function StepContent({
                   relVal === v ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
                 }`}
               >
-                {v === 'yes' ? 'Да' : v === 'no' ? 'Нет' : 'Сложно сказать'}
+                {v === 'yes' ? 'Да' : v === 'no' ? 'Нет' : 'Затрудняюсь ответить'}
               </button>
             ))}
           </div>
           {relVal === 'yes' && (
             <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground">Как ощущаются твои отношения прямо сейчас?</p>
+              <p className="text-sm font-medium text-foreground">Как ощущаются ваши отношения прямо сейчас?</p>
               <div className="flex flex-wrap gap-3">
                 {[1, 2, 3, 4, 5].map((v) => (
                   <button
@@ -234,7 +240,7 @@ function StepContent({
           )}
           {relVal === 'unsure' && (
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Добавить свой ответ:</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Расскажи своими словами: как это для тебя сейчас? 🤍</label>
               <Textarea
                 value={otherText}
                 onChange={(e) => onChange(step.questionId!, { ...val, value: 'unsure', other: e.target.value })}
@@ -404,19 +410,41 @@ function OnboardingPageContent() {
   const currentQuestionNum = steps.slice(0, stepIndex + 1).filter((s) => s.type === 'question').length
   const progress = ((stepIndex + 1) / steps.length) * 100
 
+  const PROGRESS_LABELS = ['Эмоциональное состояние', 'Состояние жизненных сфер', 'Завершение опроса']
+  const progressSectionIndex = currentStep?.section === 'emotional-start' ? 0 : currentStep?.section === 'life-areas' ? 1 : 2
+
   return (
     <div className="min-h-screen flex flex-col bg-[hsl(var(--app-bg))]">
-      {/* Progress bar */}
-      <div className="shrink-0 h-1.5 w-full bg-muted overflow-hidden">
-        <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.3 }} />
+      {/* Progress bar с подписями */}
+      <div className="shrink-0 px-4 sm:px-6 pt-4 pb-2">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex justify-between gap-2 text-[10px] sm:text-xs text-muted-foreground mb-1.5">
+            {PROGRESS_LABELS.map((label, i) => (
+              <span key={i} className={i === progressSectionIndex ? 'font-semibold text-foreground' : ''}>
+                {label}
+              </span>
+            ))}
+          </div>
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-primary rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${((progressSectionIndex + 1) / 3) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col px-4 sm:px-6 py-6 max-w-2xl mx-auto w-full">
-        {/* Logo + section block */}
+        {/* Лого DAISY сверху слева */}
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-white/95 border border-[hsl(var(--app-border))]">
-            <Image src="/images/daisy-icon.png" alt="Daisy" width={48} height={48} className="object-contain" />
-          </div>
+          <Link href={`/${locale}`} className="flex items-center gap-2 shrink-0">
+            <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-[hsl(var(--app-border))] shadow-sm p-1.5">
+              <Image src="/images/daisy-icon.svg" alt="Daisy" width={40} height={40} className="object-contain" />
+            </div>
+            <span className="font-bold text-lg text-foreground tracking-tight">DAISY</span>
+          </Link>
           <div className="flex-1">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{sectionLabel}</span>
           </div>
@@ -440,13 +468,13 @@ function OnboardingPageContent() {
                       <p className="text-xs text-muted-foreground">
                         Продолжая, вы соглашаетесь с нашими{' '}
                         <Link href={`/${locale}/terms`} className="underline hover:text-foreground">
-                          {tAuth('termsOfService')}
+                          Условиями использования
                         </Link>{' '}
                         и{' '}
                         <Link href={`/${locale}/privacy`} className="underline hover:text-foreground">
-                          {tAuth('privacyPolicy')}
+                          Политикой конфиденциальности
                         </Link>
-                        . Ознакомьтесь перед продолжением.
+                        . Пожалуйста, ознакомьтесь, прежде чем продолжить.
                       </p>
                     </div>
                   </>
@@ -474,22 +502,7 @@ function OnboardingPageContent() {
                 )}
 
                 {isFinal && (
-                  <>
-                    <h2 className="text-2xl sm:text-3xl font-semibold text-foreground whitespace-pre-line leading-relaxed">{currentStep?.content}</h2>
-                    <p className="text-lg text-foreground/80">
-                      Будем работать над{' '}
-                      <span className="font-medium text-primary">
-                        {(() => {
-                          const needs = (answers.support_needs as string[] | null) ?? []
-                          const other = answers.support_needs_other as string | undefined
-                          const parts = needs.filter((n) => n !== 'Другое')
-                          if (needs.includes('Другое') && other?.trim()) parts.push(other.trim())
-                          return parts.length ? parts.join(', ') : 'твоими целями'
-                        })()}
-                      </span>{' '}
-                      вместе, шаг за шагом, в твоём ритме.
-                    </p>
-                  </>
+                  <h2 className="text-2xl sm:text-3xl font-semibold text-foreground whitespace-pre-line leading-relaxed">{currentStep?.content}</h2>
                 )}
 
                 {error && (

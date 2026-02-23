@@ -65,7 +65,7 @@ export function computePsychProfile(responses: OnboardingResponses): PsychProfil
   let rel_quality: number | null = null
   if (relRaw && typeof relRaw === 'object' && !Array.isArray(relRaw)) {
     const r = relRaw as Record<string, unknown>
-    if (r.value === 'Да' && typeof r.rel_quality === 'number') {
+    if ((r.value === 'yes' || r.value === 'Да') && typeof r.rel_quality === 'number') {
       rel_quality = r.rel_quality
     }
   }

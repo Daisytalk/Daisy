@@ -101,22 +101,31 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left: Brand / Visual — голубой фон */}
-      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between bg-gradient-to-br from-sky-100 via-blue-50 to-sky-100 p-12 xl:p-16 text-sky-900">
-        <div>
-          <span className="text-sky-900/90 font-medium tracking-wide">Daisy</span>
+      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between relative overflow-hidden bg-gradient-to-br from-sky-100 via-blue-50 to-sky-100 p-12 xl:p-16 text-sky-900">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-sky-200/30 blur-3xl" />
+          <div className="absolute top-1/2 -left-20 w-72 h-72 rounded-full bg-blue-100/50 blur-2xl" />
         </div>
-        <div className="space-y-6">
-          <h2 className="text-3xl xl:text-4xl font-semibold leading-tight max-w-sm">
+        <div className="relative z-10">
+          <span className="inline-flex items-center gap-2 text-sky-900/90 font-medium tracking-wide">
+            <span className="w-2 h-2 rounded-full bg-sky-600/80 animate-pulse" />
+            Daisy
+          </span>
+        </div>
+        <div className="relative z-10 space-y-6">
+          <h2 className="text-3xl xl:text-4xl font-semibold leading-tight max-w-sm whitespace-pre-line">
             {t('registerPageTitle')}
           </h2>
-          <p className="text-sky-900/85 text-lg max-w-sm leading-relaxed">
+          <p className="text-sky-900/90 text-lg max-w-sm leading-relaxed whitespace-pre-line">
             {t('registerPageDesc')}
           </p>
         </div>
-        <div className="flex gap-6 text-sm text-sky-800/75">
-          <span>Next: quick onboarding</span>
+        <div className="relative z-10 flex flex-wrap gap-x-6 gap-y-1 text-sm text-sky-800/75">
+          <span>{t('badgeCompanion')}</span>
           <span>·</span>
-          <span>Then start chatting</span>
+          <span>{t('badgePrivate')}</span>
+          <span>·</span>
+          <span>{t('badge24_7')}</span>
         </div>
       </div>
 
