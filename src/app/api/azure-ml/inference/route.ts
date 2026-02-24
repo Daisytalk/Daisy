@@ -4,7 +4,8 @@ import prisma from '@/shared/lib/database';
 import { getAzureMLService } from '@/shared/lib/azure-ml';
 import { apiMessages } from '@/shared/api-messages';
 import { redactPII } from '@/shared/lib/pii/redactor';
-import { rateLimit } from '@/shared/lib/rate-limit';
+import { rateLimitAI } from '@/shared/lib/rate-limit';
+import { scanForInjection } from '@/shared/lib/input-guard';
 
 /**
  * Azure ML CBT API Inference Route
@@ -47,12 +48,6 @@ export async function POST(request: NextRequest) {
         // Validate text
         if (!text || typeof text !== 'string' || text.trim().length === 0) {
             return NextResponse.json({ error: apiMessages.textRequired }, { status: 400 });
-        }
-        if (text.trim().length > 2000) {
-            return NextResponse.json(
-                { error: 'Сообщение слишком длинное. Максимум 2000 символов.' },
-                { status: 400 }
-            );
         }
 
         // ============================================
@@ -99,12 +94,33 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Rate limit per user: 20 messages/minute
-        const rl = rateLimit(`ai:${user.id}`, 20, 60_000)
+        // 1. Абсолютный потолок — UX граница, не защита
+        const HARD_MAX = 10_000;
+        if (text.trim().length > HARD_MAX) {
+            return NextResponse.json(
+                { error: 'Сообщение слишком длинное. Попробуйте разбить на части.' },
+                { status: 400 }
+            );
+        }
+
+        // 2. Контент-сканер — защита от prompt injection
+        if (scanForInjection(text)) {
+            console.warn(JSON.stringify({ level: 'warn', ctx: 'injection_attempt', userId: user.id, length: text.length }));
+            return NextResponse.json(
+                { error: 'Сообщение содержит недопустимый контент.' },
+                { status: 400 }
+            );
+        }
+
+        // 3. Token-weighted rate limit — защита от DoS
+        const rl = rateLimitAI(user.id, text);
         if (!rl.allowed) {
             return NextResponse.json(
-                { error: 'Пожалуйста, подождите немного перед следующим сообщением.' },
-                { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.retryAfterMs / 1000)) } }
+                { error: 'Пожалуйста, подождите немного.' },
+                {
+                    status: 429,
+                    headers: { 'Retry-After': String(Math.ceil(rl.retryAfterMs / 1000)) },
+                }
             );
         }
 

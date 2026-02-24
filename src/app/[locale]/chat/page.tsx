@@ -473,6 +473,19 @@ function ChatPageContent() {
                 <ArrowUp className="w-4 h-4" />
               </Button>
             </div>
+            {inputValue.length > 3000 && (
+              <p className="mt-1 text-center">
+                <span
+                  className={
+                    inputValue.length > 10000
+                      ? 'text-red-500 text-xs'
+                      : 'text-yellow-500 text-xs'
+                  }
+                >
+                  {inputValue.length.toLocaleString()} / {(10000).toLocaleString()}
+                </span>
+              </p>
+            )}
             <p className="mt-2 text-xs text-muted-foreground text-center" role="note">
               {t('disclaimer')}
             </p>

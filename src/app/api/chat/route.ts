@@ -6,7 +6,9 @@ import { sendChatMessage } from '@/shared/lib/ai-api'
 import { buildDaisyRequest, handleDaisyResponse, type DaisyLocale } from '@/shared/lib/daisy-integration'
 import { redactPII } from '@/shared/lib/pii/redactor'
 import { prepareContentForStorage } from '@/shared/lib/cbt-message-content'
-import { rateLimit } from '@/shared/lib/rate-limit'
+import { rateLimitAI } from '@/shared/lib/rate-limit'
+import { scanForInjection } from '@/shared/lib/input-guard'
+import { logger } from '@/shared/lib/safe-logger'
 import { detectCrisis, CRISIS_RESPONSE } from '@/shared/lib/crisis-detection'
 
 /**
@@ -122,12 +124,6 @@ export async function POST(request: NextRequest) {
     if (!userMessage || userMessage.trim().length === 0) {
       return NextResponse.json({ error: apiMessages.noMessageProvided }, { status: 400 })
     }
-    if (userMessage.trim().length > 2000) {
-      return NextResponse.json(
-        { error: 'Сообщение слишком длинное. Максимум 2000 символов.' },
-        { status: 400 }
-      )
-    }
 
     // Layer 1: PII redaction — strip до INSERT
     const { redacted, hadPII, detectedTypes } = redactPII(userMessage.trim())
@@ -156,12 +152,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
     }
 
-    // Rate limit per user: 20 messages/minute
-    const rl = rateLimit(`ai:${decoded.userId}`, 20, 60_000)
-    if (!rl.allowed) {
+    // 1. Абсолютный потолок — UX граница, не защита
+    const HARD_MAX = 10_000
+    if (userMessage.trim().length > HARD_MAX) {
       return NextResponse.json(
-        { error: 'Пожалуйста, подождите немного перед следующим сообщением.' },
-        { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.retryAfterMs / 1000)) } }
+        { error: 'Сообщение слишком длинное. Попробуйте разбить на части.' },
+        { status: 400 }
+      )
+    }
+
+    // 2. Контент-сканер — защита от prompt injection
+    if (scanForInjection(userMessage)) {
+      logger.warn('injection_attempt', { userId: decoded.userId, length: userMessage.length })
+      return NextResponse.json(
+        { error: 'Сообщение содержит недопустимый контент.' },
+        { status: 400 }
+      )
+    }
+
+    // 3. Token-weighted rate limit — защита от DoS
+    const { allowed, retryAfterMs } = rateLimitAI(decoded.userId, userMessage)
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Пожалуйста, подождите немного.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) },
+        }
       )
     }
 

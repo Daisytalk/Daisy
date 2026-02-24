@@ -22,3 +22,33 @@ export function rateLimit(
   entry.count++
   return { allowed: true, retryAfterMs: 0 }
 }
+
+function messageCost(text: string): number {
+  const chars = text.length
+  if (chars <= 500) return 1
+  if (chars <= 2000) return 2
+  if (chars <= 5000) return 4
+  if (chars <= 10000) return 8
+  return 12
+}
+
+export function rateLimitAI(
+  userId: string,
+  message: string
+): { allowed: boolean; retryAfterMs: number } {
+  const cost = messageCost(message)
+  const BUDGET = 40
+  const now = Date.now()
+  const key = `ai_weighted:${userId}`
+  const entry = cache.get(key)
+
+  if (!entry || now > entry.resetAt) {
+    cache.set(key, { count: cost, resetAt: now + 60_000 })
+    return { allowed: true, retryAfterMs: 0 }
+  }
+  if (entry.count + cost > BUDGET) {
+    return { allowed: false, retryAfterMs: entry.resetAt - now }
+  }
+  entry.count += cost
+  return { allowed: true, retryAfterMs: 0 }
+}
