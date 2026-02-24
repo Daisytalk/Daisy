@@ -69,7 +69,9 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           images: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      # Secrets injected at runtime — never baked into image layers
+      # Secrets injected at runtime — never baked into image layers.
+      # Required GitHub Secrets: AI_API_KEY, JWT_SECRET, DATABASE_URL, GOOGLE_*,
+      # ENCRYPTION_KEY (32+ chars), CRON_SECRET (for /api/internal/cleanup).
       - name: Configure Azure App Service Settings
         uses: azure/appservice-settings@v1
         with:
