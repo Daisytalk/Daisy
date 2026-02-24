@@ -14,6 +14,8 @@ export const env = {
   // Freedom Pay (https://docs.freedompay.kz) — когда будет реальная интеграция
   FREEDOMPAY_MERCHANT_ID: process.env.FREEDOMPAY_MERCHANT_ID || '',
   FREEDOMPAY_API_KEY: process.env.FREEDOMPAY_API_KEY || '',
+  /** 32+ символов для AES-256-GCM шифрования CbtMessage.content */
+  ENCRYPTION_KEY: process.env.ENCRYPTION_KEY || '',
 } as const
 
 if (typeof window === 'undefined') {

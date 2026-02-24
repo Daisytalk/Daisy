@@ -7,6 +7,8 @@
 import type { Prisma } from '@prisma/client'
 import prisma from '@/shared/lib/database'
 import type { AIApiResponse } from '@/shared/lib/ai-api'
+import { getMemoryBundle, getPrefetchPack } from '@/shared/lib/memory'
+import { prepareContentForStorage, getDecryptedContent } from '@/shared/lib/cbt-message-content'
 
 const HISTORY_LIMIT = 30
 export type DaisyLocale = 'ru' | 'kk' | 'en'
@@ -78,9 +80,10 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
   ])
 
   const messages = [...(conversation?.messages ?? [])].reverse()
-  const last = messages[messages.length - 1]
+  const decrypted = messages.map((m) => ({ ...m, content: getDecryptedContent(m.content) }))
+  const last = decrypted[decrypted.length - 1]
   const isLastCurrentUser = last?.role === 'user' && last?.content === userMessage
-  const forHistory = isLastCurrentUser ? messages.slice(0, -1) : messages
+  const forHistory = isLastCurrentUser ? decrypted.slice(0, -1) : decrypted
   const history = forHistory.map((msg) => ({ role: msg.role, content: msg.content }))
   const isFirstInConversation = history.length === 0
 
@@ -112,14 +115,27 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
     }
   }
 
-  // user_context: только conversationMemory (накопленные факты из прошлых сессий)
-  let userContext: string | undefined
+  // user_context: conversationMemory (legacy) + memory_items (episodic) + prefetch pack
+  const parts: string[] = []
   const memoryArr = Array.isArray(user?.conversationMemory)
     ? (user.conversationMemory as string[])
     : []
   if (memoryArr.length > 0) {
-    userContext = memoryArr.join('. ')
+    parts.push(memoryArr.join('. '))
   }
+  try {
+    const memoryBundle = await getMemoryBundle(userId)
+    if (memoryBundle.length > 0) {
+      parts.push(`Помню из прошлого: ${memoryBundle.join('; ')}`)
+    }
+    const prefetch = await getPrefetchPack(userId)
+    if (prefetch.lastSessionSummary) {
+      parts.push(`Прошлая сессия: ${prefetch.lastSessionSummary.slice(0, 200)}`)
+    }
+  } catch (e) {
+    console.warn('Memory retrieval failed:', e)
+  }
+  const userContext = parts.length > 0 ? parts.join(' ') : undefined
 
   // persona: приоритет — выбор пользователя (первый стиль), иначе persona из диалога
   const persona =
@@ -177,7 +193,7 @@ export async function handleDaisyResponse(
     data: {
       conversationId,
       role: 'assistant',
-      content: aiResponse.response,
+      content: prepareContentForStorage(aiResponse.response),
       protocol: aiResponse.protocol_used ?? undefined,
       diagnosis: aiResponse.diagnosis ?? [],
       persona: aiResponse.persona_used ?? undefined,

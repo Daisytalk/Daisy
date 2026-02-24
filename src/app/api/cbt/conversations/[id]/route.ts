@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { getDecryptedContent } from '@/shared/lib/cbt-message-content'
 
 export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
       messages: conversation.messages.map(msg => ({
         id: msg.id,
         role: msg.role,
-        content: msg.content,
+        content: getDecryptedContent(msg.content),
         protocol: msg.protocol,
         persona: msg.persona,
         diagnosis: msg.diagnosis,

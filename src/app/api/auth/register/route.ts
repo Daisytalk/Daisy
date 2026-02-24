@@ -3,8 +3,20 @@ import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
 import { computePsychProfile } from '@/shared/lib/scoring'
+import { syncUserPreferences } from '@/shared/lib/memory'
+import { rateLimit } from '@/shared/lib/rate-limit'
+import { getClientIP } from '@/shared/lib/get-client-ip'
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request)
+  const { allowed, retryAfterMs } = rateLimit(`register:${ip}`, 3, 60_000)
+  if (!allowed) {
+    return NextResponse.json(
+      { message: 'Слишком много попыток. Попробуйте позже.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) } }
+    )
+  }
+
   if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET environment variable is not set')
     return NextResponse.json(
@@ -117,6 +129,17 @@ export async function POST(request: NextRequest) {
       return user
     })
 
+    // Sync user preferences for memory architecture (after transaction commits)
+    if (isOnboarded && onboardingAnswers) {
+      const styles = Array.isArray((onboardingAnswers as Record<string, unknown>)?.communication_style)
+        ? (onboardingAnswers as Record<string, unknown>).communication_style as string[]
+        : []
+      const goals = Array.isArray((onboardingAnswers as Record<string, unknown>)?.support_needs)
+        ? ((onboardingAnswers as Record<string, unknown>).support_needs as string[]).slice(0, 2)
+        : []
+      await syncUserPreferences(newUser.id, { communicationStyle: styles, goals })
+    }
+
     const trialEndsAt = AuthService.generateTrialEndDate()
     
     const token = AuthService.generateToken({
@@ -148,7 +171,7 @@ export async function POST(request: NextRequest) {
     response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: isSecure,
-      sameSite: 'lax',
+      sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     })

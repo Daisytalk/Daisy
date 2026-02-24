@@ -4,6 +4,8 @@ import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
 import { sendChatMessage } from '@/shared/lib/ai-api'
 import { buildDaisyRequest, handleDaisyResponse, type DaisyLocale } from '@/shared/lib/daisy-integration'
+import { redactPII } from '@/shared/lib/pii/redactor'
+import { prepareContentForStorage } from '@/shared/lib/cbt-message-content'
 
 /**
  * Обработка чата в фоне: сбор запроса через buildDaisyRequest, вызов Daisy API, сохранение через handleDaisyResponse.
@@ -75,7 +77,7 @@ async function processAsyncChat(
         data: {
           conversationId,
           role: 'assistant',
-          content: 'Извини, произошла ошибка при обработке сообщения. Попробуй ещё раз.',
+          content: prepareContentForStorage('Извини, произошла ошибка при обработке сообщения. Попробуй ещё раз.'),
           diagnosis: [],
           protocol: 'error',
         },
@@ -120,7 +122,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: apiMessages.noMessageProvided }, { status: 400 })
     }
 
-    console.log('Extracted user message:', userMessage.substring(0, 100))
+    // Layer 1: PII redaction — strip до INSERT
+    const { redacted, hadPII, detectedTypes } = redactPII(userMessage.trim())
+    const messageToStore = redacted
+
+    if (hadPII) {
+      console.warn('[PII_DETECTED] L1 types=', detectedTypes.join(','))
+    }
+
+    console.log('Extracted user message:', messageToStore.substring(0, 100))
 
     // Authentication - try cookie first, then Bearer token
     let token = request.cookies.get('auth_token')?.value
@@ -210,19 +220,32 @@ export async function POST(request: NextRequest) {
       console.log('Using existing CBT conversation:', conversation.id)
     }
 
-    // Save user message to database
+    // Save user message to database (только анонимный текст)
     const userMessageRecord = await prisma.cbtMessage.create({
       data: {
         conversationId: conversation.id,
         role: 'user',
-        content: userMessage,
+        content: prepareContentForStorage(messageToStore),
         diagnosis: [],
+        isAnonymized: hadPII,
+        piiDetected: hadPII,
       },
     })
 
+    if (hadPII) {
+      await prisma.piiAuditLog.create({
+        data: {
+          userId: user.id,
+          messageId: userMessageRecord.id,
+          entityTypes: detectedTypes,
+          layer: 'L1_REGEX',
+        },
+      })
+    }
+
     console.log('💾 Saved user message:', userMessageRecord.id)
 
-    processAsyncChat(conversation.id, userMessage, user.id, locale).catch((error) => {
+    processAsyncChat(conversation.id, messageToStore, user.id, locale).catch((error) => {
       console.error('❌ Async chat processing failed:', error)
     })
 

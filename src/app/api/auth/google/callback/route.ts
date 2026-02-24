@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 import prisma from '@/shared/lib/database'
 import { AuthService } from '@/shared/lib/auth'
 import type { User } from '@/shared/types/auth'
@@ -7,7 +8,6 @@ import { apiMessages } from '@/shared/api-messages'
 /**
  * Альтернативный callback (/api/auth/google/callback).
  * Основной callback — /api/auth/callback/google (тот что в Google Console).
- * Этот маршрут использует HTML-ответ для сохранения токена в localStorage.
  */
 export async function GET(req: NextRequest) {
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '')
@@ -15,6 +15,17 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const code = searchParams.get('code')
+
+    // State verification — CSRF protection for OAuth flow
+    const stateFromGoogle = searchParams.get('state')
+    const stateFromCookie = req.cookies.get('oauth_state')?.value
+
+    if (!stateFromGoogle || !stateFromCookie || stateFromGoogle !== stateFromCookie) {
+      const response = NextResponse.redirect(new URL('/login?error=state_mismatch', baseUrl))
+      response.cookies.delete('oauth_state')
+      return response
+    }
+
     if (!code) return NextResponse.json({ message: apiMessages.missingCode }, { status: 400 })
 
     const clientId = process.env.GOOGLE_CLIENT_ID
@@ -36,8 +47,7 @@ export async function GET(req: NextRequest) {
     })
 
     if (!tokenRes.ok) {
-      const txt = await tokenRes.text()
-      return NextResponse.json({ message: apiMessages.tokenExchangeFailed, detail: txt }, { status: 500 })
+      return NextResponse.redirect(new URL('/login?error=token_exchange_failed', baseUrl))
     }
 
     const tokenJson = await tokenRes.json()
@@ -48,7 +58,7 @@ export async function GET(req: NextRequest) {
     })
 
     if (!userInfoRes.ok) {
-      return NextResponse.json({ message: apiMessages.failedToFetchUserInfo }, { status: 500 })
+      return NextResponse.redirect(new URL('/login?error=userinfo_failed', baseUrl))
     }
 
     const profile = await userInfoRes.json()
@@ -57,7 +67,10 @@ export async function GET(req: NextRequest) {
 
     let user = await prisma.user.findUnique({ where: { email } })
     if (!user) {
-      user = await prisma.user.create({ data: { name, email, password: '' } })
+      // OAuth users get a random unguessable password — they authenticate via Google only
+      user = await prisma.user.create({
+        data: { name, email, password: crypto.randomBytes(32).toString('hex') },
+      })
       await prisma.onboardingData.create({ data: { userId: user.id, responses: {}, completed: false } })
       await prisma.aiSession.create({ data: { userId: user.id, messages: [], context: { persona: 'intake_specialist' } } })
     }
@@ -75,21 +88,22 @@ export async function GET(req: NextRequest) {
       subscriptionStatus: 'trial',
       trialEndsAt: null,
     }
-    const token = AuthService.generateToken(tokenPayload)
+    const authToken = AuthService.generateToken(tokenPayload)
 
     const locale = 'ru'
     const redirectPath = !isOnboarded ? `/${locale}/onboarding` : `/${locale}/chat`
-    const safeToken = JSON.stringify(token)
-    const html = `<!doctype html><html><body>
-    <script>
-      try {
-        localStorage.setItem('auth_token', ${safeToken})
-      } catch(e) { /* ignore */ }
-      window.location = '${redirectPath}'
-    </script>
-    </body></html>`
 
-    return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } })
+    // Set httpOnly cookie — no localStorage, no XSS exposure
+    const redirectResponse = NextResponse.redirect(new URL(redirectPath, baseUrl))
+    redirectResponse.cookies.set('auth_token', authToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // lax required for OAuth redirect cross-site flow
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    })
+    redirectResponse.cookies.delete('oauth_state')
+    return redirectResponse
   } catch (err) {
     console.error('OAuth callback error', err)
     return NextResponse.redirect(new URL('/ru/login?error=oauth_failed', baseUrl))

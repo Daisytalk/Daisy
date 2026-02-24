@@ -25,6 +25,67 @@ const COMMUNICATION_STYLES = [
   { id: 'flexible_companion', name: 'Гибкая собеседница', keywords: 'чуткий, ситуативный, настраиваемый' },
 ]
 
+// ─── Psych Profile Section ──────────────────────────────────────────────────
+
+function PsychProfileSection({ locale }: { locale: string }) {
+  const [profile, setProfile] = useState<{
+    ESI: number
+    BSI: number
+    SSI: number
+    PVI: number
+    MRI: number
+    statusESI: string
+    statusBSI: string
+    statusSSI: string
+    statusMRI: string
+    riskLevel: string
+    createdAt: string
+  } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token')
+    if (!token) return
+    fetch('/api/account/psych-profile', { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.profile) setProfile(d.profile)
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading || !profile) return null
+
+  const items = [
+    { label: 'Эмоциональная устойчивость', status: profile.statusESI },
+    { label: 'Уровень стресса', status: profile.statusBSI },
+    { label: 'Поддержка', status: profile.statusSSI },
+    { label: 'Ресурс', status: profile.statusMRI },
+  ]
+
+  return (
+    <section>
+      <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Мой профиль сейчас</h2>
+      <div className="rounded-2xl border border-[hsl(var(--app-border))] bg-white overflow-hidden divide-y divide-[hsl(var(--app-border))]">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-center justify-between p-4">
+            <span className="text-foreground">{item.label}</span>
+            <span className="text-sm font-medium text-muted-foreground">{item.status}</span>
+          </div>
+        ))}
+        <div className="p-4">
+          <a
+            href={`/${locale}/chat`}
+            className="text-sm text-primary hover:text-primary/80 underline underline-offset-2"
+          >
+            Посмотреть рекомендации
+          </a>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatAnswer(answer: unknown): string {
@@ -317,6 +378,9 @@ function ProfilePageContent() {
                 </div>
               )}
             </section>
+
+            {/* Мой эмоциональный профиль */}
+            <PsychProfileSection locale={locale} />
 
             {/* Daisy card */}
             <section className="rounded-2xl bg-[hsl(160,22%,88%)] p-6 text-foreground relative overflow-hidden border border-[hsl(160,20%,78%)]">

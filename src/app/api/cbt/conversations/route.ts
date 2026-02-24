@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { getDecryptedContent } from '@/shared/lib/cbt-message-content'
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
       let title = 'New Conversation'
       
       if (firstMessage && firstMessage.role === 'user') {
-        const text = firstMessage.content
+        const text = getDecryptedContent(firstMessage.content)
         title = text.substring(0, 50) + (text.length > 50 ? '...' : '')
       }
 

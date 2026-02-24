@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { getDecryptedContent } from '@/shared/lib/cbt-message-content'
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,8 +37,9 @@ export async function GET(request: NextRequest) {
     const sessions = conversations.map((conv) => {
       const messages = conv.messages
       const firstUser = messages.find((m) => m.role === 'user')
-      const title = firstUser?.content
-        ? firstUser.content.substring(0, 50) + (firstUser.content.length > 50 ? '...' : '')
+      const decryptedContent = firstUser?.content ? getDecryptedContent(firstUser.content) : ''
+      const title = decryptedContent
+        ? decryptedContent.substring(0, 50) + (decryptedContent.length > 50 ? '...' : '')
         : 'New Conversation'
 
       return {

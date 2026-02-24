@@ -4,6 +4,7 @@ import prisma from '@/shared/lib/database'
 import type { OnboardingAnswer } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
 import { computePsychProfile } from '@/shared/lib/scoring'
+import { syncUserPreferences } from '@/shared/lib/memory'
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,6 +56,12 @@ export async function POST(request: NextRequest) {
         },
       })
     })
+
+    // Sync user preferences (goals, styles) for memory architecture
+    const answersMap = Object.fromEntries(answers.map((a) => [a.questionId, a.answer]))
+    const styles = Array.isArray(answersMap.communication_style) ? (answersMap.communication_style as string[]) : []
+    const goals = Array.isArray(answersMap.support_needs) ? (answersMap.support_needs as string[]).slice(0, 2) : []
+    await syncUserPreferences(decoded.userId, { communicationStyle: styles, goals })
 
     return NextResponse.json({ message: apiMessages.onboardingCompletedSuccess })
   } catch (error) {

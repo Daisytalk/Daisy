@@ -114,6 +114,15 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     required: true,
   },
   {
+    id: 'social_support',
+    type: 'question',
+    section: 'life-areas',
+    questionId: 'social_support',
+    question: 'Как тебе круг общения: друзья, коллеги, знакомые? 🤍',
+    questionType: 'scale',
+    required: false,
+  },
+  {
     id: 'solo_comfort',
     type: 'question',
     section: 'life-areas',

@@ -3,6 +3,8 @@ import { AuthService } from '@/shared/lib/auth';
 import prisma from '@/shared/lib/database';
 import { sendChatMessage } from '@/shared/lib/ai-api';
 import { apiMessages } from '@/shared/api-messages';
+import { redactPII } from '@/shared/lib/pii/redactor';
+import { prepareContentForStorage, getDecryptedContent } from '@/shared/lib/cbt-message-content';
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,6 +48,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: apiMessages.messageRequired }, { status: 400 });
     }
 
+    const { redacted: messageToStore } = redactPII(message.trim());
+
     // 3. Get or create conversation
     let conversation;
     if (conversationId) {
@@ -69,7 +73,7 @@ export async function POST(req: NextRequest) {
       data: {
         conversationId: conversation.id,
         role: 'user',
-        content: message,
+        content: prepareContentForStorage(messageToStore),
         diagnosis: [],
       },
     });
@@ -83,7 +87,7 @@ export async function POST(req: NextRequest) {
     });
 
     const aiResponse = await sendChatMessage(
-      message,
+      messageToStore,
       user.id,
       sessionId || conversation.id
     );
@@ -100,16 +104,16 @@ export async function POST(req: NextRequest) {
       data: {
         conversationId: conversation.id,
         role: 'assistant',
-        content: aiResponse.response,
+        content: prepareContentForStorage(aiResponse.response),
         protocol: aiResponse.protocol_used,
         diagnosis: aiResponse.diagnosis || [],
         persona: aiResponse.persona_used,
       },
     });
 
-    // 7. Return response
+    // 7. Return response (aiResponse.response уже plaintext)
     return NextResponse.json({
-      message: aiResponse.response,
+      message: aiResponse.response ?? '',
       conversationId: conversation.id,
       messageId: assistantMessage.id,
       protocol: aiResponse.protocol_used,
@@ -157,8 +161,7 @@ export async function GET(req: NextRequest) {
     const conversationId = searchParams.get('conversationId');
 
     if (conversationId) {
-      // Get specific conversation
-      const conversation = await prisma.cbtConversation.findUnique({
+      const conversation = await prisma.cbtConversation.findFirst({
         where: {
           id: conversationId,
           userId: decoded.userId,
@@ -170,7 +173,15 @@ export async function GET(req: NextRequest) {
         },
       });
 
-      return NextResponse.json(conversation);
+      if (!conversation) return NextResponse.json({ error: apiMessages.conversationNotFound }, { status: 404 })
+
+      return NextResponse.json({
+        ...conversation,
+        messages: conversation.messages.map((m) => ({
+          ...m,
+          content: getDecryptedContent(m.content),
+        })),
+      });
     } else {
       // Get all user conversations
       const conversations = await prisma.cbtConversation.findMany({
@@ -184,7 +195,12 @@ export async function GET(req: NextRequest) {
         orderBy: { updatedAt: 'desc' },
       });
 
-      return NextResponse.json(conversations);
+      return NextResponse.json(
+        conversations.map((c) => ({
+          ...c,
+          messages: c.messages.map((m) => ({ ...m, content: getDecryptedContent(m.content) })),
+        }))
+      );
     }
   } catch (error) {
     console.error('Get CBT conversations error:', error);

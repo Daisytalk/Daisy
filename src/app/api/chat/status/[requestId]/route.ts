@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { getDecryptedContent } from '@/shared/lib/cbt-message-content'
 
 /**
  * Poll endpoint to check status of async chat request
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ reque
             // Response is ready
             return NextResponse.json({
                 status: 'completed',
-                response: assistantMessage.content,
+                response: getDecryptedContent(assistantMessage.content),
                 protocol: assistantMessage.protocol,
                 persona: assistantMessage.persona,
                 diagnosis: assistantMessage.diagnosis

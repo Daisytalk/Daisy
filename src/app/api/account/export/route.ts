@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { getDecryptedContent } from '@/shared/lib/cbt-message-content'
 
 function getToken(request: NextRequest): string | null {
   const cookie = request.cookies.get('auth_token')?.value
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
         createdAt: c.createdAt,
         messages: c.messages.map((m) => ({
           role: m.role,
-          content: m.content,
+          content: getDecryptedContent(m.content),
           createdAt: m.createdAt,
         })),
       })),

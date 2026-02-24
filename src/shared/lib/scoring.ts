@@ -64,6 +64,7 @@ export function computePsychProfile(responses: OnboardingResponses): PsychProfil
   const mood_today = num('mood_today')
   const work_state = num('work_state')
   const family_support = num('family_support')
+  const social_support = num('social_support')
   const solo_comfort = num('solo_comfort')
   const physical_state = num('physical_state')
   const emo_state = num('emo_state')
@@ -85,19 +86,22 @@ export function computePsychProfile(responses: OnboardingResponses): PsychProfil
   }
 
   const rel = rel_quality != null ? norm(rel_quality) : 0
-  const social_support = norm(family_support) // family_support как proxy для social_support
+  const socialNorm = norm(social_support)
 
   const flags: Record<string, boolean> = {}
   if (physical_state <= 2) flags.sleep_issues = true
   if (emo_state <= 2) flags.high_anxiety = true
+  if (family_history_yes === 1) flags.family_history_flag = true
+  if (chronic_yes === 1) flags.chronic_flag = true
+  if (addiction_yes === 1) flags.addiction_flag = true
 
   // ESI = 0.20×mood + 0.30×emo + 0.20×solo_comfort + 0.05×rel + 0.05×family + 0.05×social − 0.05×addiction_yes
   const ESI_raw = 0.20 * norm(mood_today) + 0.30 * norm(emo_state) + 0.20 * norm(solo_comfort)
-    + 0.05 * rel + 0.05 * norm(family_support) + 0.05 * social_support - 0.05 * addiction_yes
+    + 0.05 * rel + 0.05 * norm(family_support) + 0.05 * socialNorm - 0.05 * addiction_yes
   const ESI = 100 * clamp01(ESI_raw)
 
   // SSI = 0.20×rel + 0.20×family_support + 0.30×social_support (normalize)
-  const ssiSum = 0.20 * rel + 0.20 * norm(family_support) + 0.30 * social_support
+  const ssiSum = 0.20 * rel + 0.20 * norm(family_support) + 0.30 * socialNorm
   const SSI = 100 * clamp01(ssiSum / 0.7)
 
   // BSI = 0.30×inv(work) + 0.20×inv(emo) + 0.10×inv(mood) + 0.10×inv(physical) + 0.10×inv(leisure) + 0.15×inv(finance) + 0.05×inv(housing) + 0.05×addiction_yes

@@ -22,10 +22,19 @@ model User {
   passwordResetToken   String?           @unique @map("password_reset_token")
   passwordResetExpires DateTime?         @map("password_reset_expires")
   deactivatedAt        DateTime?         @map("deactivated_at")
+  currentStressRating  Int?              @map("current_stress_rating") // 1-5, для weekly report
+  locale              String?           @default("ru")
+  timezone            String?
   aiSessions             AiSession[]
   cbtConversations       CbtConversation[]
   onboarding             OnboardingData?
   psychProfileSnapshots  PsychProfileSnapshot[]
+  userPreferences        UserPreferences?
+  memoryItems            MemoryItem[]
+  conversationState      ConversationState?
+  premiumOfferLogs      PremiumOfferLog[]
+  stressRatings         StressRating[]
+  interventionFeedbacks InterventionFeedback[]
 
   @@map("users")
 }
@@ -114,9 +123,112 @@ model CbtMessage {
   protocol       String?
   diagnosis      String[]
   persona        String?
+  isAnonymized   Boolean         @default(false) @map("is_anonymized")
+  piiDetected    Boolean         @default(false) @map("pii_detected")
   createdAt      DateTime        @default(now())
   conversation   CbtConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
   @@map("cbt_messages")
+}
+
+model PiiAuditLog {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  messageId   String?  @map("message_id")
+  entityTypes String[] @map("entity_types") // типы, НЕ значения
+  layer       String   // L1_REGEX | L2_PRESIDIO
+  detectedAt  DateTime @default(now()) @map("detected_at")
+
+  @@index([userId, detectedAt])
+  @@map("pii_audit_logs")
+}
+
+// ─── Memory Architecture (3 layers) ───────────────────────────────────────────
+
+model UserPreferences {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  preferredStyles  Json?    @map("preferred_styles") // array of style ids
+  boundaries      Json?    // { "avoid_topics": [], "sensitive": [] }
+  goalsTop2       Json?    @map("goals_top2") // array of 2 goals from onboarding
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model MemoryItem {
+  id            String   @id @default(cuid())
+  userId        String
+  type          String   // event | belief | relationship | health | habit
+  topic         String   // work | relationship | anxiety | sleep | self-worth | planning | etc.
+  valence       Int?     // -2..+2
+  intensity     Int?     // 0..3
+  summary       String   @db.Text
+  evidence      String?  @db.Text
+  confidence    Float?   // 0..1
+  ttlDays       Int?     @map("ttl_days")
+  isPinned      Boolean  @default(false) @map("is_pinned")
+  consentScope  String?  @map("consent_scope") // core | personal | sensitive
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, topic])
+  @@index([userId, createdAt])
+  @@map("memory_items")
+}
+
+model ConversationState {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  lastSessionSummary String? @map("last_session_summary") @db.Text
+  lastSessionAt     DateTime? @map("last_session_at")
+  rollingState      Json?    @map("rolling_state") // { lastMood, lastStress, arousal, valence }
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("conversation_state")
+}
+
+// ─── Premium & Outcome Loop ──────────────────────────────────────────────────
+
+model PremiumOfferLog {
+  id          String   @id @default(cuid())
+  userId      String
+  triggerType String   @map("trigger_type") // P1 | P2 | P3 | P4 | P5
+  offerShownAt DateTime @default(now()) @map("offer_shown_at")
+  dismissed   Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, offerShownAt])
+  @@map("premium_offer_logs")
+}
+
+model StressRating {
+  id        String   @id @default(cuid())
+  userId    String
+  rating    Int      // 1-5
+  source    String?  // post_session | daily_checkin
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("stress_ratings")
+}
+
+model InterventionFeedback {
+  id           String   @id @default(cuid())
+  userId       String
+  rating       Int      // 1-5 "Стало легче?"
+  helped       Boolean? // "Это помогло?" Да/Нет
+  protocolType String?  @map("protocol_type") // stabilize | regulate | solve
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("intervention_feedbacks")
 }

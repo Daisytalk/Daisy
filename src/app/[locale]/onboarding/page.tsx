@@ -44,6 +44,7 @@ const SCALE_MAP: Record<string, string[]> = {
   work_state: SCALE_LABELS_WORK,
   rel_quality: SCALE_LABELS_REL,
   family_support: SCALE_LABELS_FAMILY,
+  social_support: SCALE_LABELS_FAMILY,
   solo_comfort: SCALE_LABELS_SOLO,
   physical_state: SCALE_LABELS_PHYSICAL,
   emo_state: SCALE_LABELS_EMO,

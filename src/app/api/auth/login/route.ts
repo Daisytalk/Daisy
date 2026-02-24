@@ -2,10 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { rateLimit } from '@/shared/lib/rate-limit'
+import { getClientIP } from '@/shared/lib/get-client-ip'
 
 const DUMMY_HASH = '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYbwBRhC5ZO'
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request)
+  const { allowed, retryAfterMs } = rateLimit(`login:${ip}`, 5, 60_000)
+  if (!allowed) {
+    return NextResponse.json(
+      { message: 'Слишком много попыток. Попробуйте позже.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) } }
+    )
+  }
+
   if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET environment variable is not set')
     return NextResponse.json(
@@ -42,6 +53,7 @@ export async function POST(request: NextRequest) {
         createdAt: true,
         updatedAt: true,
         deactivatedAt: true,
+        subscriptionStatus: true,
       },
     })
 
@@ -76,6 +88,8 @@ export async function POST(request: NextRequest) {
 
     const isOnboarded = onboardingData?.completed ?? false
 
+    const subscriptionStatus = (user.subscriptionStatus ?? 'trial') as 'trial' | 'active' | 'cancelled' | 'expired'
+
     const token = AuthService.generateToken({
       id: user.id,
       email: user.email,
@@ -83,7 +97,7 @@ export async function POST(request: NextRequest) {
       isOnboarded,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      subscriptionStatus: 'active',
+      subscriptionStatus,
       trialEndsAt: null,
     })
 
@@ -93,7 +107,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name,
         isOnboarded,
-        subscriptionStatus: 'active',
+        subscriptionStatus,
         trialEndsAt: null,
       },
       token,
@@ -106,7 +120,7 @@ export async function POST(request: NextRequest) {
     response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: isSecure,
-      sameSite: 'lax',
+      sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     })

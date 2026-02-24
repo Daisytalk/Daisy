@@ -14,6 +14,7 @@ import { Button } from '@/shared/ui/button'
 import { Textarea } from '@/shared/ui/textarea'
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar'
 import { TypewriterText } from '@/shared/ui/typewriter-text'
+import { PremiumBanner } from '@/shared/components/PremiumBanner'
 
 interface Message {
   id: string
@@ -446,6 +447,7 @@ function ChatPageContent() {
         </div>
 
         <div className="shrink-0 p-4 sm:p-6 relative z-10 bg-[hsl(var(--app-bg))]/60 backdrop-blur-sm">
+          <PremiumBanner />
           <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
             <div className="flex items-end gap-3 p-2 rounded-2xl bg-white border-2 border-[hsl(var(--app-border))] shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
               <Textarea

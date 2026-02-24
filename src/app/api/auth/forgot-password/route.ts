@@ -3,14 +3,22 @@ import crypto from 'crypto'
 import prisma from '@/shared/lib/database'
 import { getEmailService } from '@/shared/services/email'
 import { env } from '@/shared/config/env'
+import { rateLimit } from '@/shared/lib/rate-limit'
+import { getClientIP } from '@/shared/lib/get-client-ip'
 
 /**
  * POST /api/auth/forgot-password
- *
- * Генерирует токен сброса пароля и отправляет письмо со ссылкой (Mailgun).
- * Если Mailgun не настроен — ссылка логируется в console (для разработки).
  */
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request)
+  const { allowed, retryAfterMs } = rateLimit(`forgot:${ip}`, 3, 300_000)
+  if (!allowed) {
+    return NextResponse.json(
+      { message: 'Слишком много попыток. Попробуйте позже.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) } }
+    )
+  }
+
   try {
     const { email, locale = 'ru' } = await request.json()
 
