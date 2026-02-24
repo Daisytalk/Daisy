@@ -24,12 +24,14 @@ RUN npm install -g pnpm
 # Generate Prisma Client
 RUN pnpm prisma generate
 
-# Build-time environment variables
-ARG NEXT_PUBLIC_AI_API_URL
-ARG NEXT_PUBLIC_AI_API_KEY
-ENV NEXT_PUBLIC_AI_API_URL=$NEXT_PUBLIC_AI_API_URL
-ENV NEXT_PUBLIC_AI_API_KEY=$NEXT_PUBLIC_AI_API_KEY
-# Для сборки (prisma generate) реальный URL не нужен; в проде App Service передаёт DATABASE_URL в runtime
+# Only non-secret build-time vars here.
+# Secrets (AI_API_KEY, JWT_SECRET, DATABASE_URL, etc.) are injected at
+# runtime via Azure App Service → Configuration → Application Settings.
+ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=$NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
+# Placeholder DATABASE_URL for prisma generate only (not used at runtime)
 ARG DATABASE_URL=postgresql://local:local@localhost:5432/local
 ENV DATABASE_URL=${DATABASE_URL}
 ENV DOCKER_BUILD=true

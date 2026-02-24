@@ -30,7 +30,7 @@ jobs:
         with:
           version: 10
 
-      # Миграции выполняются при старте контейнера в Azure (scripts/docker-start.sh), т.к. БД доступна из сети Azure
+      # Migrations run at container startup in Azure (scripts/docker-start.sh)
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -42,6 +42,8 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      # Only non-secret public vars passed as build-args.
+      # Secrets are injected at runtime via Azure App Service Settings (step below).
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -51,8 +53,8 @@ jobs:
             ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
           build-args: |
-            NEXT_PUBLIC_AI_API_URL=${{ secrets.NEXT_PUBLIC_AI_API_URL }}
-            NEXT_PUBLIC_AI_API_KEY=${{ secrets.NEXT_PUBLIC_AI_API_KEY }}
+            NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
+            NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID }}
           cache-from: type=registry,ref=${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
@@ -66,6 +68,26 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           images: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      # Secrets injected at runtime — never baked into image layers
+      - name: Configure Azure App Service Settings
+        uses: azure/appservice-settings@v1
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          app-settings-json: |
+            [
+              { "name": "AI_API_KEY",          "value": "${{ secrets.NEXT_PUBLIC_AI_API_KEY }}", "slotSetting": false },
+              { "name": "AI_API_URL",          "value": "${{ secrets.NEXT_PUBLIC_AI_API_URL }}", "slotSetting": false },
+              { "name": "CBT_API_URL",         "value": "${{ secrets.CBT_API_URL }}",            "slotSetting": false },
+              { "name": "CBT_API_KEY",         "value": "${{ secrets.CBT_API_KEY }}",            "slotSetting": false },
+              { "name": "JWT_SECRET",          "value": "${{ secrets.JWT_SECRET }}",             "slotSetting": false },
+              { "name": "DATABASE_URL",        "value": "${{ secrets.DATABASE_URL }}",           "slotSetting": false },
+              { "name": "GOOGLE_CLIENT_ID",    "value": "${{ secrets.GOOGLE_CLIENT_ID }}",       "slotSetting": false },
+              { "name": "GOOGLE_CLIENT_SECRET","value": "${{ secrets.GOOGLE_CLIENT_SECRET }}",   "slotSetting": false },
+              { "name": "GOOGLE_REDIRECT_URI", "value": "${{ secrets.GOOGLE_REDIRECT_URI }}",    "slotSetting": false },
+              { "name": "ENCRYPTION_KEY",      "value": "${{ secrets.ENCRYPTION_KEY }}",         "slotSetting": false },
+              { "name": "CRON_SECRET",         "value": "${{ secrets.CRON_SECRET }}",            "slotSetting": false }
+            ]
 
       - name: Azure logout
         run: az logout
