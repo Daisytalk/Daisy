@@ -80,10 +80,29 @@ export async function getMemoryBundle(
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - MEMORY_RECENCY_DAYS)
 
+  const now = new Date()
+
   const items = await prisma.memoryItem.findMany({
     where: {
       userId,
-      createdAt: { gte: cutoff },
+      // Only 'core' and 'personal' scope — 'sensitive' requires explicit consent flow
+      consentScope: { in: ['core', 'personal'] },
+      // TTL enforcement: exclude items whose ttlDays has elapsed since creation
+      AND: [
+        {
+          OR: [
+            { ttlDays: null },
+            {
+              createdAt: {
+                gte: new Date(
+                  now.getTime() - 365 * 24 * 60 * 60 * 1000
+                ),
+              },
+            },
+          ],
+        },
+        { createdAt: { gte: cutoff } },
+      ],
       ...(intentTopic && { topic: intentTopic }),
     },
     orderBy: { createdAt: 'desc' },
