@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+
+const VALID_PROTOCOLS = ['stabilize', 'regulate', 'solve'] as const
+
+const FeedbackSchema = z.object({
+  protocolType: z.enum(VALID_PROTOCOLS),
+  feltEasier: z.number().int().min(1).max(5),
+  helped: z.boolean(),
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,17 +18,18 @@ export async function POST(request: NextRequest) {
     const decoded = AuthService.verifyToken(token)
     if (!decoded) return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
 
-    const { rating, helped, protocolType } = await request.json()
-    if (typeof rating !== 'number' || rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'rating must be 1-5' }, { status: 400 })
+    const parsed = FeedbackSchema.safeParse(await request.json())
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Недопустимые данные обратной связи' }, { status: 400 })
     }
+    const { protocolType, feltEasier, helped } = parsed.data
 
     await prisma.interventionFeedback.create({
       data: {
         userId: decoded.userId,
-        rating,
-        helped: typeof helped === 'boolean' ? helped : null,
-        protocolType: typeof protocolType === 'string' ? protocolType : null,
+        rating: feltEasier,
+        helped,
+        protocolType,
       },
     })
 

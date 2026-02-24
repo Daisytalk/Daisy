@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+
+const VALID_STYLES = [
+  'warm_friend', 'practical_helper', 'soft_explorer',
+  'calm_mentor', 'wise_teacher', 'flexible',
+] as const
+
+const StylesSchema = z.object({
+  styles: z
+    .array(z.enum(VALID_STYLES))
+    .min(1, 'Выберите хотя бы один стиль')
+    .max(3, 'Максимум 3 стиля'),
+})
 
 function getToken(request: NextRequest): string | null {
   const cookie = request.cookies.get('auth_token')?.value
@@ -53,11 +66,11 @@ export async function PATCH(request: NextRequest) {
     const decoded = AuthService.verifyToken(token)
     if (!decoded) return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
 
-    const { styles } = await request.json() as { styles: string[] }
-
-    if (!Array.isArray(styles)) {
-      return NextResponse.json({ error: 'styles must be an array' }, { status: 400 })
+    const parsed = StylesSchema.safeParse(await request.json())
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Недопустимое значение стиля' }, { status: 400 })
     }
+    const { styles } = parsed.data
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },

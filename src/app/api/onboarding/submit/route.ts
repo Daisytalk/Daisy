@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import type { OnboardingAnswer } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
 import { computePsychProfile } from '@/shared/lib/scoring'
 import { syncUserPreferences } from '@/shared/lib/memory'
+
+const OnboardingSchema = z.object({
+  answers: z.record(
+    z.string().max(50),
+    z.union([
+      z.number().int().min(1).max(5),
+      z.boolean(),
+      z.string().max(500),
+      z.array(z.string().max(100)).max(10),
+    ])
+  ).refine(obj => Object.keys(obj).length <= 30, 'Слишком много ответов'),
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,14 +39,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { answers }: { answers: OnboardingAnswer[] } = await request.json()
+    const rawBody = await request.json()
+    // Support both {answers: {}} map format (new) and {answers: []} array format (legacy)
+    const bodyToValidate = Array.isArray(rawBody?.answers)
+      ? { answers: Object.fromEntries((rawBody.answers as OnboardingAnswer[]).map((a, i) => [String(a.questionId ?? i), a.answer])) }
+      : rawBody
 
-    if (!answers || !Array.isArray(answers)) {
-      return NextResponse.json(
-        { message: apiMessages.answersArrayRequired },
-        { status: 400 }
-      )
+    const parsed = OnboardingSchema.safeParse(bodyToValidate)
+    if (!parsed.success) {
+      return NextResponse.json({ message: apiMessages.answersArrayRequired }, { status: 400 })
     }
+
+    const answers = rawBody?.answers as OnboardingAnswer[]
 
     await prisma.$transaction(async (tx) => {
       await tx.onboardingData.update({
