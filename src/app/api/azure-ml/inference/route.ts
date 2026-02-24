@@ -3,6 +3,8 @@ import { AuthService } from '@/shared/lib/auth';
 import prisma from '@/shared/lib/database';
 import { getAzureMLService } from '@/shared/lib/azure-ml';
 import { apiMessages } from '@/shared/api-messages';
+import { redactPII } from '@/shared/lib/pii/redactor';
+import { rateLimit } from '@/shared/lib/rate-limit';
 
 /**
  * Azure ML CBT API Inference Route
@@ -44,14 +46,14 @@ export async function POST(request: NextRequest) {
 
         // Validate text
         if (!text || typeof text !== 'string' || text.trim().length === 0) {
-            console.warn('⚠️ Invalid text received');
+            return NextResponse.json({ error: apiMessages.textRequired }, { status: 400 });
+        }
+        if (text.trim().length > 2000) {
             return NextResponse.json(
-                { error: apiMessages.textRequired },
+                { error: 'Сообщение слишком длинное. Максимум 2000 символов.' },
                 { status: 400 }
             );
         }
-
-        console.log('📝 Text:', text.substring(0, 100) + '...');
 
         // ============================================
         // 2. AUTHENTICATE USER
@@ -97,13 +99,23 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log(JSON.stringify({ level: 'info', ctx: 'user_authenticated', userId: user.id }));
+        // Rate limit per user: 20 messages/minute
+        const rl = rateLimit(`ai:${user.id}`, 20, 60_000)
+        if (!rl.allowed) {
+            return NextResponse.json(
+                { error: 'Пожалуйста, подождите немного перед следующим сообщением.' },
+                { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.retryAfterMs / 1000)) } }
+            );
+        }
+
+        // PII redaction before sending to Azure ML
+        const { redacted: safeText } = redactPII(text.trim())
 
         // ============================================
         // 3. PREPARE AZURE ML CBT API REQUEST
         // ============================================
         const azureMLRequest = {
-            text: text,
+            text: safeText,
             user_id: user.id,
             session_id: session_id || conversationId,
             persona: persona,

@@ -6,6 +6,7 @@ import { sendChatMessage } from '@/shared/lib/ai-api'
 import { buildDaisyRequest, handleDaisyResponse, type DaisyLocale } from '@/shared/lib/daisy-integration'
 import { redactPII } from '@/shared/lib/pii/redactor'
 import { prepareContentForStorage } from '@/shared/lib/cbt-message-content'
+import { rateLimit } from '@/shared/lib/rate-limit'
 
 /**
  * Обработка чата в фоне: сбор запроса через buildDaisyRequest, вызов Daisy API, сохранение через handleDaisyResponse.
@@ -118,8 +119,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (!userMessage || userMessage.trim().length === 0) {
-      console.warn('No valid user message found in request')
       return NextResponse.json({ error: apiMessages.noMessageProvided }, { status: 400 })
+    }
+    if (userMessage.trim().length > 2000) {
+      return NextResponse.json(
+        { error: 'Сообщение слишком длинное. Максимум 2000 символов.' },
+        { status: 400 }
+      )
     }
 
     // Layer 1: PII redaction — strip до INSERT
@@ -127,10 +133,8 @@ export async function POST(request: NextRequest) {
     const messageToStore = redacted
 
     if (hadPII) {
-      console.warn('[PII_DETECTED] L1 types=', detectedTypes.join(','))
+      console.warn(JSON.stringify({ level: 'warn', ctx: 'pii_detected_l1', types: detectedTypes }))
     }
-
-    console.log('Extracted user message:', messageToStore.substring(0, 100))
 
     // Authentication - try cookie first, then Bearer token
     let token = request.cookies.get('auth_token')?.value
@@ -149,6 +153,15 @@ export async function POST(request: NextRequest) {
     const decoded = AuthService.verifyToken(token)
     if (!decoded) {
       return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
+    }
+
+    // Rate limit per user: 20 messages/minute
+    const rl = rateLimit(`ai:${decoded.userId}`, 20, 60_000)
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Пожалуйста, подождите немного перед следующим сообщением.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.retryAfterMs / 1000)) } }
+      )
     }
 
     // Проверка подписки: блокировать чат при истёкшем trial (данные из JWT)

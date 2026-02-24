@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
 
-/**
- * Debug endpoint: which env vars the app sees at runtime (no secrets).
- * Use to verify Azure App Service env is applied.
- */
 export async function GET() {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   const url = process.env.AI_API_URL || process.env.NEXT_PUBLIC_AI_API_URL
   return NextResponse.json({
     hasAiApiUrl: !!url,
@@ -14,6 +13,5 @@ export async function GET() {
     hasCbtApiKey: !!process.env.CBT_API_KEY,
     hasDatabaseUrl: !!process.env.DATABASE_URL,
     nodeEnv: process.env.NODE_ENV,
-    envSource: process.env.AI_API_URL ? 'AI_API_URL' : process.env.NEXT_PUBLIC_AI_API_URL ? 'NEXT_PUBLIC_AI_API_URL' : 'none',
   })
 }
