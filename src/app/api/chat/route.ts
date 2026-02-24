@@ -7,6 +7,7 @@ import { buildDaisyRequest, handleDaisyResponse, type DaisyLocale } from '@/shar
 import { redactPII } from '@/shared/lib/pii/redactor'
 import { prepareContentForStorage } from '@/shared/lib/cbt-message-content'
 import { rateLimit } from '@/shared/lib/rate-limit'
+import { detectCrisis, CRISIS_RESPONSE } from '@/shared/lib/crisis-detection'
 
 /**
  * Обработка чата в фоне: сбор запроса через buildDaisyRequest, вызов Daisy API, сохранение через handleDaisyResponse.
@@ -233,6 +234,27 @@ export async function POST(request: NextRequest) {
       console.log('Using existing CBT conversation:', conversation.id)
     }
 
+    // Crisis detection — deterministic response, do NOT call Azure ML
+    if (detectCrisis(messageToStore)) {
+      console.warn(JSON.stringify({ level: 'warn', ctx: 'crisis_detected', userId: user.id }))
+      const crisisMsg = await prisma.cbtMessage.create({
+        data: {
+          conversationId: conversation.id,
+          role: 'assistant',
+          content: prepareContentForStorage(CRISIS_RESPONSE),
+          diagnosis: [],
+          isAnonymized: true,
+        },
+      })
+      return NextResponse.json({
+        response: CRISIS_RESPONSE,
+        isCrisis: true,
+        phase: 'STABILIZE',
+        requestId: crisisMsg.id,
+        conversationId: conversation.id,
+      })
+    }
+
     // Save user message to database (только анонимный текст)
     const userMessageRecord = await prisma.cbtMessage.create({
       data: {
@@ -256,10 +278,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    console.log('💾 Saved user message:', userMessageRecord.id)
-
     processAsyncChat(conversation.id, messageToStore, user.id, locale).catch((error) => {
-      console.error('❌ Async chat processing failed:', error)
+      console.error(JSON.stringify({ level: 'error', ctx: 'async_chat_failed', message: error instanceof Error ? error.message : String(error) }))
     })
 
     // Return immediately with request ID for polling
