@@ -33,7 +33,7 @@ export class CBTApiClient {
     });
 
     // Use Azure-hosted CBT API URL from environment
-    this.apiUrl = process.env.CBT_API_URL || 'http://cbt-therapy-api-daisy-ergpf5fecjeheub5.centralus-01.azurewebsites.net';
+    this.apiUrl = process.env.CBT_API_URL || 'https://cbt-therapy-api-daisy-ergpf5fecjeheub5.centralus-01.azurewebsites.net';
     this.apiKey = process.env.CBT_API_KEY || '';
 
     // Remove trailing slash if present
