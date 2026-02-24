@@ -29,15 +29,18 @@ function messageCost(text: string): number {
   if (chars <= 2000) return 2
   if (chars <= 5000) return 4
   if (chars <= 10000) return 8
+  // Unreachable when HARD_MAX = 10_000 is enforced upstream.
+  // Kept as a safety net in case HARD_MAX is raised in the future.
   return 12
 }
 
 export function rateLimitAI(
   userId: string,
-  message: string
+  message: string,
+  budget = 40
 ): { allowed: boolean; retryAfterMs: number } {
   const cost = messageCost(message)
-  const BUDGET = 40
+  const BUDGET = budget
   const now = Date.now()
   const key = `ai_weighted:${userId}`
   const entry = cache.get(key)

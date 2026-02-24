@@ -467,7 +467,7 @@ function ChatPageContent() {
               />
               <Button
                 type="submit"
-                disabled={isLoading || !inputValue.trim()}
+                disabled={isLoading || !inputValue.trim() || inputValue.length > 10000}
                 className="h-11 w-11 shrink-0 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all duration-200"
               >
                 <ArrowUp className="w-4 h-4" />
