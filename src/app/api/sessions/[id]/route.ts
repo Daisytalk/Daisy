@@ -35,11 +35,8 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
       updatedAt: conversation.updatedAt,
     })
   } catch (error: unknown) {
-    console.error('Session API error:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : apiMessages.internalServerError },
-      { status: 500 }
-    )
+    console.error(JSON.stringify({ level: 'error', ctx: 'session_get', message: error instanceof Error ? error.message : String(error) }))
+    return NextResponse.json({ error: apiMessages.internalServerError }, { status: 500 })
   }
 }
 

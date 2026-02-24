@@ -30,10 +30,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Clear memory error:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : apiMessages.internalServerError },
-      { status: 500 }
-    )
+    console.error(JSON.stringify({ level: 'error', ctx: 'clear_memory', message: error instanceof Error ? error.message : String(error) }))
+    return NextResponse.json({ error: apiMessages.internalServerError }, { status: 500 })
   }
 }

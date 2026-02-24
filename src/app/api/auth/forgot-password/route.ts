@@ -86,20 +86,15 @@ export async function POST(request: NextRequest) {
         html,
       })
     } catch (err) {
-      console.error('Forgot password: failed to send email', err)
+      console.error(JSON.stringify({ level: 'error', ctx: 'forgot_password_email_failed', userId: user.id, message: err instanceof Error ? err.message : String(err) }))
       return NextResponse.json(
-        { message: 'Не удалось отправить письмо. Попробуйте позже или обратитесь в поддержку.' },
-        { status: 500 }
+        { message: 'Email сервис временно недоступен. Попробуйте позже.' },
+        { status: 503 }
       )
-    }
-    if (!env.AZURE_COMMUNICATION_CONNECTION_STRING && !env.MAILGUN_API_KEY) {
-      console.log('📧 СБРОС ПАРОЛЯ (email не настроен — ссылка в логах):', resetUrl)
     }
 
     return NextResponse.json({
       message: 'Если аккаунт с таким email существует, мы отправили инструкции по сбросу пароля.',
-      // DEV ONLY: в проде убрать. Для удобства тестирования.
-      ...(process.env.NODE_ENV !== 'production' && { _dev_resetUrl: resetUrl }),
     })
   } catch (error) {
     console.error('Forgot password error:', error)

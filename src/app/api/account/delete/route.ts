@@ -47,10 +47,7 @@ export async function DELETE(request: NextRequest) {
     response.cookies.delete('auth_token')
     return response
   } catch (error) {
-    console.error('Account delete error:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : apiMessages.internalServerError },
-      { status: 500 }
-    )
+    console.error(JSON.stringify({ level: 'error', ctx: 'account_delete', message: error instanceof Error ? error.message : String(error) }))
+    return NextResponse.json({ error: apiMessages.internalServerError }, { status: 500 })
   }
 }

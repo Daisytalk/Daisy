@@ -52,10 +52,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Account restore error:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : apiMessages.internalServerError },
-      { status: 500 }
-    )
+    console.error(JSON.stringify({ level: 'error', ctx: 'account_restore', message: error instanceof Error ? error.message : String(error) }))
+    return NextResponse.json({ error: apiMessages.internalServerError }, { status: 500 })
   }
 }

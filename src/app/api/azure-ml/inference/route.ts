@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log('✅ User authenticated:', user.email);
+        console.log(JSON.stringify({ level: 'info', ctx: 'user_authenticated', userId: user.id }));
 
         // ============================================
         // 3. PREPARE AZURE ML CBT API REQUEST
