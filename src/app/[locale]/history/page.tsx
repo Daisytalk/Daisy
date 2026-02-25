@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, Trash2, Loader2, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -18,6 +18,31 @@ interface Session {
   persona: string
 }
 
+function groupSessionsByDate(sessions: Session[], locale: string) {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const groups: { label: string; sessions: Session[] }[] = [
+    { label: locale === 'ru' ? 'Сегодня' : 'Today', sessions: [] },
+    { label: locale === 'ru' ? 'Вчера' : 'Yesterday', sessions: [] },
+    { label: locale === 'ru' ? 'На этой неделе' : 'This week', sessions: [] },
+    { label: locale === 'ru' ? 'Ранее' : 'Earlier', sessions: [] },
+  ]
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const weekAgo = new Date(today)
+  weekAgo.setDate(weekAgo.getDate() - 7)
+
+  sessions.forEach((s) => {
+    const d = new Date(s.updatedAt)
+    if (d >= today) groups[0].sessions.push(s)
+    else if (d >= yesterday) groups[1].sessions.push(s)
+    else if (d >= weekAgo) groups[2].sessions.push(s)
+    else groups[3].sessions.push(s)
+  })
+
+  return groups.filter((g) => g.sessions.length > 0)
+}
+
 function HistoryPageContent() {
   const t = useTranslations('history')
   const [sessions, setSessions] = useState<Session[]>([])
@@ -25,6 +50,8 @@ function HistoryPageContent() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const router = useRouter()
   const locale = useLocale()
+
+  const groupedSessions = useMemo(() => groupSessionsByDate(sessions, locale), [sessions, locale])
 
   useEffect(() => {
     loadSessions()
@@ -83,98 +110,116 @@ function HistoryPageContent() {
     router.push(`/${locale}/chat`)
   }
 
-  const formatDate = (dateString: string) => {
+  const formatTime = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    if (diffMins < 1) return locale === 'ru' ? 'Только что' : 'Just now'
+    if (diffMins < 60) return locale === 'ru' ? `${diffMins} мин. назад` : `${diffMins}m ago`
+    if (diffHours < 24) return locale === 'ru' ? `${diffHours} ч. назад` : `${diffHours}h ago`
+    if (diffDays < 7) return locale === 'ru' ? `${diffDays} дн. назад` : `${diffDays}d ago`
+    return date.toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' })
   }
 
   return (
     <AppLayout>
-      <div className="h-full flex flex-col bg-[hsl(var(--app-bg))]">
-        <div className="shrink-0 border-b border-[hsl(var(--app-border))] bg-white px-4 sm:px-6 py-4">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{t('subtitle')}</p>
+      <div className="h-full flex flex-col min-h-0 bg-[#fafafa]">
+        <div className="shrink-0 px-4 sm:px-6 py-5 bg-white border-b border-[#eee]">
+          <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-[20px] font-semibold text-[#1a1a1a]">{t('title')}</h1>
+              <p className="text-[14px] text-[#6b6b6b] mt-0.5">{t('subtitle')}</p>
+            </div>
+            <button
+              onClick={startNewChat}
+              className="shrink-0 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#5ba3c6] text-white text-[14px] font-medium hover:bg-[#4a8fb3] transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              {t('newChat')}
+            </button>
           </div>
         </div>
 
-        <main className="flex-1 overflow-auto">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+        <main className="flex-1 overflow-auto min-h-0">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
             {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              <div className="flex items-center justify-center py-24">
+                <Loader2 className="w-8 h-8 animate-spin text-[#5ba3c6]" />
               </div>
             ) : sessions.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center text-center py-16"
+                className="flex flex-col items-center text-center py-20"
               >
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                  <MessageCircle className="w-8 h-8 text-primary" />
+                <div className="w-14 h-14 rounded-2xl bg-[#e0f7fa] flex items-center justify-center mb-5">
+                  <MessageCircle className="w-7 h-7 text-[#5ba3c6]" />
                 </div>
-                <h2 className="text-xl font-semibold text-foreground mb-2">{t('emptyTitle')}</h2>
-                <p className="text-muted-foreground mb-6 max-w-sm">{t('emptyDesc')}</p>
+                <h2 className="text-lg font-semibold text-[#1a1a1a] mb-2">{t('emptyTitle')}</h2>
+                <p className="text-[15px] text-[#6b6b6b] mb-6 max-w-sm">{t('emptyDesc')}</p>
                 <button
                   onClick={startNewChat}
-                  className="inline-flex items-center gap-2 h-11 px-5 rounded-2xl bg-primary text-primary-foreground font-medium hover:opacity-95"
+                  className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-[#5ba3c6] text-white font-medium hover:bg-[#4a8fb3] transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   {t('startChatting')}
                 </button>
               </motion.div>
             ) : (
-              <ul className="space-y-0">
-                <AnimatePresence>
-                  {sessions.map((session, index) => (
-                    <motion.li
-                      key={session.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      transition={{ delay: index * 0.02 }}
-                      className="group flex items-center gap-4 py-4 px-4 rounded-2xl hover:bg-white/80 transition-colors cursor-pointer border border-transparent hover:border-[hsl(var(--app-border))]"
-                      onClick={() => openSession(session.id)}
-                    >
-                      <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <MessageCircle className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                          {session.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {session.messageCount} messages · {formatDate(session.updatedAt)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteSession(session.id)
-                        }}
-                        disabled={deletingId === session.id}
-                        className="p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                        aria-label="Delete"
-                      >
-                        {deletingId === session.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
-                    </motion.li>
-                  ))}
-                </AnimatePresence>
-              </ul>
+              <div className="space-y-8">
+                {groupedSessions.map((group) => (
+                  <div key={group.label}>
+                    <p className="text-[12px] font-medium text-[#8e8e8e] uppercase tracking-wider mb-3 px-1">
+                      {group.label}
+                    </p>
+                    <ul className="space-y-1">
+                      <AnimatePresence>
+                        {group.sessions.map((session, index) => (
+                          <motion.li
+                            key={session.id}
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, x: -16 }}
+                            transition={{ delay: index * 0.02 }}
+                            className="group flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-[#e5e5e5] hover:shadow-sm"
+                            onClick={() => openSession(session.id)}
+                          >
+                            <div className="w-9 h-9 rounded-lg bg-[#e0f7fa] flex items-center justify-center shrink-0">
+                              <MessageCircle className="w-4 h-4 text-[#5ba3c6]" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-[15px] font-medium text-[#2d2d2d] truncate group-hover:text-[#5ba3c6] transition-colors">
+                                {session.title}
+                              </h3>
+                              <p className="text-[13px] text-[#8e8e8e]">
+                                {session.messageCount} {locale === 'ru' ? 'сообщ.' : 'messages'} · {formatTime(session.updatedAt)}
+                              </p>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                deleteSession(session.id)
+                              }}
+                              disabled={deletingId === session.id}
+                              className="p-2 rounded-lg text-[#8e8e8e] hover:text-[#e57373] hover:bg-[#fef2f2] opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
+                              aria-label="Delete"
+                            >
+                              {deletingId === session.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </button>
+                          </motion.li>
+                        ))}
+                      </AnimatePresence>
+                    </ul>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </main>

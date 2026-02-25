@@ -59,7 +59,7 @@ export default function PricingPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-white pb-20">
+      <div className="h-full min-h-[calc(100vh-4rem)] flex" style={{ background: '#fafbfc' }}>
         <PricingSection onSelectPlan={handleSelectPlan} />
       </div>
     </AppLayout>

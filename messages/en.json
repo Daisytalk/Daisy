@@ -160,6 +160,28 @@
     "createAccountDesc": "Create your account to get started",
     "consentDataProcessing": "I agree to the processing of my personal data in accordance with the Privacy Policy",
     "consentRequired": "You must agree to the processing of personal data",
+    "backToLogin": "Back to login",
+    "rememberPassword": "Remember your password?",
+    "forgotPasswordTitle": "Forgot your password?",
+    "forgotPasswordDesc": "Enter the email you used to register. We'll send a link to reset your password.",
+    "forgotPasswordBrandDesc": "Don't worry — we'll help you restore access to your account.",
+    "forgotPasswordSubmit": "Send link",
+    "forgotPasswordSending": "Sending...",
+    "forgotPasswordError": "Failed to send link. Please try again.",
+    "forgotPasswordSentTitle": "Email sent!",
+    "forgotPasswordSentDesc": "We've sent password reset instructions to the email:",
+    "forgotPasswordResend": "Send again",
+    "forgotPasswordCheckSpam": "Don't see the email? Check your spam folder or try again in a few minutes.",
+    "newPassword": "New password",
+    "resetPasswordTitle": "Create a new password",
+    "resetPasswordDesc": "Enter a new password for your account. Minimum 8 characters.",
+    "resetPasswordSubmit": "Save password",
+    "resetPasswordSubmitting": "Saving...",
+    "resetPasswordError": "Failed to reset password. Please try again.",
+    "resetPasswordSuccessTitle": "Password changed!",
+    "resetPasswordSuccessDesc": "Your password has been successfully updated. You can now sign in with your new password.",
+    "resetPasswordInvalidLink": "Link is invalid",
+    "resetPasswordInvalidLinkDesc": "The password reset link is broken or missing. Please request a new one.",
     "safeSpaceQuote": "A safe space to reflect and grow.",
     "badgeCompanion": "Companion",
     "badgePrivate": "Private & safe",
@@ -331,5 +353,187 @@
     "message4Bot": "What you're describing are classic signs of burnout and anxiety. Your body and mind are signaling that you've been running on overdrive for too long without enough recovery. Several months of constant stress - that's an enormous load on your nervous system. Racing heart, insomnia, spinning thoughts - these are all your body's reactions to burnout. Tell me, are there any moments in your life right now when you feel even a little bit calmer?",
     "message5User": "Maybe when I go for walks... Or when I meet up with my friend, but that's rare. Mostly I'm just working or lying at home without energy, even on weekends.",
     "message6Bot": "I see something really important here - walks and spending time with your friend bring you some relief, even if it's rare. These are clues from your body about what it needs. Right now you're living in survival mode: work - exhaustion - work. It's like a closed loop where you only give and nothing comes back, so your energy never gets restored. I want to remind you that you deserve to take care of yourself - not as a reward for being productive, but as part of your routine, where you actively care for yourself. Let's think together: what would be one small step you could take this week to give yourself even a little space to recover? No pressure, let's just look at what possibilities you have right now."
+  },
+  "profile": {
+    "tabs": {
+      "overview": "Overview",
+      "detailed": "Detailed",
+      "weekly": "Report"
+    },
+    "status": {
+      "title": "My profile now",
+      "noData": "Complete onboarding to see your emotional profile 🤍",
+      "startOnboarding": "Start onboarding",
+      "metrics": {
+        "stress": "Stress level",
+        "emotion": "Emotions",
+        "support": "Support",
+        "resource": "Resource"
+      },
+      "explainProfile": "Explain my profile",
+      "daisyNotices": "Daisy notices:",
+      "talkToDaisy": "→ Talk to Daisy about this"
+    },
+    "trend": {
+      "title": "📈 My dynamics — Last 7 days",
+      "noData": "Complete your first check-in to see your dynamics 🤍",
+      "startCheckin": "→ Start check-in",
+      "details": "→ More details",
+      "metrics": {
+        "emotion": "Emotional state",
+        "stress": "Stress level",
+        "energy": "Energy",
+        "support": "Support level"
+      }
+    },
+    "dynamics": {
+      "period7d": "7 days",
+      "period14d": "2 weeks",
+      "period30d": "Month",
+      "analyzing": "Analyzing your data...",
+      "bestDay": "Best day:",
+      "worstDay": "Hardest day:",
+      "daisyNotices": "Daisy notices:",
+      "talkToDaisy": "→ Talk to Daisy about this",
+      "metrics": {
+        "emotion": "Emotions",
+        "stress": "Stress",
+        "energy": "Energy",
+        "support": "Support"
+      }
+    },
+    "weeklyReport": {
+      "period7d": "7 days",
+      "period14d": "2 weeks",
+      "period30d": "Month",
+      "weekTitle": "Your week",
+      "topicsTitle": "What the week was about:",
+      "changesTitle": "Changes this week:",
+      "chartTitle": "Week chart:",
+      "recommendationsTitle": "Report recommendations:",
+      "premiumLock": "Full report available in Premium",
+      "upgradePlan": "Upgrade plan",
+      "metrics": {
+        "stress": "Stress",
+        "energy": "Energy",
+        "support": "Support",
+        "emotion": "Emotions"
+      },
+      "fallbackSummaryStress": "This week was tough — stress stayed high.",
+      "fallbackSummaryEnergy": "Energy was running low. It's important to recover.",
+      "fallbackSummaryNormal": "The week was relatively stable 🤍",
+      "fallbackRec1": "Try the STOP technique when stressed",
+      "fallbackRec2": "Add 15 minutes of walking",
+      "fallbackRec3": "Talk to Daisy if it gets hard"
+    },
+    "recommendations": {
+      "title": "3 recommendations for next week",
+      "premiumLock": "Unlock in Premium",
+      "upgradePlan": "Upgrade plan"
+    },
+    "programs": {
+      "title": "Personal programs",
+      "badge": "Just for you",
+      "startProgram": "→ Start program",
+      "premiumLock": "Available in Premium"
+    },
+    "premium": {
+      "title": "✨ Deep analysis",
+      "desc": "Detailed pattern analytics, burnout risk forecast and 30-day personal plan.",
+      "features": {
+        "guided": "Guided programs (7/14/30 days)",
+        "weekly": "Weekly report with deltas",
+        "techniques": "DBT/CBT techniques in program format",
+        "history": "History up to 30 days",
+        "recs": "3 recommendations for next week"
+      },
+      "cta": "→ Try Premium"
+    },
+    "checkin": {
+      "question": "{name}, how are you right now? 🤍",
+      "questionToday": "{name}, how are you today? 🩷 — Check-in",
+      "notNow": "Not now",
+      "saved": "✓ Recorded 🌸",
+      "saving": "Saving...",
+      "done": "→ Done 🤍",
+      "ariaLabel": "Daily check-in",
+      "questions": {
+        "emotion": "Emotional state",
+        "stress": "Stress level",
+        "energy": "Energy",
+        "support": "Support level"
+      },
+      "scaleLeft": {
+        "emotion": "Very hard",
+        "stress": "Very high",
+        "energy": "No energy",
+        "support": "Alone"
+      },
+      "scaleRight": {
+        "emotion": "In flow",
+        "stress": "All calm",
+        "energy": "Lots of energy",
+        "support": "Feel supported"
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "loading": "Loading settings...",
+    "account": {
+      "title": "Account",
+      "name": "Name",
+      "email": "Email",
+      "subscription": "Subscription",
+      "trial": "Trial period",
+      "premium": "Premium",
+      "trialDaysLeft": "{days} days left",
+      "trialExpired": "Expired"
+    },
+    "style": {
+      "title": "Communication style with Daisy",
+      "edit": "Edit",
+      "hint": "Choose 1-2 styles",
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "notSelected": "No style selected",
+      "selectStyle": "Choose style"
+    },
+    "onboarding": {
+      "title": "Onboarding answers",
+      "notCompleted": "Onboarding not completed",
+      "start": "Start onboarding",
+      "labels": {
+        "yes": "Yes",
+        "no": "No",
+        "score": "Score:"
+      }
+    },
+    "privacy": {
+      "title": "Data & privacy",
+      "export": "Export data",
+      "exportDesc": "Download all your data (GDPR)",
+      "exportBtn": "Download",
+      "exportLoading": "Downloading...",
+      "clearMemory": "Clear memory",
+      "clearMemoryDesc": "Delete accumulated facts about you",
+      "clearBtn": "Clear",
+      "clearLoading": "Clearing...",
+      "deactivate": "Deactivate account",
+      "deactivateDesc": "Account will be deactivated for 30 days",
+      "deactivateBtn": "Delete",
+      "deactivateLoading": "Deleting...",
+      "confirm": "Confirm",
+      "cancelBtn": "Cancel"
+    },
+    "communicationStyles": {
+      "warm_friend": { "name": "Warm friend", "keywords": "Supportive, understanding, gentle" },
+      "practical_helper": { "name": "Practical helper", "keywords": "Concrete, structured, honest" },
+      "gentle_explorer": { "name": "Gentle explorer", "keywords": "Curious, reflective, deep" },
+      "calm_mentor": { "name": "Calm mentor", "keywords": "Balanced, accepting, patient" },
+      "wise_teacher": { "name": "Wise teacher", "keywords": "Informative, scientific, educational" },
+      "flexible_companion": { "name": "Flexible companion", "keywords": "Sensitive, situational, adaptable" }
+    }
   }
 }

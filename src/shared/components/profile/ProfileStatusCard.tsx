@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { ChevronDown, Flame, Heart, Users, Leaf } from 'lucide-react'
 import {
   getStressStatus,
@@ -25,31 +26,32 @@ interface ProfileStatusCardProps {
   locale: string
 }
 
-const ITEMS = [
-  { key: 'stress' as const, label: 'Уровень стресса', icon: Flame, getStatus: getStressStatus, valueKey: 'BSI' as const },
-  { key: 'emotion' as const, label: 'Эмоции', icon: Heart, getStatus: getEmotionStatus, valueKey: 'ESI' as const },
-  { key: 'support' as const, label: 'Поддержка', icon: Users, getStatus: getSupportStatus, valueKey: 'SSI' as const },
-  { key: 'resource' as const, label: 'Ресурс', icon: Leaf, getStatus: getResourceStatus, valueKey: 'MRI' as const },
-]
-
 export function ProfileStatusCard({ snapshot, locale }: ProfileStatusCardProps) {
+  const t = useTranslations('profile')
   const [expanded, setExpanded] = useState(false)
+
+  const ITEMS = [
+    { key: 'stress' as const, label: t('status.metrics.stress'), icon: Flame, getStatus: getStressStatus, valueKey: 'BSI' as const },
+    { key: 'emotion' as const, label: t('status.metrics.emotion'), icon: Heart, getStatus: getEmotionStatus, valueKey: 'ESI' as const },
+    { key: 'support' as const, label: t('status.metrics.support'), icon: Users, getStatus: getSupportStatus, valueKey: 'SSI' as const },
+    { key: 'resource' as const, label: t('status.metrics.resource'), icon: Leaf, getStatus: getResourceStatus, valueKey: 'MRI' as const },
+  ]
 
   if (!snapshot) {
     return (
       <section>
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-          Мой профиль сейчас
+          {t('status.title')}
         </h2>
         <div className="rounded-[12px] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            Пройди онбординг, чтобы увидеть свой эмоциональный профиль 🤍
+            {t('status.noData')}
           </p>
           <a
             href={`/${locale}/onboarding`}
             className="inline-flex items-center gap-2 h-10 px-5 rounded-2xl bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors text-sm"
           >
-            Пройти онбординг
+            {t('status.startOnboarding')}
           </a>
         </div>
       </section>
@@ -61,7 +63,7 @@ export function ProfileStatusCard({ snapshot, locale }: ProfileStatusCardProps) 
   return (
     <section>
       <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-4 ml-2">
-        Мой профиль сейчас
+        {t('status.title')}
       </h2>
       <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden divide-y divide-[#f0f0f0]">
         {ITEMS.map((item) => {
@@ -83,11 +85,11 @@ export function ProfileStatusCard({ snapshot, locale }: ProfileStatusCardProps) 
             className="flex items-center gap-2 text-[15px] text-[#5ba3c6] hover:text-[#4a8fb3] transition-colors"
           >
             <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-            Объяснить мой профиль
+            {t('status.explainProfile')}
           </button>
           {expanded && (
             <div className="mt-4 p-5 rounded-[16px] bg-[#f7f7f7] text-[15px] text-[#4a4a4a] leading-relaxed">
-              <p className="font-semibold text-[#2d2d2d] mb-2">Daisy замечает:</p>
+              <p className="font-semibold text-[#2d2d2d] mb-2">{t('status.daisyNotices')}</p>
               <p>{summary}</p>
             </div>
           )}
@@ -97,7 +99,7 @@ export function ProfileStatusCard({ snapshot, locale }: ProfileStatusCardProps) 
             href={`/${locale}/chat`}
             className="inline-flex items-center text-[15px] text-[#5ba3c6] hover:text-[#4a8fb3] transition-colors"
           >
-            <span className="border-b border-[#5ba3c6]/30 hover:border-[#4a8fb3]">→ Поговорить с Daisy об этом</span>
+            <span className="border-b border-[#5ba3c6]/30 hover:border-[#4a8fb3]">{t('status.talkToDaisy')}</span>
           </Link>
         </div>
       </div>

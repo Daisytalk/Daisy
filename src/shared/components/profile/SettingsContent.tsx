@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import {
   User as UserIcon,
   Mail,
@@ -26,37 +27,33 @@ import type { OnboardingData, OnboardingQuestion } from '@/shared/types/auth'
 import { ClientOnly } from '@/shared/components/ClientOnly'
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 import { AppLayout } from '@/shared/components/AppLayout'
+import { COMMUNICATION_STYLE_IDS } from '@/shared/constants/communication-styles'
 
-const COMMUNICATION_STYLES = [
-  { id: 'warm_friend', name: 'Тёплая подруга', keywords: 'душевная, понимающая, мягкая' },
-  { id: 'practical_helper', name: 'Практичный помощник', keywords: 'конкретный, структурированный, честный' },
-  { id: 'gentle_explorer', name: 'Мягкий исследователь', keywords: 'любопытный, рефлексивный, глубокий' },
-  { id: 'calm_mentor', name: 'Спокойный наставник', keywords: 'уравновешенный, принимающий, терпеливый' },
-  { id: 'wise_teacher', name: 'Мудрый учитель', keywords: 'информативный, научный, обучающий' },
-  { id: 'flexible_companion', name: 'Гибкая собеседница', keywords: 'чуткий, ситуативный, настраиваемый' },
-]
-
-function formatAnswer(answer: unknown): string {
+function formatAnswer(answer: unknown, t?: (k: string) => string): string {
+  const yes = t ? t('onboarding.labels.yes') : 'Да'
+  const no = t ? t('onboarding.labels.no') : 'Нет'
+  const score = t ? t('onboarding.labels.score') : 'Оценка:'
   if (answer === null || answer === undefined) return '-'
   if (Array.isArray(answer)) return answer.join(', ')
-  if (typeof answer === 'boolean') return answer ? 'Да' : 'Нет'
-  if (typeof answer === 'number') return `Оценка: ${answer}/5`
+  if (typeof answer === 'boolean') return answer ? yes : no
+  if (typeof answer === 'number') return `${score} ${answer}/5`
   if (typeof answer === 'object') {
     const o = answer as Record<string, unknown>
-    if (typeof o.rating === 'number') return `Оценка: ${o.rating}/5${o.comment ? ` - ${o.comment}` : ''}`
-    if (o.value === 'yes') return typeof o.rel_quality === 'number' ? `Да, оценка: ${o.rel_quality}/5` : 'Да'
-    if (o.value === 'no') return 'Нет'
+    if (typeof o.rating === 'number') return `${score} ${o.rating}/5${o.comment ? ` - ${o.comment}` : ''}`
+    if (o.value === 'yes') return typeof o.rel_quality === 'number' ? `${yes}, ${score} ${o.rel_quality}/5` : yes
+    if (o.value === 'no') return no
     if (o.value === 'unsure') return o.other ? `Сложно сказать: ${o.other}` : 'Сложно сказать'
-    if (o.yes === true) return o.detail ? `Да - ${o.detail}` : 'Да'
-    if (o.yes === false) return 'Нет'
+    if (o.yes === true) return o.detail ? `${yes} - ${o.detail}` : yes
+    if (o.yes === false) return no
     if (o.hasRelationship === false) return 'Нет отношений'
-    if (o.hasRelationship === true) return typeof o.rating === 'number' ? `Оценка: ${o.rating}/5` : 'Да'
+    if (o.hasRelationship === true) return typeof o.rating === 'number' ? `${score} ${o.rating}/5` : yes
     return JSON.stringify(answer)
   }
   return String(answer)
 }
 
 export function SettingsContent() {
+  const t = useTranslations('settings')
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null)
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -143,13 +140,23 @@ export function SettingsContent() {
     }
   }
 
+  const communicationStyles = useMemo(
+    () =>
+      COMMUNICATION_STYLE_IDS.map((id) => ({
+        id,
+        name: t(`communicationStyles.${id}.name`),
+        keywords: t(`communicationStyles.${id}.keywords`),
+      })),
+    [t]
+  )
+
   if (isLoading) {
     return (
       <AppLayout>
         <div className="h-full flex items-center justify-center">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
             <div className="w-12 h-12 border-2 border-[#5ba3c6] border-t-transparent rounded-full mx-auto mb-4 animate-spin" />
-            <p className="text-[#4a4a4a]">Загрузка настроек...</p>
+            <p className="text-[#4a4a4a]">{t('loading')}</p>
           </motion.div>
         </div>
       </AppLayout>
@@ -163,32 +170,32 @@ export function SettingsContent() {
           <div className="w-12 h-12 rounded-[16px] bg-[#e0f7fa] flex items-center justify-center">
             <Settings className="w-6 h-6 text-[#5ba3c6]" />
           </div>
-          <h1 className="text-[22px] font-semibold text-[#2d2d2d]">Настройки</h1>
+          <h1 className="text-[22px] font-semibold text-[#2d2d2d]">{t('title')}</h1>
         </div>
 
         <section>
-          <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-4 ml-2">Аккаунт</h2>
+          <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-4 ml-2">{t('account.title')}</h2>
           <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden divide-y divide-[#f0f0f0]">
             <div className="flex items-center gap-5 px-6 py-5">
               <UserIcon className="w-5 h-5 text-[#8e8e8e] shrink-0" />
               <div>
-                <p className="text-[13px] text-[#8e8e8e] mb-1">Имя</p>
+                <p className="text-[13px] text-[#8e8e8e] mb-1">{t('account.name')}</p>
                 <p className="font-medium text-[16px] text-[#2d2d2d]">{user?.name}</p>
               </div>
             </div>
             <div className="flex items-center gap-5 px-6 py-5">
               <Mail className="w-5 h-5 text-[#8e8e8e] shrink-0" />
               <div>
-                <p className="text-[13px] text-[#8e8e8e] mb-1">Эл. почта</p>
+                <p className="text-[13px] text-[#8e8e8e] mb-1">{t('account.email')}</p>
                 <p className="font-medium text-[16px] text-[#2d2d2d]">{user?.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-5 px-6 py-5">
               <Shield className="w-5 h-5 text-[#8e8e8e] shrink-0" />
               <div>
-                <p className="text-[13px] text-[#8e8e8e] mb-1">Подписка</p>
+                <p className="text-[13px] text-[#8e8e8e] mb-1">{t('account.subscription')}</p>
                 <p className="font-medium text-[16px] text-[#2d2d2d]">
-                  {user?.subscriptionStatus === 'trial' ? 'Пробный период' : 'Премиум'}
+                  {user?.subscriptionStatus === 'trial' ? t('account.trial') : t('account.premium')}
                 </p>
               </div>
             </div>
@@ -196,9 +203,9 @@ export function SettingsContent() {
               <div className="flex items-center gap-5 px-6 py-5">
                 <Calendar className="w-5 h-5 text-[#8e8e8e] shrink-0" />
                 <div>
-                  <p className="text-[13px] text-[#8e8e8e] mb-1">Пробный период</p>
+                  <p className="text-[13px] text-[#8e8e8e] mb-1">{t('account.trial')}</p>
                   <p className="font-medium text-[16px] text-[#2d2d2d]">
-                    {trialDaysLeft > 0 ? `Осталось ${trialDaysLeft} дн.` : 'Истёк'}
+                    {trialDaysLeft > 0 ? t('account.trialDaysLeft', { days: trialDaysLeft }) : t('account.trialExpired')}
                   </p>
                 </div>
               </div>
@@ -209,7 +216,7 @@ export function SettingsContent() {
         <section>
           <div className="flex items-center justify-between mb-4 px-2">
             <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest">
-              Стиль общения с Daisy
+              {t('style.title')}
             </h2>
             {!isEditingStyle && (
               <button
@@ -217,15 +224,15 @@ export function SettingsContent() {
                 className="flex items-center gap-2 text-[14px] font-medium text-[#5ba3c6] hover:text-[#4a8fb3]"
               >
                 <Pencil className="w-4 h-4" />
-                Изменить
+                {t('style.edit')}
               </button>
             )}
           </div>
           {isEditingStyle ? (
             <div className="space-y-4">
-              <p className="text-[15px] text-[#6b6b6b] ml-2">Выберите 1-2 стиля</p>
+              <p className="text-[15px] text-[#6b6b6b] ml-2">{t('style.hint')}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {COMMUNICATION_STYLES.map((style) => {
+                {communicationStyles.map((style) => {
                   const isSelected = draftStyles.includes(style.id)
                   const isDisabled = !isSelected && draftStyles.length >= 2
                   return (
@@ -255,20 +262,20 @@ export function SettingsContent() {
                   className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full bg-[#5ba3c6] text-white text-[15px] font-medium hover:bg-[#4a8fb3] disabled:opacity-50 transition-colors"
                 >
                   <Check className="w-4 h-4" />
-                  {styleSaving ? 'Сохранение...' : 'Сохранить'}
+                  {styleSaving ? t('style.saving') : t('style.save')}
                 </button>
                 <button
                   onClick={() => setIsEditingStyle(false)}
                   className="h-12 px-6 rounded-full bg-white border border-[#e5e5e5] text-[15px] font-medium text-[#4a4a4a] hover:bg-[#f5f5f5] transition-colors"
                 >
-                  Отмена
+                  {t('style.cancel')}
                 </button>
               </div>
             </div>
           ) : selectedStyles.length > 0 ? (
             <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden divide-y divide-[#f0f0f0]">
               {selectedStyles.map((styleId) => {
-                const style = COMMUNICATION_STYLES.find((s) => s.id === styleId)
+                const style = communicationStyles.find((s) => s.id === styleId)
                 if (!style) return null
                 return (
                   <div key={styleId} className="flex items-center gap-5 px-6 py-5">
@@ -285,12 +292,12 @@ export function SettingsContent() {
             </div>
           ) : (
             <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-8 text-center">
-              <p className="text-[15px] text-[#6b6b6b] mb-4">Стиль не выбран</p>
+              <p className="text-[15px] text-[#6b6b6b] mb-4">{t('style.notSelected')}</p>
               <button
                 onClick={startEditingStyle}
                 className="text-[15px] font-medium text-[#5ba3c6] hover:text-[#4a8fb3] underline underline-offset-4 decoration-[#5ba3c6]/40 hover:decoration-[#4a8fb3]"
               >
-                Выбрать стиль
+                {t('style.selectStyle')}
               </button>
             </div>
           )}
@@ -298,7 +305,7 @@ export function SettingsContent() {
 
         <section>
           <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-4 ml-2">
-            Ответы онбординга
+            {t('onboarding.title')}
           </h2>
           {onboardingData?.answers && onboardingData.answers.length > 0 ? (
             <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden divide-y divide-[#f0f0f0]">
@@ -309,18 +316,18 @@ export function SettingsContent() {
                     <p className="text-[13px] text-[#8e8e8e] mb-2">
                       {QUESTION_LABELS[answer.questionId] ?? answer.questionId}
                     </p>
-                    <p className="text-[16px] text-[#2d2d2d] leading-relaxed">{formatAnswer(answer.answer)}</p>
+                    <p className="text-[16px] text-[#2d2d2d] leading-relaxed">{formatAnswer(answer.answer, (k) => t(k))}</p>
                   </div>
                 ))}
             </div>
           ) : (
             <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-8 text-center">
-              <p className="text-[15px] text-[#6b6b6b] mb-6">Онбординг не пройден</p>
+              <p className="text-[15px] text-[#6b6b6b] mb-6">{t('onboarding.notCompleted')}</p>
               <button
                 onClick={() => router.push(`/${locale}/onboarding`)}
                 className="inline-flex items-center justify-center h-12 px-6 rounded-full bg-[#e0f7fa] text-[#5ba3c6] font-medium hover:bg-[#b2ebf2] text-[15px] transition-colors"
               >
-                Пройти онбординг
+                {t('onboarding.start')}
               </button>
             </div>
           )}
@@ -328,7 +335,7 @@ export function SettingsContent() {
 
         <section>
           <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-4 ml-2">
-            Данные и приватность
+            {t('privacy.title')}
           </h2>
           <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">
             {accountError && (
@@ -343,8 +350,8 @@ export function SettingsContent() {
                   <Download className="w-5 h-5 text-[#6b6b6b]" />
                 </div>
                 <div>
-                  <p className="font-medium text-[16px] text-[#2d2d2d]">Экспорт данных</p>
-                  <p className="text-[13px] text-[#8e8e8e] mt-0.5">Скачать все свои данные (GDPR)</p>
+                  <p className="font-medium text-[16px] text-[#2d2d2d]">{t('privacy.export')}</p>
+                  <p className="text-[13px] text-[#8e8e8e] mt-0.5">{t('privacy.exportDesc')}</p>
                 </div>
               </div>
               <button
@@ -370,7 +377,7 @@ export function SettingsContent() {
                 disabled={accountAction !== 'idle'}
                 className="h-10 px-5 rounded-full text-[14px] font-medium bg-[#f5f5f5] text-[#4a4a4a] hover:bg-[#ebebeb] disabled:opacity-50 transition-colors"
               >
-                {accountAction === 'exporting' ? 'Скачивание...' : 'Скачать'}
+                {accountAction === 'exporting' ? t('privacy.exportLoading') : t('privacy.exportBtn')}
               </button>
             </div>
             <div className="flex items-center justify-between gap-4 px-6 py-5 border-t border-[#f0f0f0]">
@@ -379,8 +386,8 @@ export function SettingsContent() {
                   <Brain className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-[16px] text-[#2d2d2d]">Очистить память</p>
-                  <p className="text-[13px] text-[#8e8e8e] mt-0.5">Удалить накопленные факты о тебе</p>
+                  <p className="font-medium text-[16px] text-[#2d2d2d]">{t('privacy.clearMemory')}</p>
+                  <p className="text-[13px] text-[#8e8e8e] mt-0.5">{t('privacy.clearMemoryDesc')}</p>
                 </div>
               </div>
               <button
@@ -399,7 +406,7 @@ export function SettingsContent() {
                 disabled={accountAction !== 'idle'}
                 className="h-10 px-5 rounded-full text-[14px] font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:opacity-50 transition-colors"
               >
-                {accountAction === 'clearing' ? 'Очистка...' : 'Очистить'}
+                {accountAction === 'clearing' ? t('privacy.clearLoading') : t('privacy.clearBtn')}
               </button>
             </div>
             <div className="flex items-center justify-between gap-4 px-6 py-5 border-t border-[#f0f0f0]">
@@ -408,8 +415,8 @@ export function SettingsContent() {
                   <Trash2 className="w-5 h-5 text-red-500" />
                 </div>
                 <div>
-                  <p className="font-medium text-[16px] text-[#2d2d2d]">Деактивировать аккаунт</p>
-                  <p className="text-[13px] text-[#8e8e8e] mt-0.5">Аккаунт будет деактивирован на 30 дней</p>
+                  <p className="font-medium text-[16px] text-[#2d2d2d]">{t('privacy.deactivate')}</p>
+                  <p className="text-[13px] text-[#8e8e8e] mt-0.5">{t('privacy.deactivateDesc')}</p>
                 </div>
               </div>
               {showDeleteConfirm ? (
@@ -435,14 +442,14 @@ export function SettingsContent() {
                     disabled={accountAction !== 'idle'}
                     className="h-10 px-5 rounded-full text-[14px] font-medium bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
                   >
-                    {accountAction === 'deleting' ? 'Удаление...' : 'Подтвердить'}
+                    {accountAction === 'deleting' ? t('privacy.deactivateLoading') : t('privacy.confirm')}
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
                     disabled={accountAction !== 'idle'}
                     className="h-10 px-5 rounded-full text-[14px] font-medium bg-[#f5f5f5] text-[#4a4a4a] hover:bg-[#ebebeb] disabled:opacity-50 transition-colors"
                   >
-                    Отмена
+                    {t('privacy.cancelBtn')}
                   </button>
                 </div>
               ) : (
@@ -450,7 +457,7 @@ export function SettingsContent() {
                   onClick={() => setShowDeleteConfirm(true)}
                   className="h-10 px-5 rounded-full text-[14px] font-medium text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
                 >
-                  Удалить
+                  {t('privacy.deactivateBtn')}
                 </button>
               )}
             </div>

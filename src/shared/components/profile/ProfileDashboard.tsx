@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs'
 import { ProfileStatusCard } from './ProfileStatusCard'
 import { TrendSummaryCard } from './TrendSummaryCard'
@@ -64,11 +64,23 @@ export function ProfileDashboard({
   hasCheckInToday,
 }: ProfileDashboardProps) {
   const t = useTranslations('nav')
+  const tp = useTranslations('profile')
   const [activeTab, setActiveTab] = useState<Tab>('overview')
+  const [aiRecommendations, setAiRecommendations] = useState<string[]>([])
 
   const isPremium = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial'
   const history7d = history.slice(-7)
   const history30d = history
+
+  useEffect(() => {
+    if (!isPremium) return
+    fetch('/api/account/weekly-report?period=7d', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.recommendations?.length) setAiRecommendations(d.recommendations)
+      })
+      .catch(() => {})
+  }, [isPremium])
 
   return (
     <AppLayout>
@@ -88,9 +100,9 @@ export function ProfileDashboard({
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)}>
           <TabsList className="w-full grid grid-cols-3 bg-[#f0f0f0] p-1 rounded-[16px] h-12">
-            <TabsTrigger value="overview" className="rounded-[12px] data-[state=active]:bg-white data-[state=active]:shadow-sm text-[15px]">Обзор</TabsTrigger>
-            <TabsTrigger value="detailed" className="rounded-[12px] data-[state=active]:bg-white data-[state=active]:shadow-sm text-[15px]">Детально</TabsTrigger>
-            <TabsTrigger value="weekly" className="rounded-[12px] data-[state=active]:bg-white data-[state=active]:shadow-sm text-[15px]">Отчёт {isPremium ? '' : '🔒'}</TabsTrigger>
+            <TabsTrigger value="overview" className="rounded-[12px] data-[state=active]:bg-white data-[state=active]:shadow-sm text-[15px]">{tp('tabs.overview')}</TabsTrigger>
+            <TabsTrigger value="detailed" className="rounded-[12px] data-[state=active]:bg-white data-[state=active]:shadow-sm text-[15px]">{tp('tabs.detailed')}</TabsTrigger>
+            <TabsTrigger value="weekly" className="rounded-[12px] data-[state=active]:bg-white data-[state=active]:shadow-sm text-[15px]">{tp('tabs.weekly')} {isPremium ? '' : '🔒'}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-8 space-y-8">
@@ -105,6 +117,7 @@ export function ProfileDashboard({
               snapshot={snapshot}
               history={history}
               isPremium={isPremium}
+              aiRecommendations={aiRecommendations}
             />
             {!isPremium && <ProfilePremiumBanner locale={locale} />}
           </TabsContent>

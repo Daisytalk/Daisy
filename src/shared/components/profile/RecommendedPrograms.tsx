@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Lock } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface Snapshot {
   ESI: number
@@ -45,6 +46,7 @@ const PROGRAMS = [
 ]
 
 export function RecommendedPrograms({ snapshot, isPremium, locale }: RecommendedProgramsProps) {
+  const t = useTranslations('profile')
   if (!snapshot) return null
 
   const matched = PROGRAMS.filter((p) => p.condition(snapshot)).slice(0, 2)
@@ -54,7 +56,7 @@ export function RecommendedPrograms({ snapshot, isPremium, locale }: Recommended
   return (
     <section>
       <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-4 ml-2">
-        Персональные программы
+        {t('programs.title')}
       </h2>
       <div className="space-y-4">
         {matched.map((prog) => (
@@ -64,7 +66,7 @@ export function RecommendedPrograms({ snapshot, isPremium, locale }: Recommended
           >
             <div className="p-6">
               <span className="text-[12px] font-medium text-[#5ba3c6] bg-[#e0f7fa] px-3 py-1 rounded-full">
-                Специально для тебя
+                {t('programs.badge')}
               </span>
               <h3 className="text-[18px] font-semibold text-[#2d2d2d] mt-4">{prog.title}</h3>
               <ul className="mt-4 text-[15px] text-[#6b6b6b] space-y-2">
@@ -80,12 +82,12 @@ export function RecommendedPrograms({ snapshot, isPremium, locale }: Recommended
                   href={`/${locale}/chat`}
                   className="mt-6 inline-flex items-center justify-center w-full h-12 rounded-full bg-[#5ba3c6] text-white font-medium text-[15px] hover:bg-[#4a8fb3] transition-colors"
                 >
-                  → Начать программу
+                  {t('programs.startProgram')}
                 </Link>
               ) : (
                 <div className="mt-6 inline-flex items-center justify-center w-full h-12 rounded-full bg-[#f5f5f5] text-[#8e8e8e] font-medium text-[15px] cursor-not-allowed">
                   <Lock className="w-4 h-4 mr-2" />
-                  Доступно в Premium
+                  {t('programs.premiumLock')}
                 </div>
               )}
             </div>

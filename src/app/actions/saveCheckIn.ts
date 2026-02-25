@@ -23,6 +23,17 @@ export async function saveCheckIn(answers: CheckInAnswers): Promise<{ ok: boolea
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  const existing = await prisma.stressRating.findFirst({
+    where: {
+      userId,
+      source: 'daily_checkin',
+      date: { gte: today, lt: tomorrow },
+    },
+  })
+  if (existing) return { ok: false, error: 'Check-in already exists for today' }
 
   await prisma.stressRating.create({
     data: {

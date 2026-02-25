@@ -5,6 +5,7 @@ import { getTrend, getTrendLabel } from '@/shared/lib/scoring-helpers'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { useTranslations } from 'next-intl'
 
 interface HistoryRecord {
   id: string
@@ -21,31 +22,31 @@ interface TrendSummaryCardProps {
   locale: string
 }
 
-const METRICS = [
-  { key: 'emotion' as const, label: 'Эмоциональное состояние' },
-  { key: 'stress' as const, label: 'Уровень стресса' },
-  { key: 'energy' as const, label: 'Энергия' },
-  { key: 'support' as const, label: 'Уровень поддержки' },
-]
-
 export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSummaryCardProps) {
+  const t = useTranslations('profile')
+  const METRICS = [
+    { key: 'emotion' as const, label: t('trend.metrics.emotion') },
+    { key: 'stress' as const, label: t('trend.metrics.stress') },
+    { key: 'energy' as const, label: t('trend.metrics.energy') },
+    { key: 'support' as const, label: t('trend.metrics.support') },
+  ]
   const history7d = history.slice(-7)
 
   if (history7d.length === 0) {
     return (
       <section>
       <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-4 ml-2">
-        📈 Моя динамика — За последние 7 дней
+        {t('trend.title')}
       </h2>
       <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-8 text-center">
         <p className="text-[15px] text-[#6b6b6b] mb-6">
-          Пройди первый чек-ин, чтобы увидеть свою динамику 🤍
+          {t('trend.noData')}
         </p>
         <Link
           href={`/${locale}/chat`}
           className="inline-flex items-center gap-2 h-12 px-6 rounded-full bg-[#e0f7fa] text-[#5ba3c6] font-medium hover:bg-[#b2ebf2] transition-colors text-[15px]"
         >
-          → Начать чек-ин
+          {t('trend.startCheckin')}
         </Link>
       </div>
     </section>
@@ -62,7 +63,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
   return (
     <section>
       <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-4 ml-2">
-        📈 Моя динамика — За последние 7 дней
+        {t('trend.title')}
       </h2>
       <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden divide-y divide-[#f0f0f0]">
         {METRICS.map((m) => {
@@ -97,7 +98,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
             onClick={onDetailsClick}
             className="inline-flex items-center text-[15px] text-[#5ba3c6] hover:text-[#4a8fb3] transition-colors"
           >
-            <span className="border-b border-[#5ba3c6]/30 hover:border-[#4a8fb3]">→ Подробнее</span>
+            <span className="border-b border-[#5ba3c6]/30 hover:border-[#4a8fb3]">{t('trend.details')}</span>
           </button>
         </div>
       </div>

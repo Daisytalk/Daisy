@@ -7,6 +7,7 @@ import { ru } from 'date-fns/locale'
 import { getBestAndWorstDay } from '@/shared/lib/scoring-helpers'
 import { Heart, Flame, Zap, Users } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface HistoryRecord {
   id: string
@@ -22,16 +23,16 @@ interface DetailedDynamicsProps {
   locale: string
 }
 
-const METRICS_CONFIG = [
-  { key: 'emotion' as const, label: 'Эмоции', icon: Heart },
-  { key: 'stress' as const, label: 'Стресс', icon: Flame },
-  { key: 'energy' as const, label: 'Энергия', icon: Zap },
-  { key: 'support' as const, label: 'Поддержка', icon: Users },
-]
-
 type Period = '7d' | '14d' | '30d'
 
 export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
+  const t = useTranslations('profile')
+  const METRICS_CONFIG = [
+    { key: 'emotion' as const, label: t('dynamics.metrics.emotion'), icon: Heart },
+    { key: 'stress' as const, label: t('dynamics.metrics.stress'), icon: Flame },
+    { key: 'energy' as const, label: t('dynamics.metrics.energy'), icon: Zap },
+    { key: 'support' as const, label: t('dynamics.metrics.support'), icon: Users },
+  ]
   const [period, setPeriod] = useState<Period>('7d')
   const [insights, setInsights] = useState<{ emotion?: string; stress?: string; energy?: string; support?: string } | null>(null)
   const [loadingInsights, setLoadingInsights] = useState(true)
@@ -84,7 +85,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
         const data = toChartData(filtered, m.key)
         const { best, worst } = getBestAndWorstDay(data)
         const Icon = m.icon
-        const insightText = insights?.[m.key] || 'Анализирую твои данные...'
+        const insightText = insights?.[m.key] || t('dynamics.analyzing')
         
         return (
           <div key={m.key} className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
@@ -127,10 +128,10 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
             </div>
             <div className="bg-[#f7f7f7] rounded-[16px] p-5">
               <p className="text-[14px] text-[#4a4a4a] mb-3">
-                <span className="font-medium">Лучший день:</span> {best} 🌤 <span className="mx-2 text-[#e5e5e5]">|</span> <span className="font-medium">Самый тяжёлый:</span> {worst} 🌧
+                <span className="font-medium">{t('dynamics.bestDay')}</span> {best} 🌤 <span className="mx-2 text-[#e5e5e5]">|</span> <span className="font-medium">{t('dynamics.worstDay')}</span> {worst} 🌧
               </p>
               <p className="text-[14px] text-[#6b6b6b] leading-relaxed">
-                <span className="font-medium text-[#2d2d2d]">Daisy замечает:</span>{' '}
+                <span className="font-medium text-[#2d2d2d]">{t('dynamics.daisyNotices')}</span>{' '}
                 {loadingInsights ? (
                   <span className="inline-block w-4 h-4 border-2 border-[#5ba3c6] border-t-transparent rounded-full animate-spin align-middle ml-1" />
                 ) : (
@@ -147,7 +148,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
           href={`/${locale}/chat`}
           className="inline-flex items-center text-[15px] text-[#5ba3c6] hover:text-[#4a8fb3] transition-colors"
         >
-          <span className="border-b border-[#5ba3c6]/30 hover:border-[#4a8fb3]">→ Поговорить с Daisy об этом</span>
+          <span className="border-b border-[#5ba3c6]/30 hover:border-[#4a8fb3]">{t('dynamics.talkToDaisy')}</span>
         </Link>
       </div>
     </section>

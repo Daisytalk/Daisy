@@ -2,14 +2,8 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import type { CheckInAnswers } from '@/app/actions/saveCheckIn'
-
-const QUESTIONS = [
-  { key: 'emotion' as const, label: 'Эмоциональное состояние', left: 'Очень тяжело', right: 'В ресурсе' },
-  { key: 'stress' as const, label: 'Уровень стресса', left: 'Очень высокий', right: 'Всё спокойно' },
-  { key: 'energy' as const, label: 'Энергия', left: 'Нет сил', right: 'Много сил' },
-  { key: 'support' as const, label: 'Уровень поддержки', left: 'Одна', right: 'Чувствую опору' },
-] as const
 
 const EMOJIS = ['😞', '😕', '😐', '🙂', '😊']
 
@@ -18,9 +12,17 @@ interface CheckInQuestionsProps {
 }
 
 export function CheckInQuestions({ onComplete }: CheckInQuestionsProps) {
+  const t = useTranslations('profile.checkin')
   const [answers, setAnswers] = useState<Partial<CheckInAnswers>>({})
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
+
+  const QUESTIONS = [
+    { key: 'emotion' as const, label: t('questions.emotion'), left: t('scaleLeft.emotion'), right: t('scaleRight.emotion') },
+    { key: 'stress' as const, label: t('questions.stress'), left: t('scaleLeft.stress'), right: t('scaleRight.stress') },
+    { key: 'energy' as const, label: t('questions.energy'), left: t('scaleLeft.energy'), right: t('scaleRight.energy') },
+    { key: 'support' as const, label: t('questions.support'), left: t('scaleLeft.support'), right: t('scaleRight.support') },
+  ] as const
 
   const allSelected = QUESTIONS.every((q) => answers[q.key] != null)
 
@@ -46,7 +48,7 @@ export function CheckInQuestions({ onComplete }: CheckInQuestionsProps) {
         animate={{ opacity: 1, scale: 1 }}
         className="text-center text-green-600 font-medium py-4"
       >
-        ✓ Записала 🌸
+        {t('saved')}
       </motion.p>
     )
   }
@@ -83,7 +85,7 @@ export function CheckInQuestions({ onComplete }: CheckInQuestionsProps) {
         disabled={!allSelected || submitting}
         className="mt-2 w-full py-2.5 rounded-2xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {submitting ? 'Сохранение...' : '→ Готово 🤍'}
+        {submitting ? t('saving') : t('done')}
       </button>
     </div>
   )

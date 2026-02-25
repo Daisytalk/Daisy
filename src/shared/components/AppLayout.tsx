@@ -26,7 +26,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
 import { cn } from '@/shared/lib/utils'
@@ -140,9 +139,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="p-3 mt-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="w-full flex items-center gap-3 p-2 rounded-[20px] bg-[#f7f7f7] hover:bg-[#ebebeb] transition-colors cursor-pointer text-left"
+                <div
+                  className="flex items-center gap-2 p-2 rounded-[20px] bg-[#f7f7f7] hover:bg-[#ebebeb] transition-colors cursor-pointer select-none"
                 >
                   <Avatar className="h-10 w-10 rounded-full overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center">
                     <AvatarImage src="/images/user-icon.png" alt={user?.name || 'User'} className="object-cover" />
@@ -154,17 +152,21 @@ export function AppLayout({ children }: AppLayoutProps) {
                     <p className="text-[15px] font-medium text-[#2d2d2d] truncate">{user?.name || 'User'}</p>
                     <p className="text-[13px] text-[#6b6b6b] truncate">{user?.email}</p>
                   </div>
-                  <ChevronDown className="w-4 h-4 text-[#6b6b6b] shrink-0" />
-                  <div
+                 
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
-                      e.stopPropagation();
-                      window.location.href = `/${locale}/pricing`;
+                      e.stopPropagation()
+                      setSidebarOpen(false)
+                      window.location.href = `/${locale}/pricing`
                     }}
-                    className="shrink-0 px-4 py-1.5 rounded-[14px] bg-[#4a4a4a] text-white text-[13px] font-medium hover:bg-[#3a3a3a] transition-colors ml-1"
+                    className="shrink-0 px-4 py-1.5 rounded-[14px] bg-[#4a4a4a] text-white text-[13px] font-medium hover:bg-[#3a3a3a] transition-colors cursor-pointer"
                   >
                     {t('upgrade')}
-                  </div>
-                </button>
+                  </button>
+                  <ChevronDown className="w-4 h-4 text-[#6b6b6b] shrink-0" />
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" side="top" sideOffset={12} className="w-[260px] rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-2 border-none bg-white">
                   <DropdownMenuItem

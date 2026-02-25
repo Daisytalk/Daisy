@@ -11,11 +11,13 @@ export async function GET(request: NextRequest) {
     if (!decoded) return NextResponse.json({ hasCheckIn: false })
 
     const today = startOfDay(new Date())
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
     const record = await prisma.stressRating.findFirst({
       where: {
         userId: decoded.userId,
         source: 'daily_checkin',
-        date: { gte: today },
+        date: { gte: today, lt: tomorrow },
       },
     })
 
