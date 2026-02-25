@@ -36,49 +36,25 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const historyText = history
-      .map((r) => {
-        const d = format(r.date, 'd MMM', { locale: ru })
-        const parts = []
-        if (r.emotion != null) parts.push(`эмоции: ${r.emotion}/5`)
-        if (r.stress != null) parts.push(`стресс: ${r.stress}/5`)
-        if (r.energy != null) parts.push(`энергия: ${r.energy}/5`)
-        if (r.support != null) parts.push(`поддержка: ${r.support}/5`)
-        return `${d}: ${parts.join(', ')}`
-      })
-      .join('\n')
+    const checkins = history.map((r) => ({
+      date: format(r.date, 'd MMM', { locale: ru }),
+      emotion: r.emotion ?? undefined,
+      stress: r.stress ?? undefined,
+      energy: r.energy ?? undefined,
+      support: r.support ?? undefined,
+    }))
 
-    const prompt = `Ты Daisy — эмпатичный терапевтический ассистент. Проанализируй данные пользователя за ${days} дней и дай по одному короткому инсайту (1-2 предложения) для каждой метрики.
-
-ЧЕК-ИНЫ (1-5, где 5 лучше):
-${historyText}
-
-Ответь СТРОГО в формате JSON:
-{
-  "emotion": "инсайт про эмоции",
-  "stress": "инсайт про стресс",
-  "energy": "инсайт про энергию",
-  "support": "инсайт про поддержку"
-}
-
-Только JSON, без markdown и пояснений.`
-
-    let aiResponse: { emotion?: string; stress?: string; energy?: string; support?: string }
+    let result: { emotion: string; stress: string; energy: string; support: string }
     try {
-      const res = await cbtApi.chat({
-        text: prompt,
+      result = await cbtApi.getDynamicsInsights({
         user_id: decoded.userId,
-        session_id: `dynamics-insights-${period}`,
+        period_days: days,
+        checkins,
+        locale: 'ru',
       })
-      const jsonMatch = res.response.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        aiResponse = JSON.parse(jsonMatch[0]) as typeof aiResponse
-      } else {
-        aiResponse = JSON.parse(res.response)
-      }
     } catch (err) {
       console.error('Dynamics insights AI error:', err)
-      aiResponse = {
+      result = {
         emotion: 'Эмоциональный фон меняется, продолжай наблюдать 🤍',
         stress: 'Обрати внимание на моменты, когда стресс повышается.',
         energy: 'Старайся давать себе отдых, когда энергия падает.',
@@ -86,12 +62,7 @@ ${historyText}
       }
     }
 
-    return NextResponse.json({
-      emotion: aiResponse.emotion || 'Эмоциональный фон меняется, продолжай наблюдать 🤍',
-      stress: aiResponse.stress || 'Обрати внимание на моменты, когда стресс повышается.',
-      energy: aiResponse.energy || 'Старайся давать себе отдых, когда энергия падает.',
-      support: aiResponse.support || 'Ощущение поддержки важно, не забывай о близких.',
-    })
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Dynamics insights error:', error)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

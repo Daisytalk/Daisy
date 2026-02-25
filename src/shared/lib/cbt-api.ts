@@ -206,6 +206,52 @@ export class CBTApiClient {
       return false;
     }
   }
+
+  /** Structured dynamics insights — uses model's native analysis endpoint */
+  async getDynamicsInsights(request: {
+    user_id: string;
+    period_days: number;
+    checkins: Array<{ date: string; emotion?: number; stress?: number; energy?: number; support?: number }>;
+    locale?: string;
+  }): Promise<{ emotion: string; stress: string; energy: string; support: string }> {
+    const payload = {
+      request_type: 'dynamics_insights',
+      user_id: request.user_id,
+      period_days: request.period_days,
+      checkins: request.checkins,
+      locale: request.locale || 'ru',
+    };
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (this.apiKey) headers['x-api-key'] = this.apiKey;
+    const res = await fetch(`${this.apiUrl}/chat`, { method: 'POST', headers, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error(`CBT API error: ${res.status}`);
+    return res.json();
+  }
+
+  /** Structured weekly report — uses model's native analysis endpoint */
+  async getWeeklyReport(request: {
+    user_id: string;
+    period_days: number;
+    checkins: Array<{ date: string; emotion?: number; stress?: number; energy?: number; support?: number }>;
+    profile?: { ESI?: number; BSI?: number; SSI?: number; MRI?: number; riskLevel?: string };
+    memory_topics?: string[];
+    locale?: string;
+  }): Promise<{ summary: string; insights: string[]; recommendations: string[] }> {
+    const payload = {
+      request_type: 'weekly_report',
+      user_id: request.user_id,
+      period_days: request.period_days,
+      checkins: request.checkins,
+      profile: request.profile || {},
+      memory_topics: request.memory_topics || [],
+      locale: request.locale || 'ru',
+    };
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (this.apiKey) headers['x-api-key'] = this.apiKey;
+    const res = await fetch(`${this.apiUrl}/chat`, { method: 'POST', headers, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error(`CBT API error: ${res.status}`);
+    return res.json();
+  }
 }
 
 // Singleton instance

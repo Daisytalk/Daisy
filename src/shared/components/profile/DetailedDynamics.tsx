@@ -34,10 +34,9 @@ type Period = '7d' | '14d' | '30d'
 export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
   const [period, setPeriod] = useState<Period>('7d')
   const [insights, setInsights] = useState<{ emotion?: string; stress?: string; energy?: string; support?: string } | null>(null)
-  const [loadingInsights, setLoadingInsights] = useState(false)
+  const [loadingInsights, setLoadingInsights] = useState(true)
 
   useEffect(() => {
-    setLoadingInsights(true)
     fetch(`/api/account/dynamics-insights?period=${period}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
@@ -46,6 +45,11 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
       .catch(() => setInsights(null))
       .finally(() => setLoadingInsights(false))
   }, [period])
+
+  const handlePeriodChange = (p: Period) => {
+    setPeriod(p)
+    setLoadingInsights(true)
+  }
 
   const filtered = useMemo(() => {
     const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
@@ -66,7 +70,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
         {(['7d', '14d', '30d'] as const).map((p) => (
           <button
             key={p}
-            onClick={() => setPeriod(p)}
+            onClick={() => handlePeriodChange(p)}
             className={`px-5 py-2.5 rounded-[12px] text-[15px] font-medium transition-all ${
               period === p ? 'bg-white text-[#2d2d2d] shadow-sm' : 'text-[#6b6b6b] hover:text-[#2d2d2d]'
             }`}

@@ -9,8 +9,7 @@ type Period = '7d' | '14d' | '30d'
 
 /**
  * GET /api/account/weekly-report?period=7d|14d|30d
- * Generates AI analysis for the given period. Uses CBT API to produce
- * summary, insights, and recommendations.
+ * Generates AI analysis for the given period. Uses CBT API native weekly_report endpoint.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -45,60 +44,37 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
-    const historyText = history
-      .map((r) => {
-        const d = format(r.date, 'd MMM', { locale: ru })
-        const parts = []
-        if (r.emotion != null) parts.push(`эмоции: ${r.emotion}/5`)
-        if (r.stress != null) parts.push(`стресс: ${r.stress}/5`)
-        if (r.energy != null) parts.push(`энергия: ${r.energy}/5`)
-        if (r.support != null) parts.push(`поддержка: ${r.support}/5`)
-        return `${d}: ${parts.join(', ')}`
-      })
-      .join('\n')
-
-    const topics = [...new Set(memoryItems.map((m) => m.topic))].slice(0, 10).join(', ')
-
-    const prompt = `Ты Daisy — эмпатичный терапевтический ассистент. Проанализируй данные пользователя и дай краткий отчёт.
-
-ПЕРИОД: последние ${days} дней
-
-ПРОФИЛЬ (если есть): ESI=${snapshot?.ESI ?? '—'}, BSI=${snapshot?.BSI ?? '—'}, SSI=${snapshot?.SSI ?? '—'}, MRI=${snapshot?.MRI ?? '—'}, риск=${snapshot?.riskLevel ?? '—'}
-
-ЧЕК-ИНЫ (1-5, где 5 лучше):
-${historyText || 'Нет данных за период'}
-
-ТЕМЫ РАЗГОВОРОВ: ${topics || 'Нет данных'}
-
-Ответь СТРОГО в формате JSON:
-{
-  "summary": "Один абзац общий вывод о периоде (2-3 предложения)",
-  "insights": ["инсайт 1", "инсайт 2", "инсайт 3"],
-  "recommendations": ["рекомендация 1", "рекомендация 2", "рекомендация 3"]
-}
-
-Только JSON, без markdown и пояснений.`
-
-    let aiResponse: { summary?: string; insights?: string[]; recommendations?: string[] }
-    try {
-      const res = await cbtApi.chat({
-        text: prompt,
-        user_id: decoded.userId,
-        session_id: `weekly-report-${period}`,
-      })
-      const jsonMatch = res.response.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        aiResponse = JSON.parse(jsonMatch[0]) as typeof aiResponse
-      } else {
-        aiResponse = {
-          summary: res.response.slice(0, 300),
-          insights: [],
-          recommendations: [],
+    const checkins = history.map((r) => ({
+      date: format(r.date, 'd MMM', { locale: ru }),
+      emotion: r.emotion ?? undefined,
+      stress: r.stress ?? undefined,
+      energy: r.energy ?? undefined,
+      support: r.support ?? undefined,
+    }))
+    const memoryTopics = [...new Set(memoryItems.map((m) => m.topic))].slice(0, 10)
+    const profile = snapshot
+      ? {
+          ESI: snapshot.ESI ?? undefined,
+          BSI: snapshot.BSI ?? undefined,
+          SSI: snapshot.SSI ?? undefined,
+          MRI: snapshot.MRI ?? undefined,
+          riskLevel: snapshot.riskLevel ?? undefined,
         }
-      }
+      : undefined
+
+    let result: { summary: string; insights: string[]; recommendations: string[] }
+    try {
+      result = await cbtApi.getWeeklyReport({
+        user_id: decoded.userId,
+        period_days: days,
+        checkins,
+        profile,
+        memory_topics: memoryTopics,
+        locale: 'ru',
+      })
     } catch (err) {
       console.error('Weekly report AI error:', err)
-      aiResponse = {
+      result = {
         summary: history.length
           ? 'За этот период есть данные чек-инов. Продолжай отслеживать своё состояние 🤍'
           : 'Пройди чек-ин, чтобы получить персональный анализ.',
@@ -113,10 +89,10 @@ ${historyText || 'Нет данных за период'}
 
     return NextResponse.json({
       period,
-      summary: aiResponse.summary ?? '',
-      insights: aiResponse.insights ?? [],
-      recommendations: aiResponse.recommendations ?? [],
-      topics: topics ? topics.split(', ') : [],
+      summary: result.summary,
+      insights: result.insights,
+      recommendations: result.recommendations,
+      topics: memoryTopics,
     })
   } catch (error) {
     console.error('Weekly report error:', error)
