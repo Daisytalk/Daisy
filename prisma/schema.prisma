@@ -210,13 +210,19 @@ model PremiumOfferLog {
 model StressRating {
   id        String   @id @default(cuid())
   userId    String
-  rating    Int      // 1-5
+  rating    Int?     // 1-5 (post_session)
   source    String?  // post_session | daily_checkin
+  date      DateTime @default(now()) // calendar date for daily check-in
+  emotion   Int?     // 1-5 (daily_checkin)
+  stress    Int?     // 1-5 (daily_checkin)
+  energy    Int?     // 1-5 (daily_checkin)
+  support   Int?     // 1-5 (daily_checkin)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, createdAt])
+  @@index([userId, date])
   @@map("stress_ratings")
 }
 

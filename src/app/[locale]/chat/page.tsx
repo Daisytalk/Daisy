@@ -15,6 +15,7 @@ import { Textarea } from '@/shared/ui/textarea'
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar'
 import { TypewriterText } from '@/shared/ui/typewriter-text'
 import { PremiumBanner } from '@/shared/components/PremiumBanner'
+import { FloatingDaisy } from '@/shared/components/chat/FloatingDaisy'
 
 interface Message {
   id: string
@@ -491,6 +492,7 @@ function ChatPageContent() {
             </p>
           </form>
         </div>
+        {user?.name && <FloatingDaisy userName={user.name} />}
       </div>
     </AppLayout>
   )

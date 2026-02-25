@@ -11,19 +11,38 @@ export async function POST(request: NextRequest) {
     const decoded = AuthService.verifyToken(token)
     if (!decoded) return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
 
-    const { rating, source } = await request.json()
-    if (typeof rating !== 'number' || rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'rating must be 1-5' }, { status: 400 })
+    const { rating, source, emotion, stress, energy, support } = await request.json()
+    const isDailyCheckin = source === 'daily_checkin'
+    if (isDailyCheckin) {
+      const vals = [emotion, stress, energy, support]
+      if (vals.some((v) => typeof v !== 'number' || v < 1 || v > 5)) {
+        return NextResponse.json({ error: 'emotion, stress, energy, support must be 1-5' }, { status: 400 })
+      }
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      await prisma.stressRating.create({
+        data: {
+          userId: decoded.userId,
+          source: 'daily_checkin',
+          date: today,
+          emotion,
+          stress,
+          energy,
+          support,
+        },
+      })
+    } else {
+      if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+        return NextResponse.json({ error: 'rating must be 1-5' }, { status: 400 })
+      }
+      await prisma.stressRating.create({
+        data: { userId: decoded.userId, rating, source: source ?? 'post_session' },
+      })
+      await prisma.user.update({
+        where: { id: decoded.userId },
+        data: { currentStressRating: rating },
+      })
     }
-
-    await prisma.stressRating.create({
-      data: { userId: decoded.userId, rating, source: source ?? 'post_session' },
-    })
-
-    await prisma.user.update({
-      where: { id: decoded.userId },
-      data: { currentStressRating: rating },
-    })
 
     return NextResponse.json({ ok: true })
   } catch (error) {

@@ -3,17 +3,13 @@ import { z } from 'zod'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
-
-const VALID_STYLES = [
-  'warm_friend', 'practical_helper', 'soft_explorer',
-  'calm_mentor', 'wise_teacher', 'flexible',
-] as const
+import { COMMUNICATION_STYLE_IDS } from '@/shared/constants/communication-styles'
 
 const StylesSchema = z.object({
   styles: z
-    .array(z.enum(VALID_STYLES))
+    .array(z.enum(COMMUNICATION_STYLE_IDS))
     .min(1, 'Выберите хотя бы один стиль')
-    .max(3, 'Максимум 3 стиля'),
+    .max(2, 'Максимум 2 стиля'),
 })
 
 function getToken(request: NextRequest): string | null {

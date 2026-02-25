@@ -11,11 +11,24 @@ import {
   LogOut,
   Menu,
   X,
-  Plus
+  Plus,
+  User,
+  Settings,
+  CreditCard,
+  ChevronDown,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/shared/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu'
 import { cn } from '@/shared/lib/utils'
 interface AppLayoutProps {
   children: ReactNode
@@ -29,6 +42,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const locale = useLocale()
   const { user, logout } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const navigation = [
     { name: t('chat'), href: `/${locale}/chat`, icon: MessageSquare },
@@ -62,29 +76,40 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-[280px] bg-white border-r border-[hsl(var(--app-border))] transform transition-transform duration-200 ease-out lg:translate-x-0 lg:static lg:z-0',
-          sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'
+          'fixed inset-y-0 left-0 z-50 bg-white border-r border-[hsl(var(--app-border))] transform transition-all duration-300 ease-in-out flex flex-col',
+          sidebarOpen ? 'translate-x-0 shadow-xl w-[280px]' : '-translate-x-full w-[280px]',
+          'lg:translate-x-0 lg:static lg:z-0',
+          isCollapsed ? 'lg:w-0 lg:opacity-0 lg:overflow-hidden lg:border-none' : 'lg:w-[280px] lg:opacity-100'
         )}
       >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 lg:px-5 border-b border-[hsl(var(--app-border))]">
+        <div className="flex flex-col h-full w-[280px]">
+          <div className="flex items-center justify-between p-4 lg:px-5 border-b border-transparent">
             <Link href={`/${locale}`} className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm flex items-center justify-center bg-white">
-                <Image src="/images/daisy-icon.svg" alt="Daisy" width={48} height={48} className="object-contain" />
+              <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-white">
+                <Image src="/images/daisy-icon.svg" alt="Daisy" width={40} height={40} className="object-contain" />
               </div>
               <div>
                 <span className="font-semibold text-foreground text-lg tracking-tight">Daisy</span>
-                <p className="text-xs text-muted-foreground">{t('companionSubtitle')}</p>
               </div>
             </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden rounded-xl text-muted-foreground"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden lg:flex rounded-xl text-muted-foreground hover:bg-muted/60"
+                onClick={() => setIsCollapsed(true)}
+              >
+                <PanelLeftClose className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden rounded-xl text-muted-foreground"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
 
           <nav className="flex-1 p-3 space-y-1">
@@ -112,37 +137,100 @@ export function AppLayout({ children }: AppLayoutProps) {
             ))}
           </nav>
 
-          <div className="p-3 border-t border-[hsl(var(--app-border))]">
-            <Link
-              href={`/${locale}/profile`}
-              onClick={() => setSidebarOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 mb-2 hover:bg-muted/60 transition-colors cursor-pointer"
-            >
-              <Avatar className="h-10 w-10 rounded-full overflow-hidden shrink-0">
-                <AvatarImage src="/images/user-icon.png" alt={user?.name || 'User'} className="object-cover" />
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium rounded-full">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{user?.name || 'User'}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-              </div>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full h-10 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 justify-start gap-2"
+          <div className="p-3 mt-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-3 p-2 rounded-[20px] bg-[#f7f7f7] hover:bg-[#ebebeb] transition-colors cursor-pointer text-left"
+                >
+                  <Avatar className="h-10 w-10 rounded-full overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center">
+                    <AvatarImage src="/images/user-icon.png" alt={user?.name || 'User'} className="object-cover" />
+                    <AvatarFallback className="bg-white text-pink-500 text-sm font-medium rounded-full">
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-medium text-[#2d2d2d] truncate">{user?.name || 'User'}</p>
+                    <p className="text-[13px] text-[#6b6b6b] truncate">{user?.email}</p>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-[#6b6b6b] shrink-0" />
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = `/${locale}/pricing`;
+                    }}
+                    className="shrink-0 px-4 py-1.5 rounded-[14px] bg-[#4a4a4a] text-white text-[13px] font-medium hover:bg-[#3a3a3a] transition-colors ml-1"
+                  >
+                    {t('upgrade')}
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" side="top" sideOffset={12} className="w-[260px] rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-2 border-none bg-white">
+                  <DropdownMenuItem
+                  className={cn(
+                    "h-11 rounded-[12px] cursor-pointer mb-1 px-3",
+                    pathname.startsWith(`/${locale}/profile`)
+                      ? "text-[#4a8fb3] bg-[#edf6fa] focus:bg-[#e0f0f7] focus:text-[#4a8fb3]"
+                      : "text-[#4a4a4a] hover:bg-[#f5f5f5] focus:bg-[#f5f5f5]"
+                  )}
+                  onClick={() => { router.push(`/${locale}/profile`); setSidebarOpen(false) }}
+                >
+                  <User className="w-5 h-5 mr-3 shrink-0" />
+                  <span className="font-medium text-[15px]">{t('profile')}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className={cn(
+                    "h-11 rounded-[12px] cursor-pointer mb-1 px-3",
+                    pathname.startsWith(`/${locale}/settings`)
+                      ? "text-[#4a8fb3] bg-[#edf6fa] focus:bg-[#e0f0f7] focus:text-[#4a8fb3]"
+                      : "text-[#4a4a4a] hover:bg-[#f5f5f5] focus:bg-[#f5f5f5]"
+                  )}
+                  onClick={() => { router.push(`/${locale}/settings`); setSidebarOpen(false) }}
+                >
+                  <Settings className="w-5 h-5 mr-3 shrink-0" />
+                  <span className="font-medium text-[15px]">{t('settings')}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className={cn(
+                    "h-11 rounded-[12px] cursor-pointer px-3",
+                    pathname.startsWith(`/${locale}/pricing`)
+                      ? "text-[#4a8fb3] bg-[#edf6fa] focus:bg-[#e0f0f7] focus:text-[#4a8fb3]"
+                      : "text-[#4a4a4a] hover:bg-[#f5f5f5] focus:bg-[#f5f5f5]"
+                  )}
+                  onClick={() => {
+                    setSidebarOpen(false)
+                    window.location.href = `/${locale}/pricing`
+                  }}
+                >
+                  <CreditCard className="w-5 h-5 mr-3 shrink-0" />
+                  <span className="font-medium text-[15px]">{t('upgradePlan')}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <button
               onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#e57373] hover:text-red-400 transition-colors mt-2"
             >
-              <LogOut className="w-4 h-4 shrink-0" />
-              <span className="font-medium">{t('logout')}</span>
-            </Button>
+              <LogOut className="w-4 h-4" />
+              {t('logout')}
+            </button>
           </div>
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative">
+        {isCollapsed && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden lg:flex absolute top-4 left-4 z-40 rounded-xl text-muted-foreground hover:bg-muted/60"
+            onClick={() => setIsCollapsed(false)}
+          >
+            <PanelLeftOpen className="w-5 h-5" />
+          </Button>
+        )}
         <header className="lg:hidden bg-white border-b border-[hsl(var(--app-border))] px-4 py-3 flex items-center justify-between shrink-0">
           <Button
             variant="ghost"
@@ -173,7 +261,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <h3 className="text-xl font-semibold text-foreground mb-2">{t('trialExpiredTitle')}</h3>
             <p className="text-muted-foreground text-sm mb-6">{t('trialExpiredDesc')}</p>
             <Button asChild className="w-full rounded-xl">
-              <Link href={`/${locale}#pricing`}>{t('trialExpiredCta')}</Link>
+              <Link href={`/${locale}/pricing`}>{t('trialExpiredCta')}</Link>
             </Button>
           </div>
         </div>
