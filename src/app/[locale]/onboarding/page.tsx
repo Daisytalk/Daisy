@@ -65,12 +65,12 @@ function StepContent({
   step: OnboardingStep
   answers: Record<string, OnboardingAnswerValue>
   onChange: (id: string, value: OnboardingAnswerValue) => void
-  onNext: () => void
+  onNext: (force?: boolean) => void
   autoAdvance: boolean
 }) {
   const handleScale = (value: number) => {
     onChange(step.questionId!, value)
-    if (autoAdvance) setTimeout(onNext, 300)
+    if (autoAdvance) setTimeout(() => onNext(true), 300)
   }
 
   const handleMultiselect = (opt: string) => {
@@ -88,19 +88,19 @@ function StepContent({
   const handleRelationship = (value: 'yes' | 'no' | 'unsure') => {
     onChange(step.questionId!, { value, rel_quality: value === 'yes' ? undefined : undefined, other: value === 'unsure' ? '' : undefined })
     // Автопереход только для "нет". "Да" → выбор rel_quality (авто при выборе). "Затрудняюсь" → открытый текст, кнопка Далее
-    if (autoAdvance && value === 'no') setTimeout(onNext, 300)
+    if (autoAdvance && value === 'no') setTimeout(() => onNext(true), 300)
   }
 
   const handleRelQuality = (rating: number) => {
     const current = answers[step.questionId!] as { value: string; rel_quality?: number; other?: string } | null
     onChange(step.questionId!, { ...current, value: 'yes', rel_quality: rating })
-    if (autoAdvance) setTimeout(onNext, 300)
+    if (autoAdvance) setTimeout(() => onNext(true), 300)
   }
 
   const handleYesNoText = (value: 'yes' | 'no') => {
     const current = answers[step.questionId!] as { value?: string; text?: string } | null
     onChange(step.questionId!, { ...current, value, text: value === 'yes' ? (current?.text ?? '') : undefined })
-    if (autoAdvance && value === 'no') setTimeout(onNext, 300)
+    if (autoAdvance && value === 'no') setTimeout(() => onNext(true), 300)
   }
 
   if (step.type === 'welcome' || step.type === 'transition') {
@@ -342,8 +342,8 @@ function OnboardingPageContent() {
     setError(null)
   }
 
-  const nextStep = () => {
-    if (currentStep?.type === 'question' && currentStep.required) {
+  const nextStep = (force?: boolean) => {
+    if (!force && currentStep?.type === 'question' && currentStep.required) {
       const val = answers[currentStep.questionId!]
       if (currentStep.questionType === 'scale' && (val == null || (typeof val === 'number' && (val < 1 || val > 5)))) return
       if (currentStep.questionType === 'multiselect' && (!Array.isArray(val) || val.length === 0)) return
