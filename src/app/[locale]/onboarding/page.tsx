@@ -586,7 +586,7 @@ function OnboardingPageContent() {
               {stepIndex + 1} / {steps.length}
             </span>
             {isWelcome || isTransition ? (
-              <Button type="button" className="rounded-2xl" onClick={nextStep}>
+              <Button type="button" className="rounded-2xl" onClick={() => nextStep()}>
                 {currentStep?.buttonLabel ?? 'Далее'}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -598,7 +598,7 @@ function OnboardingPageContent() {
             ) : isSingleChoiceStep ? (
               <div className="w-24" aria-hidden />
             ) : (
-              <Button type="button" className="rounded-2xl" onClick={nextStep}>
+              <Button type="button" className="rounded-2xl" onClick={() => nextStep()}>
                 {t('next')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
