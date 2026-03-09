@@ -4,6 +4,7 @@
  */
 
 import prisma from '@/shared/lib/database'
+import { getDecryptedContent } from '@/shared/lib/cbt-message-content'
 
 const MEMORY_RECENCY_DAYS = 180
 const MEMORY_MIN_CONFIDENCE = 0.55
@@ -42,7 +43,7 @@ export async function writeMemoryIfEligible(input: MemoryWriteInput): Promise<bo
   if (!summary || summary.trim().length < 10) return false
   if (summary.length > 500) return false
 
-  const importantTopics: MemoryTopic[] = ['relationship', 'anxiety', 'sleep', 'loneliness', 'burnout']
+  const importantTopics: MemoryTopic[] = ['relationship', 'anxiety', 'sleep', 'loneliness', 'burnout', 'work']
   const shouldWrite =
     intensity >= 2 && importantTopics.includes(topic) ||
     input.isPinned === true ||
@@ -172,6 +173,99 @@ export async function syncUserPreferences(
       updatedAt: new Date(),
     },
   })
+}
+
+/**
+ * Обрабатывает memory_update от модели и пишет в memory_items по write policy.
+ * Классификация topic по ключевым словам.
+ */
+export async function processMemoryUpdateToEpisodic(
+  userId: string,
+  facts: string[]
+): Promise<void> {
+  const TOPIC_KEYWORDS: Record<MemoryTopic, string[]> = {
+    work: ['работа', 'начальник', 'коллеги', 'босс', 'увольнение', 'карьера', 'work', 'boss', 'job'],
+    relationship: ['партнёр', 'отношения', 'конфликт', 'ссора', 'расставание', 'развод', 'близкий', 'relationship', 'partner', 'conflict'],
+    anxiety: ['тревога', 'паника', 'страх', 'anxiety', 'panic', 'fear'],
+    sleep: ['сон', 'усталость', 'бессонниц', 'выспаться', 'sleep', 'tired', 'insomnia'],
+    'self-worth': ['самооцен', 'самокритик', 'self-worth', 'esteem'],
+    planning: ['план', 'цель', 'plan', 'goal'],
+    loneliness: ['одиночество', 'одинок', 'lonely', 'loneliness'],
+    burnout: ['выгорание', 'burnout', 'истощение'],
+    other: [],
+  }
+
+  for (const fact of facts) {
+    if (!fact || fact.trim().length < 10 || fact.length > 500) continue
+
+    const lower = fact.toLowerCase()
+    let topic: MemoryTopic = 'other'
+    for (const [t, keywords] of Object.entries(TOPIC_KEYWORDS)) {
+      if (t === 'other') continue
+      if (keywords.some((kw) => lower.includes(kw))) {
+        topic = t as MemoryTopic
+        break
+      }
+    }
+
+    const importantTopics: MemoryTopic[] = ['relationship', 'anxiety', 'sleep', 'loneliness', 'burnout', 'work']
+    const intensity = importantTopics.includes(topic) ? 2 : 1
+
+    await writeMemoryIfEligible({
+      userId,
+      type: 'event',
+      topic,
+      summary: fact.trim().slice(0, 500),
+      intensity,
+      confidence: 0.8,
+      ttlDays: topic === 'work' || topic === 'relationship' ? 180 : 90,
+    })
+  }
+}
+
+/**
+ * Подсчёт сообщений пользователя по темам за последние 7 дней.
+ * Для premium-триггеров P2 (отношения), P3 (сон/усталость).
+ */
+export async function getTopicCounts7d(userId: string): Promise<{
+  relationshipTopicCount7d: number
+  sleepTopicCount7d: number
+}> {
+  const since = new Date()
+  since.setDate(since.getDate() - 7)
+
+  const userMessages = await prisma.cbtMessage.findMany({
+    where: {
+      role: 'user',
+      conversation: { userId },
+      createdAt: { gte: since },
+    },
+    select: { content: true },
+  })
+
+  const RELATIONSHIP_KEYWORDS = [
+    'партнёр', 'партнер', 'отношения', 'конфликт', 'ссора', 'расставание', 'развод',
+    'близкий', 'любовь', 'семья', 'муж', 'жена', 'boyfriend', 'girlfriend', 'relationship',
+  ]
+  const SLEEP_KEYWORDS = [
+    'сон', 'усталость', 'устал', 'бессонниц', 'уснуть', 'выспаться', 'энергия',
+    'выгорание', 'sleep', 'tired', 'insomnia', 'устала',
+  ]
+
+  let relationshipTopicCount7d = 0
+  let sleepTopicCount7d = 0
+
+  for (const msg of userMessages) {
+    try {
+      const text = getDecryptedContent(msg.content).toLowerCase()
+      if (RELATIONSHIP_KEYWORDS.some((kw) => text.includes(kw))) relationshipTopicCount7d++
+      if (SLEEP_KEYWORDS.some((kw) => text.includes(kw))) sleepTopicCount7d++
+    } catch {
+      // skip decryption errors
+    }
+  }
+
+  return { relationshipTopicCount7d, sleepTopicCount7d }
 }
 
 /**

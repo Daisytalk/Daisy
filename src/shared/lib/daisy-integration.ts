@@ -7,7 +7,7 @@
 import type { Prisma } from '@prisma/client'
 import prisma from '@/shared/lib/database'
 import type { AIApiResponse } from '@/shared/lib/ai-api'
-import { getMemoryBundle, getPrefetchPack } from '@/shared/lib/memory'
+import { getMemoryBundle, getPrefetchPack, updateConversationState, processMemoryUpdateToEpisodic } from '@/shared/lib/memory'
 import { prepareContentForStorage, getDecryptedContent } from '@/shared/lib/cbt-message-content'
 
 const HISTORY_LIMIT = 30
@@ -175,11 +175,13 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
 
 /**
  * После ответа Daisy: сохраняем ai_profile, memory_update, новый CbtMessage; логируем debug_context.
+ * Обновляем conversation_state (lastSessionSummary) и пишем в memory_items по write policy.
  */
 export async function handleDaisyResponse(
   userId: string,
   conversationId: string,
-  aiResponse: AIApiResponse
+  aiResponse: AIApiResponse,
+  userMessage?: string
 ): Promise<void> {
   if (aiResponse.debug_context) {
     console.log('📋 Daisy debug_context:', JSON.stringify(aiResponse.debug_context, null, 2))
@@ -227,5 +229,17 @@ export async function handleDaisyResponse(
       data: { conversationMemory: merged as Prisma.InputJsonValue },
     })
     console.log('💾 Appended memory_update for user:', userId, 'count:', aiResponse.memory_update.length)
+
+    // Пишем в memory_items по write policy (эпизодическая память)
+    await processMemoryUpdateToEpisodic(userId, aiResponse.memory_update)
   }
+
+  // Обновляем conversation_state: lastSessionSummary для prefetch pack
+  const lastSessionSummary =
+    aiResponse.memory_update?.length
+      ? aiResponse.memory_update.join('. ')
+      : userMessage && aiResponse.response
+        ? `${userMessage.slice(0, 150)}${userMessage.length > 150 ? '…' : ''} → ${aiResponse.response.slice(0, 150)}${aiResponse.response.length > 150 ? '…' : ''}`
+        : 'Сессия завершена'
+  await updateConversationState(userId, lastSessionSummary.slice(0, 500))
 }

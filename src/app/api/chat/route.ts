@@ -64,7 +64,7 @@ async function processAsyncChat(
       hasResponse: !!aiResponse.response,
     })
 
-    await handleDaisyResponse(userId, conversationId, aiResponse)
+    await handleDaisyResponse(userId, conversationId, aiResponse, userMessage)
     console.log('✅ Successfully saved assistant response for conversation:', conversationId)
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error))

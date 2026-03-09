@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { checkPremiumTrigger } from '@/shared/lib/premium-triggers'
+import { getTopicCounts7d } from '@/shared/lib/memory'
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,12 +32,14 @@ export async function GET(request: NextRequest) {
       const res = onboarding.responses as Record<string, unknown> | { questionId: string; answer: unknown }[]
       const rel = Array.isArray(res)
         ? (res as { questionId: string; answer: unknown }[]).find((r) => r.questionId === 'relationships')?.answer
-        : res.relationships
+        : (res as Record<string, unknown>).relationships
       if (rel && typeof rel === 'object' && !Array.isArray(rel)) {
         const r = rel as Record<string, unknown>
         if (r.value === 'yes' && typeof r.rel_quality === 'number') relQuality = r.rel_quality
       }
     }
+
+    const topicCounts = await getTopicCounts7d(decoded.userId)
 
     const offer = await checkPremiumTrigger(
       decoded.userId,
@@ -50,6 +53,8 @@ export async function GET(request: NextRequest) {
       },
       {
         relQuality,
+        relationshipTopicCount7d: topicCounts.relationshipTopicCount7d,
+        sleepTopicCount7d: topicCounts.sleepTopicCount7d,
         sessionCount: convCount,
         lastActiveAt: lastConv?.updatedAt,
       }
