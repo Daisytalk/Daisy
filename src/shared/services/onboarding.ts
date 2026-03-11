@@ -35,8 +35,9 @@ export class OnboardingApiService implements IOnboardingService {
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || 'Failed to submit onboarding answers')
+      const error = await response.json().catch(() => ({}))
+      const msg = error.detail || error.message || `HTTP ${response.status}`
+      throw new Error(msg)
     }
   }
 

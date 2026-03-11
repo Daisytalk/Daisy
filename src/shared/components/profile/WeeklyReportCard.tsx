@@ -31,25 +31,23 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = 'r
   const t = useTranslations('profile')
   const [period, setPeriod] = useState<Period>('7d')
   const [aiReport, setAiReport] = useState<{ summary: string; recommendations: string[] } | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [fetchLoading, setFetchLoading] = useState(true)
+  const loading = isPremium ? fetchLoading : false
 
   const handlePeriodChange = (p: Period) => {
     setPeriod(p)
-    setLoading(true)
+    setFetchLoading(true)
   }
 
   useEffect(() => {
-    if (!isPremium) {
-      setLoading(false)
-      return
-    }
+    if (!isPremium) return
     fetch(`/api/account/weekly-report?period=${period}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
         if (d.summary) setAiReport({ summary: d.summary, recommendations: d.recommendations ?? [] })
       })
       .catch(() => setAiReport(null))
-      .finally(() => setLoading(false))
+      .finally(() => setFetchLoading(false))
   }, [period, isPremium])
   const daysForPeriod = period === '7d' ? 7 : period === '14d' ? 14 : 30
   const weekData = useMemo(() => {

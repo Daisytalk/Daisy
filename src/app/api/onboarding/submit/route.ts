@@ -15,6 +15,7 @@ const OnboardingSchema = z.object({
       z.boolean(),
       z.string().max(500),
       z.array(z.string().max(100)).max(10),
+      z.record(z.string(), z.unknown()), // relationship, yes-no-text: { value, rel_quality?, text?, other? }
     ])
   ).refine(obj => Object.keys(obj).length <= 30, 'Слишком много ответов'),
 })
@@ -47,15 +48,28 @@ export async function POST(request: NextRequest) {
 
     const parsed = OnboardingSchema.safeParse(bodyToValidate)
     if (!parsed.success) {
-      return NextResponse.json({ message: apiMessages.answersArrayRequired }, { status: 400 })
+      const zodError = parsed.error.flatten()
+      console.error('Onboarding validation failed:', zodError)
+      return NextResponse.json(
+        { message: apiMessages.answersArrayRequired, detail: zodError.fieldErrors },
+        { status: 400 }
+      )
     }
 
     const answers = rawBody?.answers as OnboardingAnswer[]
 
     await prisma.$transaction(async (tx) => {
-      await tx.onboardingData.update({
+      await tx.onboardingData.upsert({
         where: { userId: decoded.userId },
-        data: { responses: answers, completed: true },
+        create: {
+          userId: decoded.userId,
+          responses: answers as object,
+          completed: true,
+        },
+        update: {
+          responses: answers as object,
+          completed: true,
+        },
       })
 
       const profile = computePsychProfile(answers)
@@ -82,10 +96,15 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: apiMessages.onboardingCompletedSuccess })
   } catch (error) {
-    console.error('Submit onboarding error:', error)
-    return NextResponse.json(
-      { message: apiMessages.internalServerError },
-      { status: 500 }
-    )
+    const err = error instanceof Error ? error : new Error(String(error))
+    console.error('Submit onboarding error:', {
+      message: err.message,
+      name: err.name,
+      stack: err.stack,
+      cause: err.cause,
+    })
+    const body: { message: string; detail?: string } = { message: apiMessages.internalServerError }
+    if (process.env.NODE_ENV === 'development') body.detail = err.message
+    return NextResponse.json(body, { status: 500 })
   }
 }

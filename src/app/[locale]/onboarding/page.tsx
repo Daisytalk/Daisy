@@ -407,8 +407,9 @@ function OnboardingPageContent() {
         router.push(`/${locale}/register`)
       }
     } catch (err) {
-      console.error('Onboarding submission error:', err)
-      setError('Не удалось отправить. Попробуйте снова.')
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('Onboarding submission error:', { error: err, message: msg })
+      setError(`Не удалось отправить. Попробуйте снова.${msg ? ` (${msg})` : ''}`)
     } finally {
       setIsSubmitting(false)
     }
