@@ -1,5 +1,5 @@
 import { OnboardingApiService } from './onboarding'
-import type { OnboardingData, User } from '@/shared/types/auth'
+import type { OnboardingData, OnboardingAnswer, OnboardingAnswerValue, User } from '@/shared/types/auth'
 import { CBT_KNOWLEDGE_BASE } from './cbt-knowledge-base'
 
 export type Persona =
@@ -52,6 +52,24 @@ ${firstContactProtocol}
     return CBT_KNOWLEDGE_BASE.personas[persona] || "You are a general-purpose helpful assistant.";
   }
 
+  private parseResponsesToAnswers(responses: unknown): OnboardingAnswer[] {
+    if (!responses) return []
+    if (Array.isArray(responses)) {
+      return responses as OnboardingAnswer[]
+    }
+    if (typeof responses === 'object' && !Array.isArray(responses)) {
+      const obj = responses as Record<string, unknown>
+      if (Array.isArray(obj.answers)) {
+        return obj.answers as OnboardingAnswer[]
+      }
+      return Object.entries(obj).map(([questionId, answer]) => ({
+        questionId,
+        answer: answer as OnboardingAnswerValue
+      }))
+    }
+    return []
+  }
+
   public async getUserContext(userId: string): Promise<string> {
     try {
       // Server-side: fetch directly from database instead of using API service
@@ -66,9 +84,10 @@ ${firstContactProtocol}
         }
         
         // Convert Prisma responses (JSON) to OnboardingData format
+        const answers = this.parseResponsesToAnswers(onboardingData.responses)
         const formattedData: OnboardingData = {
           userId: onboardingData.userId,
-          answers: (onboardingData.responses as any)?.answers || [],
+          answers,
           completedAt: onboardingData.updatedAt
         }
         

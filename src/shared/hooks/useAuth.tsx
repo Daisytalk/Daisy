@@ -26,17 +26,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const authService = new AuthApiService()
 
   useEffect(() => {
-    checkAuthStatus()
+    let cancelled = false
+    authService.getCurrentUser()
+      .then((user) => {
+        if (!cancelled) setState(prev => ({ ...prev, user, isLoading: false }))
+      })
+      .catch(() => {
+        if (!cancelled) setState(prev => ({ ...prev, user: null, isLoading: false }))
+      })
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, [])
-
-  const checkAuthStatus = async () => {
-    try {
-      const user = await authService.getCurrentUser()
-      setState(prev => ({ ...prev, user, isLoading: false }))
-    } catch (err) {
-      setState(prev => ({ ...prev, user: null, isLoading: false }))
-    }
-  }
 
   const login = async (credentials: LoginCredentials) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authService.logout()
       setState({ user: null, isLoading: false, error: null })
-    } catch (err) {
+    } catch {
       setState(prev => ({ ...prev, isLoading: false }))
     }
   }
