@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, ReactNode } from 'react'
+import { useSyncExternalStore, ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
 
 interface ClientOnlyProps {
@@ -8,12 +8,14 @@ interface ClientOnlyProps {
   fallback?: ReactNode
 }
 
-export function ClientOnly({ children, fallback }: ClientOnlyProps) {
-  const [isClient, setIsClient] = useState(false)
+const emptySubscribe = () => () => {}
 
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
+export function ClientOnly({ children, fallback }: ClientOnlyProps) {
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
 
   if (!isClient) {
     return fallback || (

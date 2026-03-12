@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import prisma from '@/shared/lib/database'
 import type { OnboardingData, CreateOnboardingData, UpdateOnboardingData } from './model'
 
@@ -13,12 +14,12 @@ export class OnboardingRepository implements IOnboardingRepository {
     const result = await prisma.onboardingData.create({
       data: {
         ...data,
-        responses: data.responses as any,
+        responses: data.responses as Prisma.InputJsonValue,
       },
     })
     return {
       ...result,
-      responses: result.responses as Record<string, any> | null,
+      responses: result.responses as Record<string, unknown> | null,
     }
   }
 
@@ -29,7 +30,7 @@ export class OnboardingRepository implements IOnboardingRepository {
     if (!result) return null
     return {
       ...result,
-      responses: result.responses as Record<string, any> | null,
+      responses: result.responses as Record<string, unknown> | null,
     }
   }
 
@@ -38,12 +39,12 @@ export class OnboardingRepository implements IOnboardingRepository {
       where: { userId },
       data: {
         ...data,
-        responses: data.responses as any,
+        responses: data.responses as Prisma.InputJsonValue,
       },
     })
     return {
       ...result,
-      responses: result.responses as Record<string, any> | null,
+      responses: result.responses as Record<string, unknown> | null,
     }
   }
 
