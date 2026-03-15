@@ -196,6 +196,7 @@ export async function sendChatMessage(
       cluster?: string;
       flags?: Record<string, boolean>;
     };
+    protocol_directive?: string;
   }
 ): Promise<AIApiResponse> {
   const endpoint = getApiBaseUrl();
@@ -224,6 +225,9 @@ export async function sendChatMessage(
   }
   if (options?.psych_profile != null) {
     requestBody.psych_profile = options.psych_profile;
+  }
+  if (options?.protocol_directive != null && options.protocol_directive !== '') {
+    requestBody.protocol_directive = options.protocol_directive;
   }
 
   const historyArr = (requestBody.history as Array<{ role: string; content: string }>) || []

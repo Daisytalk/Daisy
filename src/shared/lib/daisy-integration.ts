@@ -34,6 +34,7 @@ export interface DaisyRequestPayload {
   locale?: DaisyLocale
   request_ai_profile?: boolean
   psych_profile?: PsychProfilePayload
+  protocol_directive?: string
 }
 
 interface BuildDaisyRequestInput {
@@ -158,15 +159,31 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
     payload.user_context = userContext
   }
   if (psychSnapshot != null) {
+    const { ESI, BSI, SSI, PVI, MRI, riskLevel, cluster, flags } = psychSnapshot
+    
+    // Adaptive Emotional Regulation Algorithm (Phase Rules)
+    let protocol = undefined;
+    if (ESI <= 35 || BSI >= 75) {
+      protocol = "STABILIZE (DBT STOP / TIPP / grounding)";
+    } else if ((ESI >= 36 && ESI <= 60) || (BSI >= 55 && BSI <= 74)) {
+      protocol = "REGULATE (DBT + CBT light)";
+    } else if (ESI > 60 && BSI < 55) {
+      protocol = "SOLVE_REFLECT (CBT / coaching)";
+    }
+
+    if (protocol) {
+      payload.protocol_directive = protocol;
+    }
+
     payload.psych_profile = {
-      ESI: psychSnapshot.ESI,
-      BSI: psychSnapshot.BSI,
-      SSI: psychSnapshot.SSI,
-      PVI: psychSnapshot.PVI,
-      MRI: psychSnapshot.MRI,
-      riskLevel: psychSnapshot.riskLevel,
-      cluster: psychSnapshot.cluster ?? undefined,
-      flags: (psychSnapshot.flags as Record<string, boolean>) ?? undefined,
+      ESI,
+      BSI,
+      SSI,
+      PVI,
+      MRI,
+      riskLevel,
+      cluster: cluster ?? undefined,
+      flags: (flags as Record<string, boolean>) ?? undefined,
     }
   }
 

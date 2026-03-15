@@ -5,6 +5,7 @@ import { sendChatMessage } from '@/shared/lib/ai-api';
 import { apiMessages } from '@/shared/api-messages';
 import { redactPII } from '@/shared/lib/pii/redactor';
 import { prepareContentForStorage, getDecryptedContent } from '@/shared/lib/cbt-message-content';
+import { checkPremiumTrigger } from '@/shared/lib/premium-triggers';
 
 export async function POST(req: NextRequest) {
   try {
@@ -111,6 +112,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // 6. Check for Premium Triggers implicitly at the end of the exchange
+    const offer = await checkPremiumTrigger(user.id)
+
     // 7. Return response (aiResponse.response уже plaintext)
     return NextResponse.json({
       message: aiResponse.response ?? '',
@@ -119,6 +123,7 @@ export async function POST(req: NextRequest) {
       protocol: aiResponse.protocol_used,
       diagnosis: aiResponse.diagnosis,
       persona: aiResponse.persona_used,
+      premiumOffer: offer // Let frontend know if we hit a P1-P5 trigger
     });
   } catch (error) {
     console.error('❌ CBT Chat API error:', {

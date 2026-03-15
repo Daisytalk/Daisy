@@ -1,16 +1,17 @@
-'use client'
+import { DashboardContent } from './DashboardContent'
+import { getTranslations } from 'next-intl/server'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useLocale } from 'next-intl'
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
+  const t = await getTranslations({ locale, namespace: 'Navigation' })
+  return {
+    title: `${t('dashboard')} - Daisy`,
+  }
+}
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const locale = useLocale()
-
-  useEffect(() => {
-    router.replace(`/${locale}/chat`)
-  }, [router, locale])
-
-  return null
+  return (
+    <div className="min-h-screen bg-daisy-950">
+      <DashboardContent />
+    </div>
+  )
 }

@@ -54,6 +54,7 @@ async function processAsyncChat(
         persona: payload.persona,
         locale: payload.locale,
         psych_profile: payload.psych_profile,
+        protocol_directive: payload.protocol_directive,
       }
     )
 
