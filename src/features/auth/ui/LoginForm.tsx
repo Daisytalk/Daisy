@@ -25,7 +25,7 @@ export function LoginForm() {
       localStorage.setItem('user', JSON.stringify(data.user))
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
       // Full page redirect so AuthProvider re-runs and sees the auth cookie
-      window.location.href = `/${locale}/dashboard`
+      window.location.href = `/${locale || 'ru'}/profile`
     } catch (err: any) {
       setError(err.message || 'Login failed')
     } finally {

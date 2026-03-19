@@ -22,15 +22,21 @@ const OnboardingSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Cookie first (Google OAuth), then Bearer (email/password)
+    let token = request.cookies.get('auth_token')?.value
+    if (!token) {
+      const authHeader = request.headers.get('authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        token = authHeader.substring(7)
+      }
+    }
+    if (!token) {
       return NextResponse.json(
         { message: apiMessages.authorizationRequired },
         { status: 401 }
       )
     }
 
-    const token = authHeader.substring(7)
     const decoded = AuthService.verifyToken(token)
     
     if (!decoded) {

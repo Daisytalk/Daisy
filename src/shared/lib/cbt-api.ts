@@ -25,6 +25,12 @@ export class CBTApiClient {
   private apiUrl: string;
   private apiKey: string;
 
+  /** Azure ML uses /score; Azure Web App proxy uses /chat */
+  private get structuredEndpoint(): string {
+    const isAzureMl = this.apiUrl.includes('inference.ml.azure.com');
+    return `${this.apiUrl}${isAzureMl ? '/score' : '/chat'}`;
+  }
+
   constructor() {
     console.log('🔍 Environment check:', {
       CBT_API_URL: process.env.CBT_API_URL ? '***set***' : 'NOT SET',
@@ -223,7 +229,7 @@ export class CBTApiClient {
     };
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (this.apiKey) headers['x-api-key'] = this.apiKey;
-    const res = await fetch(`${this.apiUrl}/chat`, { method: 'POST', headers, body: JSON.stringify(payload) });
+    const res = await fetch(this.structuredEndpoint, { method: 'POST', headers, body: JSON.stringify(payload) });
     if (!res.ok) throw new Error(`CBT API error: ${res.status}`);
     return res.json();
   }
@@ -248,7 +254,7 @@ export class CBTApiClient {
     };
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (this.apiKey) headers['x-api-key'] = this.apiKey;
-    const res = await fetch(`${this.apiUrl}/chat`, { method: 'POST', headers, body: JSON.stringify(payload) });
+    const res = await fetch(this.structuredEndpoint, { method: 'POST', headers, body: JSON.stringify(payload) });
     if (!res.ok) throw new Error(`CBT API error: ${res.status}`);
     return res.json();
   }

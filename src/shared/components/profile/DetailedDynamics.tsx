@@ -25,6 +25,13 @@ interface DetailedDynamicsProps {
 
 type Period = '7d' | '14d' | '30d'
 
+const METRIC_THEMES = {
+  emotion: { gradient: 'from-rose-400/30 to-pink-300/10', stroke: '#f43f5e', iconBg: 'bg-rose-100', iconColor: 'text-rose-600' },
+  stress: { gradient: 'from-amber-400/30 to-orange-300/10', stroke: '#f59e0b', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
+  energy: { gradient: 'from-emerald-400/30 to-teal-300/10', stroke: '#10b981', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+  support: { gradient: 'from-sky-400/30 to-blue-300/10', stroke: '#0ea5e9', iconBg: 'bg-sky-100', iconColor: 'text-sky-600' },
+} as const
+
 export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
   const t = useTranslations('profile')
   const METRICS_CONFIG = [
@@ -67,13 +74,15 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
 
   return (
     <section className="space-y-6">
-      <div className="flex gap-2 bg-[#f0f0f0] p-1 rounded-[16px] w-fit">
+      <div className="flex gap-2 bg-white p-1.5 rounded-2xl border border-[#e8e8e8] shadow-[0_2px_8px_rgba(0,0,0,0.04)] w-fit">
         {(['7d', '14d', '30d'] as const).map((p) => (
           <button
             key={p}
             onClick={() => handlePeriodChange(p)}
-            className={`px-5 py-2.5 rounded-[12px] text-[15px] font-medium transition-all ${
-              period === p ? 'bg-white text-[#2d2d2d] shadow-sm' : 'text-[#6b6b6b] hover:text-[#2d2d2d]'
+            className={`px-5 py-2.5 rounded-xl text-[15px] font-medium transition-all ${
+              period === p
+                ? 'bg-[#5ba3c6] text-white shadow-sm'
+                : 'text-[#6b6b6b] hover:bg-[#f5f5f5] hover:text-[#2d2d2d]'
             }`}
           >
             {p === '7d' ? '7 дней' : p === '14d' ? '2 недели' : 'Месяц'}
@@ -86,69 +95,88 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
         const { best, worst } = getBestAndWorstDay(data)
         const Icon = m.icon
         const insightText = insights?.[m.key] || t('dynamics.analyzing')
-        
+        const theme = METRIC_THEMES[m.key]
+        const hasData = data.length > 0
+
         return (
-          <div key={m.key} className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-[14px] bg-[#e0f7fa] flex items-center justify-center">
-                <Icon className="w-5 h-5 text-[#5ba3c6]" />
+          <div
+            key={m.key}
+            className="rounded-2xl overflow-hidden bg-white shadow-[0_2px_20px_rgba(0,0,0,0.06)] border border-[#eee] hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] transition-shadow"
+          >
+            <div className={`bg-gradient-to-br ${theme.gradient} px-6 pt-6 pb-4`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-2xl ${theme.iconBg} flex items-center justify-center shadow-sm`}>
+                  <Icon className={`w-6 h-6 ${theme.iconColor}`} />
+                </div>
+                <span className="text-[17px] font-semibold text-[#1a1a1a]">{m.label}</span>
               </div>
-              <span className="text-[16px] font-semibold text-[#2d2d2d]">{m.label}</span>
             </div>
-            <div className="h-40 mb-4">
-              <ResponsiveContainer width="100%" height={160}>
-                <AreaChart data={data}>
-                  <defs>
-                    <linearGradient id={`grad-${m.key}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#5ba3c6" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#5ba3c6" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#5ba3c6"
-                    fill={`url(#grad-${m.key})`}
-                    strokeWidth={3}
-                    dot={false}
-                  />
-                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[1, 5]} tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: '16px',
-                      fontSize: '13px',
-                      border: 'none',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                      padding: '12px'
-                    }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="bg-[#f7f7f7] rounded-[16px] p-5">
-              <p className="text-[14px] text-[#4a4a4a] mb-3">
-                <span className="font-medium">{t('dynamics.bestDay')}</span> {best} 🌤 <span className="mx-2 text-[#e5e5e5]">|</span> <span className="font-medium">{t('dynamics.worstDay')}</span> {worst} 🌧
-              </p>
-              <p className="text-[14px] text-[#6b6b6b] leading-relaxed">
-                <span className="font-medium text-[#2d2d2d]">{t('dynamics.daisyNotices')}</span>{' '}
-                {loadingInsights ? (
-                  <span className="inline-block w-4 h-4 border-2 border-[#5ba3c6] border-t-transparent rounded-full animate-spin align-middle ml-1" />
+            <div className="px-6 py-5">
+              <div className="h-36 mb-5 rounded-xl bg-[#fafafa] border border-[#f0f0f0] overflow-hidden">
+                {hasData ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id={`grad-${m.key}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={theme.stroke} stopOpacity={0.35} />
+                          <stop offset="100%" stopColor={theme.stroke} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke={theme.stroke}
+                        strokeWidth={2.5}
+                        fill={`url(#grad-${m.key})`}
+                        dot={{ fill: theme.stroke, strokeWidth: 0, r: 3 }}
+                        activeDot={{ r: 5, fill: theme.stroke, stroke: 'white', strokeWidth: 2 }}
+                      />
+                      <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} />
+                      <YAxis domain={[1, 5]} tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} width={24} />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          border: 'none',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                          padding: '10px 14px',
+                        }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 ) : (
-                  insightText
+                  <div className="h-full flex flex-col items-center justify-center text-[#b0b0b0]">
+                    <p className="text-[13px] font-medium mb-1">Нет данных за период</p>
+                    <p className="text-[12px]">Пройди чек-ин, чтобы увидеть график</p>
+                  </div>
                 )}
-              </p>
+              </div>
+              <div className="rounded-xl bg-gradient-to-br from-[#f8f8f8] to-[#f5f5f5] p-4 border border-[#eee]">
+                <p className="text-[14px] text-[#4a4a4a] mb-2">
+                  <span className="font-medium text-[#2d2d2d]">{t('dynamics.bestDay')}</span> {best} 🌤
+                  <span className="mx-2 text-[#ddd]">|</span>
+                  <span className="font-medium text-[#2d2d2d]">{t('dynamics.worstDay')}</span> {worst} 🌧
+                </p>
+                <p className="text-[14px] text-[#5a5a5a] leading-relaxed">
+                  <span className="font-semibold text-[#2d2d2d]">{t('dynamics.daisyNotices')}</span>{' '}
+                  {loadingInsights ? (
+                    <span className="inline-block w-4 h-4 border-2 border-[#5ba3c6] border-t-transparent rounded-full animate-spin align-middle ml-1" />
+                  ) : (
+                    insightText
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         )
       })}
 
-      <div className="flex justify-center pt-4">
+      <div className="flex justify-center pt-2">
         <Link
           href={`/${locale}/chat`}
-          className="inline-flex items-center text-[15px] text-[#5ba3c6] hover:text-[#4a8fb3] transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#5ba3c6] to-[#4a8fb3] hover:from-[#4a8fb3] hover:to-[#3d7a9e] text-white font-medium text-[15px] shadow-[0_4px_14px_rgba(91,163,198,0.35)] hover:shadow-[0_6px_20px_rgba(91,163,198,0.4)] transition-all"
         >
-          <span className="border-b border-[#5ba3c6]/30 hover:border-[#4a8fb3]">{t('dynamics.talkToDaisy')}</span>
+          {t('dynamics.talkToDaisy')}
         </Link>
       </div>
     </section>

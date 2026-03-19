@@ -12,22 +12,14 @@ import {
   Menu,
   X,
   Plus,
-  User,
   Settings,
   CreditCard,
-  ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/shared/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu'
 import { cn } from '@/shared/lib/utils'
 interface AppLayoutProps {
   children: ReactNode
@@ -46,6 +38,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const navigation = [
     { name: t('chat'), href: `/${locale}/chat`, icon: MessageSquare },
     { name: t('history'), href: `/${locale}/history`, icon: History },
+    { name: t('settings'), href: `/${locale}/settings`, icon: Settings },
+    { name: t('upgradePlan'), href: `/${locale}/pricing`, icon: CreditCard },
   ]
 
   const handleLogout = async () => {
@@ -126,7 +120,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 variant="ghost"
                 className={cn(
                   'w-full justify-start gap-3 h-12 rounded-2xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors',
-                  pathname === item.href && 'bg-primary/10 text-primary hover:bg-primary/15'
+                  (pathname === item.href || pathname.startsWith(item.href + '/')) && 'bg-primary/10 text-primary hover:bg-primary/15'
                 )}
                 onClick={() => { router.push(item.href); setSidebarOpen(false) }}
               >
@@ -137,79 +131,24 @@ export function AppLayout({ children }: AppLayoutProps) {
           </nav>
 
           <div className="p-3 mt-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div
-                  className="flex items-center gap-2 p-2 rounded-[20px] bg-[#f7f7f7] hover:bg-[#ebebeb] transition-colors cursor-pointer select-none"
-                >
-                  <Avatar className="h-10 w-10 rounded-full overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center">
-                    <AvatarImage src="/images/user-icon.png" alt={user?.name || 'User'} className="object-cover" />
-                    <AvatarFallback className="bg-white text-pink-500 text-sm font-medium rounded-full">
-                      {user?.name?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-medium text-[#2d2d2d] truncate">{user?.name || 'User'}</p>
-                    <p className="text-[13px] text-[#6b6b6b] truncate">{user?.email}</p>
-                  </div>
-                 
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSidebarOpen(false)
-                      window.location.href = `/${locale}/pricing`
-                    }}
-                    className="shrink-0 px-4 py-1.5 rounded-[14px] bg-[#4a4a4a] text-white text-[13px] font-medium hover:bg-[#3a3a3a] transition-colors cursor-pointer"
-                  >
-                    {t('upgrade')}
-                  </button>
-                  <ChevronDown className="w-4 h-4 text-[#6b6b6b] shrink-0" />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" side="top" sideOffset={12} className="w-[260px] rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-2 border-none bg-white">
-                  <DropdownMenuItem
-                  className={cn(
-                    "h-11 rounded-[12px] cursor-pointer mb-1 px-3",
-                    pathname.startsWith(`/${locale}/profile`)
-                      ? "text-[#4a8fb3] bg-[#edf6fa] focus:bg-[#e0f0f7] focus:text-[#4a8fb3]"
-                      : "text-[#4a4a4a] hover:bg-[#f5f5f5] focus:bg-[#f5f5f5]"
-                  )}
-                  onClick={() => { router.push(`/${locale}/profile`); setSidebarOpen(false) }}
-                >
-                  <User className="w-5 h-5 mr-3 shrink-0" />
-                  <span className="font-medium text-[15px]">{t('profile')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className={cn(
-                    "h-11 rounded-[12px] cursor-pointer mb-1 px-3",
-                    pathname.startsWith(`/${locale}/settings`)
-                      ? "text-[#4a8fb3] bg-[#edf6fa] focus:bg-[#e0f0f7] focus:text-[#4a8fb3]"
-                      : "text-[#4a4a4a] hover:bg-[#f5f5f5] focus:bg-[#f5f5f5]"
-                  )}
-                  onClick={() => { router.push(`/${locale}/settings`); setSidebarOpen(false) }}
-                >
-                  <Settings className="w-5 h-5 mr-3 shrink-0" />
-                  <span className="font-medium text-[15px]">{t('settings')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className={cn(
-                    "h-11 rounded-[12px] cursor-pointer px-3",
-                    pathname.startsWith(`/${locale}/pricing`)
-                      ? "text-[#4a8fb3] bg-[#edf6fa] focus:bg-[#e0f0f7] focus:text-[#4a8fb3]"
-                      : "text-[#4a4a4a] hover:bg-[#f5f5f5] focus:bg-[#f5f5f5]"
-                  )}
-                  onClick={() => {
-                    setSidebarOpen(false)
-                    window.location.href = `/${locale}/pricing`
-                  }}
-                >
-                  <CreditCard className="w-5 h-5 mr-3 shrink-0" />
-                  <span className="font-medium text-[15px]">{t('upgradePlan')}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link
+              href={`/${locale}/profile`}
+              className={cn(
+                'flex items-center gap-2 p-2 rounded-[20px] transition-colors',
+                pathname.startsWith(`/${locale}/profile`) ? 'bg-primary/10' : 'bg-[#f7f7f7] hover:bg-[#ebebeb]'
+              )}
+            >
+              <Avatar className="h-10 w-10 rounded-full overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center">
+                <AvatarImage src="/images/user-icon.png" alt={user?.name || 'User'} className="object-cover" />
+                <AvatarFallback className="bg-white text-pink-500 text-sm font-medium rounded-full">
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[15px] font-medium text-[#2d2d2d] truncate">{user?.name || 'User'}</p>
+                <p className="text-[13px] text-[#6b6b6b] truncate">{user?.email}</p>
+              </div>
+            </Link>
 
             <button
               onClick={handleLogout}

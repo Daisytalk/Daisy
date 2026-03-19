@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { cbtApi } from '@/shared/lib/cbt-api'
 import { subDays, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+
+function toStructuredRecommendations(items: string[]): { title: string; description: string }[] {
+  return items.map((text) => {
+    const dot = text.indexOf('. ')
+    const nl = text.indexOf('\n')
+    const split = dot >= 0 && (nl < 0 || dot < nl) ? dot : nl >= 0 ? nl : -1
+    if (split >= 0) {
+      const title = text.slice(0, split).trim()
+      const description = text.slice(split + (dot >= 0 ? 2 : 1)).trim() || text
+      return { title: title.slice(0, 60), description }
+    }
+    return { title: text.slice(0, 50) || 'Рекомендация', description: text }
+  })
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,32 +26,43 @@ export async function GET(request: NextRequest) {
     if (!token) {
       token = request.cookies.get('auth_token')?.value
     }
-    
+
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const decoded = AuthService.verifyToken(token)
     if (!decoded) return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
 
-    // Build realistic mock/semi-real data for the presentation
     const now = new Date()
     const startOfWeek = subDays(now, 7)
     const dates = `${format(startOfWeek, 'd', { locale: ru })} - ${format(now, 'd MMMM', { locale: ru })}`
 
-    // Fetch memory items to find topics
-    const memoryItems = await prisma.memoryItem.findMany({
-      where: {
-        userId: decoded.userId,
-        createdAt: { gte: startOfWeek }
-      },
-      take: 20
-    })
+    const [memoryItems, stressRatings, snapshot, user] = await Promise.all([
+      prisma.memoryItem.findMany({
+        where: {
+          userId: decoded.userId,
+          createdAt: { gte: startOfWeek }
+        },
+        take: 20
+      }),
+      prisma.stressRating.findMany({
+        where: { userId: decoded.userId, source: 'daily_checkin', date: { gte: startOfWeek } },
+        orderBy: { date: 'asc' }
+      }),
+      prisma.psychProfileSnapshot.findFirst({
+        where: { userId: decoded.userId },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { name: true }
+      })
+    ])
 
     const topicCounts = memoryItems.reduce((acc, item) => {
       acc[item.topic] = (acc[item.topic] || 0) + 1
       return acc
     }, {} as Record<string, number>)
-    
-    // Sort and get top 4 topics
+
     const topics = Object.entries(topicCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 4)
@@ -46,42 +72,87 @@ export async function GET(request: NextRequest) {
       topics.push('Работа и усталость', 'Отношения с близкими', 'Тревога о будущем')
     }
 
-    // Chart data based on recent check-ins
-    let chart = []
-    const stressRatings = await prisma.stressRating.findMany({
-      where: { userId: decoded.userId, source: 'daily_checkin', date: { gte: startOfWeek } },
-      orderBy: { date: 'asc' }
-    })
+    const memoryTopics = [...new Set(memoryItems.map((m) => m.topic))].slice(0, 10)
+    const checkins = stressRatings.map((r) => ({
+      date: format(r.date, 'd MMM', { locale: ru }),
+      emotion: r.emotion ?? undefined,
+      stress: r.stress ?? undefined,
+      energy: r.energy ?? undefined,
+      support: r.support ?? undefined,
+    }))
+    const profile = snapshot
+      ? {
+          ESI: snapshot.ESI ?? undefined,
+          BSI: snapshot.BSI ?? undefined,
+          SSI: snapshot.SSI ?? undefined,
+          MRI: snapshot.MRI ?? undefined,
+          riskLevel: snapshot.riskLevel ?? undefined,
+        }
+      : undefined
 
+    let summary: string
+    let topicsInsight: string
+    let recommendations: { title: string; description: string }[]
+
+    try {
+      const ai = await cbtApi.getWeeklyReport({
+        user_id: decoded.userId,
+        period_days: 7,
+        checkins,
+        profile,
+        memory_topics: memoryTopics,
+        locale: 'ru',
+      })
+      summary = ai.summary
+      topicsInsight = ai.insights?.length ? ai.insights.join(' ') : ''
+      recommendations = toStructuredRecommendations(ai.recommendations || [])
+    } catch (err) {
+      console.error('Weekly report AI error:', err)
+      summary = stressRatings.length
+        ? 'За эту неделю есть данные чек-инов. Продолжай отслеживать своё состояние 🤍'
+        : 'Пройди чек-ин, чтобы получить персональный анализ.'
+      topicsInsight = ''
+      recommendations = toStructuredRecommendations([
+        'Попробуй технику STOP при стрессе',
+        'Добавь 15 минут прогулки',
+        'Поговори с Daisy, если станет тяжело',
+      ])
+    }
+
+    let chart: { day: string; value: number }[]
     if (stressRatings.length >= 7) {
       chart = stressRatings.map(s => ({
         day: format(s.date, 'eee', { locale: ru }),
-        value: s.emotion || 3
+        value: s.emotion ?? 3
       }))
     } else {
-      // Mock wave
       chart = [
-        { day: 'пн', value: 1.5, lightest: false, heaviest: true },
-        { day: 'вт', value: 2.5, lightest: false, heaviest: false },
-        { day: 'ср', value: 4.0, lightest: true, heaviest: false },
-        { day: 'чт', value: 3.2, lightest: false, heaviest: false },
-        { day: 'пт', value: 3.5, lightest: false, heaviest: false },
-        { day: 'сб', value: 4.2, lightest: false, heaviest: false },
-        { day: 'вс', value: 4.5, lightest: false, heaviest: false },
+        { day: 'пн', value: 1.5 },
+        { day: 'вт', value: 2.5 },
+        { day: 'ср', value: 4.0 },
+        { day: 'чт', value: 3.2 },
+        { day: 'пт', value: 3.5 },
+        { day: 'сб', value: 4.2 },
+        { day: 'вс', value: 4.5 },
       ]
     }
 
+    const chartWithValues = chart.map(c => ({ ...c, value: c.value }))
+    const minEntry = chartWithValues.reduce((a, b) => (a.value <= b.value ? a : b))
+    const maxEntry = chartWithValues.reduce((a, b) => (a.value >= b.value ? a : b))
+    const userName = user?.name?.split(' ')[0] || null
+
     return NextResponse.json({
       weekDates: dates,
-      summary: 'Эта неделя была непростой, но ты была рядом с собой 🤍',
-      backgroundTheme: 'heavy', // heavy | medium | good
-      chart,
+      summary,
+      backgroundTheme: 'heavy',
+      chart: chartWithValues,
+      lightestDay: maxEntry.day,
+      heaviestDay: minEntry.day,
+      userName,
       topics,
-      recommendations: [
-        { title: 'Работа → усталость', description: 'Попробуй в конце рабочего дня делать один ритуал остановки. Просто сказать себе: "Рабочий день окончен."' },
-        { title: 'Тревога о будущем', description: 'Когда тревожные мысли накрывают — просто запиши их. Не чтобы решить, а чтобы вынуть из головы.' },
-        { title: 'Больше времени для себя', description: 'На этой неделе ты почти не была наедине с собой без задач. Найди 10 минут только для себя.' }
-      ]
+      topicsInsight,
+      recommendations,
     })
   } catch (error) {
     console.error('Weekly report api error', error)

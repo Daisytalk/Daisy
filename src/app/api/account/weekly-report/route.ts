@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
       : undefined
 
     let result: { summary: string; insights: string[]; recommendations: string[] }
+    let fromAI = false
     try {
       result = await cbtApi.getWeeklyReport({
         user_id: decoded.userId,
@@ -72,6 +73,7 @@ export async function GET(request: NextRequest) {
         memory_topics: memoryTopics,
         locale: 'ru',
       })
+      fromAI = true
     } catch (err) {
       console.error('Weekly report AI error:', err)
       result = {
@@ -93,6 +95,7 @@ export async function GET(request: NextRequest) {
       insights: result.insights,
       recommendations: result.recommendations,
       topics: memoryTopics,
+      fromAI, // true = ответ от ИИ, false = fallback (ошибка или недоступность API)
     })
   } catch (error) {
     console.error('Weekly report error:', error)

@@ -34,7 +34,7 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(data.user))
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
 
-      window.location.href = data.requiresRestore ? `/${locale}/restore-account` : `/${locale}/dashboard`
+      window.location.href = data.requiresRestore ? `/${locale || 'ru'}/restore-account` : `/${locale || 'ru'}/profile`
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loginFailed'))
     } finally {

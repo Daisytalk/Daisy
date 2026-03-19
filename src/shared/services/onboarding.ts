@@ -27,9 +27,10 @@ export class OnboardingApiService implements IOnboardingService {
 
     const response = await fetch(`${this.baseUrl}/submit`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ answers }),
     })

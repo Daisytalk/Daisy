@@ -355,6 +355,11 @@
     "message6Bot": "I see something really important here - walks and spending time with your friend bring you some relief, even if it's rare. These are clues from your body about what it needs. Right now you're living in survival mode: work - exhaustion - work. It's like a closed loop where you only give and nothing comes back, so your energy never gets restored. I want to remind you that you deserve to take care of yourself - not as a reward for being productive, but as part of your routine, where you actively care for yourself. Let's think together: what would be one small step you could take this week to give yourself even a little space to recover? No pressure, let's just look at what possibilities you have right now."
   },
   "profile": {
+    "quickActions": "Quick actions",
+    "weeklyReportTitle": "Weekly report",
+    "talkToDaisyShort": "Talk to Daisy",
+    "quickActionChatDesc": "Start a conversation",
+    "quickActionWeeklyDesc": "Weekly summary",
     "tabs": {
       "overview": "Overview",
       "detailed": "Detailed",
@@ -387,6 +392,12 @@
       }
     },
     "dynamics": {
+      "title": "My dynamics",
+      "noData": "Charts will appear here after your daily check-ins.",
+      "last7days": "Last 7 days",
+      "emotion": "Emotional state",
+      "stress": "Stress level",
+      "energy": "Energy",
       "period7d": "7 days",
       "period14d": "2 weeks",
       "period30d": "Month",

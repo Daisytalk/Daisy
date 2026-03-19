@@ -74,13 +74,13 @@ export function NextWeekRecommendations({ snapshot, history, isPremium, aiRecomm
 
   return (
     <section>
-      <h2 className="text-[13px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-4 ml-2">
+      <h2 className="text-[11px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-3">
         {t('recommendations.title')}
       </h2>
-      <div className="rounded-[24px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-8">
+      <div className="rounded-2xl bg-white border border-[#eee] shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-8 relative overflow-hidden">
         <div className={`${!isPremium ? 'relative' : ''}`}>
           {!isPremium && (
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-[24px]">
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
               <div className="text-center">
                 <Lock className="w-8 h-8 mx-auto text-[#8e8e8e] mb-3" />
                 <p className="text-[15px] font-medium text-[#4a4a4a]">{t('recommendations.premiumLock')}</p>

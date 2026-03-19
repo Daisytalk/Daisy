@@ -7,6 +7,12 @@ import { ru } from 'date-fns/locale'
 
 type Period = '7d' | '14d' | '30d'
 
+/**
+ * GET /api/account/dynamics-insights?period=7d|14d|30d
+ * Returns AI-generated insights per metric (emotion, stress, energy, support).
+ * - With checkins: calls cbtApi.getDynamicsInsights() → Therapy-Multi-Agent
+ * - Without checkins: returns static fallback prompts
+ */
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth_token')?.value ?? request.headers.get('authorization')?.replace('Bearer ', '')
@@ -33,6 +39,7 @@ export async function GET(request: NextRequest) {
         stress: 'Пройди чек-ин, чтобы получить инсайт о стрессе 🤍',
         energy: 'Пройди чек-ин, чтобы получить инсайт об энергии 🤍',
         support: 'Пройди чек-ин, чтобы получить инсайт о поддержке 🤍',
+        fromAI: false,
       })
     }
 
@@ -45,6 +52,7 @@ export async function GET(request: NextRequest) {
     }))
 
     let result: { emotion: string; stress: string; energy: string; support: string }
+    let fromAI = false
     try {
       result = await cbtApi.getDynamicsInsights({
         user_id: decoded.userId,
@@ -52,6 +60,7 @@ export async function GET(request: NextRequest) {
         checkins,
         locale: 'ru',
       })
+      fromAI = true
     } catch (err) {
       console.error('Dynamics insights AI error:', err)
       result = {
@@ -62,7 +71,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(result)
+    return NextResponse.json({ ...result, fromAI })
   } catch (error) {
     console.error('Dynamics insights error:', error)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

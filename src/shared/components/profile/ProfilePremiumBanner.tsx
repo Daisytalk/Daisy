@@ -12,7 +12,7 @@ export function ProfilePremiumBanner({ locale }: ProfilePremiumBannerProps) {
   const t = useTranslations('profile')
   return (
     <section>
-      <div className="rounded-[24px] bg-gradient-to-br from-[#e0f7fa] to-[#f0f9ff] p-8 shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden">
+      <div className="rounded-2xl bg-gradient-to-br from-[#e0f7fa] via-[#e8f8fb] to-[#f0f9ff] p-8 shadow-[0_2px_12px_rgba(91,163,198,0.15)] border border-[#b2ebf2]/50 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-6 opacity-30">
           <Sparkles className="w-16 h-16 text-[#5ba3c6]" />
         </div>
@@ -34,7 +34,7 @@ export function ProfilePremiumBanner({ locale }: ProfilePremiumBannerProps) {
             </ul>
             <Link
               href={`/${locale}/pricing`}
-              className="mt-6 inline-flex items-center justify-center h-12 px-8 rounded-full bg-[#5ba3c6] text-white font-medium text-[15px] hover:bg-[#4a8fb3] transition-colors shadow-sm"
+              className="mt-6 inline-flex items-center justify-center h-12 px-8 rounded-xl bg-[#5ba3c6] text-white font-medium text-[15px] hover:bg-[#4a8fb3] transition-colors shadow-sm"
             >
               {t('premium.cta')}
             </Link>
