@@ -1,32 +1,33 @@
-import { NextRequest } from 'next/server';
-import createMiddleware from 'next-intl/middleware';
-import { routing } from './i18n/routing';
+import { NextRequest, NextResponse } from 'next/server'
+import createIntlMiddleware from 'next-intl/middleware'
+import { routing } from '@/i18n/routing'
+import { detectLocale, LOCALE_COOKIE } from '@/shared/lib/locale-detection'
 
-// Create the next-intl middleware with proper configuration
-const handleI18nRouting = createMiddleware(routing);
+const intlMiddleware = createIntlMiddleware(routing)
 
+/**
+ * Next.js 16: используем только `proxy.ts` (не `middleware.ts`).
+ * Корень `/` → редирект на `/ru` или `/en` по cookie / гео / Accept-Language.
+ */
 export default function proxy(request: NextRequest) {
-  console.log('🔍 MIDDLEWARE HIT:', {
-    pathname: request.nextUrl.pathname,
-    searchParams: request.nextUrl.searchParams.toString(),
-    method: request.method,
-  });
+  const pathname = request.nextUrl.pathname
 
-  const response = handleI18nRouting(request);
+  if (pathname === '/' || pathname === '') {
+    const locale = detectLocale(request)
+    const url = request.nextUrl.clone()
+    url.pathname = `/${locale}`
+    const response = NextResponse.redirect(url)
+    response.cookies.set(LOCALE_COOKIE, locale, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+    })
+    return response
+  }
 
-  console.log('📤 MIDDLEWARE RESPONSE:', {
-    status: response.status,
-    statusText: response.statusText,
-    redirected: response.redirected,
-    location: response.headers.get('location'),
-  });
-
-  return response;
+  return intlMiddleware(request)
 }
 
 export const config = {
-  // Match all pathnames except for
-  // - … if they start with `/api`, `/_next` or `/_vercel`
-  // - … the ones containing a dot (e.g. `favicon.ico`)
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
-};
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
+}
