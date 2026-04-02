@@ -1,110 +1,99 @@
-import { NextRequest } from 'next/server';
-import { defaultLocale, locales, type Locale } from '@/i18n';
+import { NextRequest } from 'next/server'
+import { defaultLocale, locales, type Locale } from '@/i18n'
 
-const LOCALE_COOKIE = 'NEXT_LOCALE';
+/** Совпадает с cookie next-intl (`NEXT_LOCALE`). */
+export const LOCALE_COOKIE = 'NEXT_LOCALE'
 
-// Russian-speaking countries
+/** Страны, где по умолчанию показываем русский интерфейс (гео из CDN / прокси). */
 const RUSSIAN_SPEAKING_COUNTRIES = new Set([
-  'RU', 'KZ', 'BY', 'UA', 'KG', 'TJ', 'UZ', 'TM', 'AM', 'AZ', 'GE', 'MD'
-]);
+  'RU',
+  'KZ',
+  'BY',
+  'UA',
+  'KG',
+  'TJ',
+  'UZ',
+  'TM',
+  'AM',
+  'AZ',
+  'GE',
+  'MD',
+])
 
 /**
- * Parse Accept-Language header and find best matching locale
+ * Разбор Accept-Language: первый подходящий из поддерживаемых (ru, en).
  */
 function parseAcceptLanguage(acceptLanguage: string): Locale {
-  if (!acceptLanguage) return defaultLocale;
+  if (!acceptLanguage) return defaultLocale
 
-  // Parse Accept-Language header (format: "en-US,en;q=0.9,ru;q=0.8")
-  const languages = acceptLanguage
-    .split(',')
-    .map(lang => {
-      const [locale, qValue] = lang.trim().split(';q=');
-      const quality = qValue ? parseFloat(qValue) : 1.0;
-      const langCode = locale.split('-')[0].toLowerCase();
-      return { langCode, quality };
-    })
-    .sort((a, b) => b.quality - a.quality);
+  const entries = acceptLanguage.split(',').map((part) => {
+    const [tag, qPart] = part.trim().split(';q=')
+    const quality = qPart ? parseFloat(qPart) : 1
+    const langCode = tag.split('-')[0].toLowerCase()
+    return { langCode, quality: Number.isFinite(quality) ? quality : 1 }
+  })
+  entries.sort((a, b) => b.quality - a.quality)
 
-  // Find first matching locale (currently only 'ru' is supported)
-  for (const { langCode } of languages) {
-    if (langCode === 'ru') return 'ru';
+  for (const { langCode } of entries) {
+    if (langCode === 'ru' || langCode === 'en') return langCode as Locale
   }
 
-  return defaultLocale;
+  return defaultLocale
 }
 
 /**
- * Detect locale from country header (optional, weak signal)
+ * Геолокация по стране (заголовки от хостинга / CDN).
+ * Если страна неизвестна — null (тогда сработает Accept-Language).
  */
 function detectFromCountry(request: NextRequest): Locale | null {
-  // Check various country headers (Cloudflare, custom, etc.)
-  const country = 
+  const country =
     request.headers.get('cf-ipcountry') ||
+    request.headers.get('x-vercel-ip-country') ||
     request.headers.get('x-country') ||
-    request.headers.get('x-vercel-ip-country');
+    request.headers.get('cloudfront-viewer-country')
 
-  if (!country) return null;
+  if (!country || country === 'XX' || country.length !== 2) return null
 
-  // If country is Russian-speaking, prefer Russian
-  if (RUSSIAN_SPEAKING_COUNTRIES.has(country.toUpperCase())) {
-    return 'ru';
-  }
-
-  return null;
+  const c = country.toUpperCase()
+  if (RUSSIAN_SPEAKING_COUNTRIES.has(c)) return 'ru'
+  return 'en'
 }
 
 /**
- * Detect user's preferred locale based on multiple signals
- * Priority: Cookie > Accept-Language > Country hint > Default
+ * Предпочтительная локаль для первого визита.
+ * Приоритет: явный выбор в cookie → гео (страна) → язык браузера → ru.
  */
 export function detectLocale(request: NextRequest): Locale {
-  // 1. Check cookie (highest priority - user's explicit choice)
-  const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value;
+  const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value
   if (cookieLocale && locales.includes(cookieLocale as Locale)) {
-    return cookieLocale as Locale;
+    return cookieLocale as Locale
   }
 
-  // 2. Check Accept-Language header
-  const acceptLanguage = request.headers.get('accept-language');
-  if (acceptLanguage) {
-    const detectedLocale = parseAcceptLanguage(acceptLanguage);
-    if (detectedLocale !== defaultLocale) {
-      return detectedLocale;
-    }
-  }
-
-  // 3. Optional: Check country hint (weak signal)
-  const countryLocale = detectFromCountry(request);
+  const countryLocale = detectFromCountry(request)
   if (countryLocale) {
-    return countryLocale;
+    return countryLocale
   }
 
-  // 4. Default fallback
-  return defaultLocale;
+  const acceptLanguage = request.headers.get('accept-language')
+  if (acceptLanguage) {
+    return parseAcceptLanguage(acceptLanguage)
+  }
+
+  return defaultLocale
 }
 
 /**
- * Get locale from pathname (e.g., /en/about -> 'en')
+ * Локаль из pathname (например /en/about → en).
  */
 export function getLocaleFromPathname(pathname: string): Locale | null {
-  const segments = pathname.split('/');
-  const potentialLocale = segments[1];
-  
+  const segments = pathname.split('/')
+  const potentialLocale = segments[1]
   if (potentialLocale && locales.includes(potentialLocale as Locale)) {
-    return potentialLocale as Locale;
+    return potentialLocale as Locale
   }
-  
-  return null;
+  return null
 }
 
-/**
- * Check if pathname already has a locale prefix
- */
 export function hasLocalePrefix(pathname: string): boolean {
-  return getLocaleFromPathname(pathname) !== null;
+  return getLocaleFromPathname(pathname) !== null
 }
-
-/**
- * Cookie name for locale preference
- */
-export { LOCALE_COOKIE };
