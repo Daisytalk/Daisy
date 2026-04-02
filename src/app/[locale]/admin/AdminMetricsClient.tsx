@@ -2,11 +2,20 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useLocale } from 'next-intl'
+import { RefreshCw } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group'
+import type { MetricsPreset } from '@/shared/lib/admin-metrics-period'
 
 type MetricsPayload = {
+  period: {
+    preset: MetricsPreset
+    from: string | null
+    to: string
+    label: string
+  }
   updatedAt: string
   totalUsers: number
   usersStartedChat: number
@@ -15,6 +24,26 @@ type MetricsPayload = {
   paymentsTransactionsCount: number
   totalsByCurrency: { currency: string; amountMinor: number }[]
   bySource: { sourceKey: string; label: string; users: number }[]
+}
+
+const PRESETS: { value: MetricsPreset; label: string }[] = [
+  { value: 'all', label: 'Всё время' },
+  { value: 'today', label: 'Сегодня' },
+  { value: 'yesterday', label: 'Вчера' },
+  { value: '7d', label: '7 дней' },
+  { value: '30d', label: '30 дней' },
+  { value: 'mtd', label: 'Месяц' },
+  { value: 'ytd', label: 'Год' },
+  { value: 'custom', label: 'Свой' },
+]
+
+function defaultCustomRange(): { from: string; to: string } {
+  const to = new Date()
+  const from = new Date(to.getTime() - 6 * 24 * 60 * 60 * 1000)
+  return {
+    from: from.toISOString().slice(0, 10),
+    to: to.toISOString().slice(0, 10),
+  }
 }
 
 function formatMinorAsMoney(amountMinor: number, currency: string): string {
@@ -39,10 +68,25 @@ export default function AdminMetricsClient() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
+  const [preset, setPreset] = useState<MetricsPreset>('mtd')
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo, setCustomTo] = useState('')
+
+  const buildMetricsUrl = useCallback(() => {
+    const p = new URLSearchParams()
+    p.set('preset', preset)
+    if (preset === 'custom') {
+      const d = customFrom && customTo ? { from: customFrom, to: customTo } : defaultCustomRange()
+      p.set('from', d.from)
+      p.set('to', d.to)
+    }
+    return `/api/admin/metrics?${p.toString()}`
+  }, [preset, customFrom, customTo])
+
   const refresh = useCallback(async () => {
     setError(null)
     try {
-      const r = await fetch('/api/admin/metrics', { credentials: 'include', cache: 'no-store' })
+      const r = await fetch(buildMetricsUrl(), { credentials: 'include', cache: 'no-store' })
       if (r.ok) {
         setMetrics(await r.json())
         setAuthState('authed')
@@ -64,7 +108,7 @@ export default function AdminMetricsClient() {
       setError('Сеть недоступна')
       setAuthState('guest')
     }
-  }, [locale])
+  }, [locale, buildMetricsUrl])
 
   useEffect(() => {
     refresh()
@@ -109,6 +153,8 @@ export default function AdminMetricsClient() {
       setBusy(false)
     }
   }
+
+  const isAllTime = metrics?.period.preset === 'all'
 
   if (authState === 'loading') {
     return (
@@ -168,17 +214,25 @@ export default function AdminMetricsClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50/50 to-background px-4 py-10">
-      <div className="max-w-3xl mx-auto space-y-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Метрики Daisy</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/50 to-[hsl(var(--app-bg))] px-4 py-8 sm:py-10">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Метрики Daisy</h1>
+            <p className="text-sm text-muted-foreground">{metrics?.period.label ?? '—'}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Обновлено: {metrics ? new Date(metrics.updatedAt).toLocaleString('ru-RU') : '—'}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="rounded-xl" onClick={() => refresh()} disabled={busy}>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl border-2 border-border bg-card shadow-sm"
+              onClick={() => refresh()}
+              disabled={busy}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
               Обновить
             </Button>
             <Button variant="secondary" size="sm" className="rounded-xl" onClick={() => logout()} disabled={busy}>
@@ -187,40 +241,119 @@ export default function AdminMetricsClient() {
           </div>
         </div>
 
+        <div className="rounded-2xl border border-border bg-card/80 p-3 shadow-[var(--app-shadow)] backdrop-blur-sm">
+          <p className="text-xs font-medium text-muted-foreground px-1 pb-2">Период</p>
+          <ToggleGroup
+            type="single"
+            value={preset}
+            onValueChange={(v) => {
+              if (!v) return
+              const next = v as MetricsPreset
+              setPreset(next)
+              if (next === 'custom') {
+                const d = defaultCustomRange()
+                setCustomFrom('')
+                setCustomTo('')
+              }
+            }}
+            className="flex flex-wrap justify-start gap-1.5"
+          >
+            {PRESETS.map(({ value, label }) => (
+              <ToggleGroupItem
+                key={value}
+                value={value}
+                aria-label={label}
+                variant="outline"
+                size="sm"
+                className="rounded-full border-2 border-primary/15 data-[state=on]:border-primary/40 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground px-3.5 h-9 text-xs sm:text-sm"
+              >
+                {label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+
+          {preset === 'custom' && (
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+              <div className="space-y-1.5">
+                <Label htmlFor="custom-from" className="text-xs text-muted-foreground">
+                  С даты
+                </Label>
+                <Input
+                  id="custom-from"
+                  type="date"
+                  value={customFrom || defaultCustomRange().from}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                  className="h-10 w-full sm:w-44 rounded-xl border-2"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="custom-to" className="text-xs text-muted-foreground">
+                  По дату
+                </Label>
+                <Input
+                  id="custom-to"
+                  type="date"
+                  value={customTo || defaultCustomRange().to}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                  className="h-10 w-full sm:w-44 rounded-xl border-2"
+                />
+              </div>
+              <Button
+                type="button"
+                className="rounded-xl h-10"
+                onClick={() => refresh()}
+                disabled={busy}
+              >
+                Применить
+              </Button>
+            </div>
+          )}
+        </div>
+
         {error && (
           <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-4 py-3">{error}</div>
         )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <MetricCard title="Всего пользователей" value={metrics?.totalUsers ?? 0} hint="Зарегистрировано в базе" />
           <MetricCard
-            title="Начали чат"
+            title={isAllTime ? 'Всего пользователей' : 'Новые регистрации'}
+            value={metrics?.totalUsers ?? 0}
+            hint={isAllTime ? 'Все учётные записи в базе' : 'Пользователи, зарегистрированные за период'}
+          />
+          <MetricCard
+            title={isAllTime ? 'Начали чат (когда-либо)' : 'Активность в чате'}
             value={metrics?.usersStartedChat ?? 0}
-            hint="Есть хотя бы одна CBT-сессия"
+            hint={
+              isAllTime
+                ? 'Есть хотя бы одна CBT-сессия'
+                : 'Уникальные пользователи с новой сессией в периоде'
+            }
           />
           <MetricCard
             title="Сообщений от пользователей"
             value={metrics?.totalUserMessages ?? 0}
-            hint="Роль «user» в CBT-сообщениях"
+            hint={isAllTime ? 'Все сообщения с ролью user' : 'За выбранный период'}
           />
           <MetricCard
-            title="Заплатили (пользователей)"
+            title={isAllTime ? 'Платили (когда-либо)' : 'Платили за период'}
             value={metrics?.payingUsersCount ?? 0}
-            hint="Есть хотя бы одна запись об оплате"
+            hint={isAllTime ? 'Есть хотя бы один платёж' : 'Уникальные плательщики за период'}
           />
           <MetricCard
             title="Платежей (транзакций)"
             value={metrics?.paymentsTransactionsCount ?? 0}
-            hint="Всего записей в таблице платежей"
+            hint={isAllTime ? 'Все записи в таблице платежей' : 'За выбранный период'}
           />
-          <RevenueCard totals={metrics?.totalsByCurrency ?? []} />
+          <RevenueCard totals={metrics?.totalsByCurrency ?? []} isAllTime={isAllTime} />
         </div>
 
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-[var(--app-shadow)]">
           <div className="px-5 py-4 border-b border-border bg-muted/40">
             <h2 className="font-medium">Откуда пришли</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              По полю источника при первом заходе (UTM / referrer). Старые аккаунты — «Не указано».
+              {isAllTime
+                ? 'По источнику при первом заходе (все пользователи).'
+                : 'Регистрации за период по источнику при первом заходе.'}
             </p>
           </div>
           <ul className="divide-y divide-border">
@@ -242,22 +375,30 @@ export default function AdminMetricsClient() {
 
 function MetricCard({ title, value, hint }: { title: string; value: number; hint: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--app-shadow)]">
       <p className="text-sm text-muted-foreground">{title}</p>
       <p className="text-3xl font-semibold tabular-nums mt-1">{value}</p>
-      <p className="text-xs text-muted-foreground mt-2">{hint}</p>
+      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{hint}</p>
     </div>
   )
 }
 
-function RevenueCard({ totals }: { totals: { currency: string; amountMinor: number }[] }) {
+function RevenueCard({
+  totals,
+  isAllTime,
+}: {
+  totals: { currency: string; amountMinor: number }[]
+  isAllTime: boolean
+}) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--app-shadow)]">
       <p className="text-sm text-muted-foreground">Выручка (сумма)</p>
       {totals.length === 0 ? (
         <>
           <p className="text-3xl font-semibold tabular-nums mt-1">—</p>
-          <p className="text-xs text-muted-foreground mt-2">Нет сохранённых платежей</p>
+          <p className="text-xs text-muted-foreground mt-2">
+            {isAllTime ? 'Нет сохранённых платежей' : 'Нет платежей за период'}
+          </p>
         </>
       ) : (
         <ul className="mt-2 space-y-1.5">
@@ -270,7 +411,9 @@ function RevenueCard({ totals }: { totals: { currency: string; amountMinor: numb
         </ul>
       )}
       <p className="text-xs text-muted-foreground mt-3">
-        Суммы в минорных единицах валюты (например центы USD). Несколько валют — отдельные строки.
+        {isAllTime
+          ? 'Суммы в минорных единицах валюты (например центы USD).'
+          : 'Сумма платежей за выбранный период.'}
       </p>
     </div>
   )

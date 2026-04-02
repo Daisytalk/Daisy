@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/shared/lib/database'
 import { verifyAdminSession } from '@/shared/lib/admin-auth'
 import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
+import { resolveMetricsPeriod } from '@/shared/lib/admin-metrics-period'
+import type { ResolvedMetricsPeriod } from '@/shared/lib/admin-metrics-period'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,6 +26,11 @@ function labelForSource(source: string): string {
   return SOURCE_LABELS[source] ?? source
 }
 
+function dateRangeWhere(period: ResolvedMetricsPeriod): { gte: Date; lte: Date } | undefined {
+  if (period.from === null) return undefined
+  return { gte: period.from, lte: period.to }
+}
+
 export async function GET(request: NextRequest) {
   if (!getVerifiedAuthFromRequest(request)) {
     return NextResponse.json(
@@ -38,9 +45,24 @@ export async function GET(request: NextRequest) {
     )
   }
 
+  const resolved = resolveMetricsPeriod(request.nextUrl.searchParams)
+  if (!resolved.ok) {
+    return NextResponse.json({ message: resolved.message }, { status: 400 })
+  }
+  const period = resolved.period
+  const dr = dateRangeWhere(period)
+
   try {
-    const [totalUsers, usersStartedChat, totalUserMessages, payingUsersCount, paymentRowsCount, bySourceRaw, paymentTotalsRaw] =
-      await Promise.all([
+    if (!dr) {
+      const [
+        totalUsers,
+        usersStartedChat,
+        totalUserMessages,
+        payingUsersCount,
+        paymentRowsCount,
+        bySourceRaw,
+        paymentTotalsRaw,
+      ] = await Promise.all([
         prisma.user.count(),
         prisma.user.count({
           where: { cbtConversations: { some: {} } },
@@ -59,6 +81,85 @@ export async function GET(request: NextRequest) {
           _sum: { amountMinor: true },
         }),
       ])
+
+      type SourceRow = { acquisitionSource: string | null; _count: { _all: number } }
+      const bySource = (bySourceRaw as SourceRow[])
+        .map((row) => ({
+          sourceKey: row.acquisitionSource ?? 'unknown',
+          label: labelForSource(row.acquisitionSource ?? 'unknown'),
+          users: row._count._all,
+        }))
+        .sort((a, b) => b.users - a.users)
+
+      type PayRow = { currency: string; _sum: { amountMinor: number | null } }
+      const totalsByCurrency = (paymentTotalsRaw as PayRow[])
+        .map((row) => ({
+          currency: row.currency,
+          amountMinor: row._sum.amountMinor ?? 0,
+        }))
+        .filter((r) => r.amountMinor > 0)
+        .sort((a, b) => b.amountMinor - a.amountMinor)
+
+      return NextResponse.json({
+        period: {
+          preset: period.preset,
+          from: null,
+          to: period.to.toISOString(),
+          label: period.labelRu,
+        },
+        updatedAt: new Date().toISOString(),
+        totalUsers,
+        usersStartedChat,
+        totalUserMessages,
+        payingUsersCount,
+        paymentsTransactionsCount: paymentRowsCount,
+        totalsByCurrency,
+        bySource,
+      })
+    }
+
+    const [
+      totalUsers,
+      convUsers,
+      totalUserMessages,
+      payUsers,
+      paymentRowsCount,
+      bySourceRaw,
+      paymentTotalsRaw,
+    ] = await Promise.all([
+      prisma.user.count({
+        where: { createdAt: dr },
+      }),
+      prisma.cbtConversation.groupBy({
+        by: ['userId'],
+        where: { createdAt: dr },
+        _count: { _all: true },
+      }),
+      prisma.cbtMessage.count({
+        where: { role: 'user', createdAt: dr },
+      }),
+      prisma.payment.groupBy({
+        by: ['userId'],
+        where: { createdAt: dr },
+        _count: { _all: true },
+      }),
+      prisma.payment.count({
+        where: { createdAt: dr },
+      }),
+      prisma.user.groupBy({
+        by: ['acquisitionSource'],
+        where: { createdAt: dr },
+        _count: { _all: true },
+      }),
+      prisma.payment.groupBy({
+        by: ['currency'],
+        where: { createdAt: dr },
+        _sum: { amountMinor: true },
+      }),
+    ])
+
+    const usersStartedChat = convUsers.length
+    const payingUsersCount = payUsers.length
 
     type SourceRow = { acquisitionSource: string | null; _count: { _all: number } }
     const bySource = (bySourceRaw as SourceRow[])
@@ -79,6 +180,12 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.amountMinor - a.amountMinor)
 
     return NextResponse.json({
+      period: {
+        preset: period.preset,
+        from: period.from!.toISOString(),
+        to: period.to.toISOString(),
+        label: period.labelRu,
+      },
       updatedAt: new Date().toISOString(),
       totalUsers,
       usersStartedChat,
