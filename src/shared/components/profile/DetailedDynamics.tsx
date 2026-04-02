@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { format, subDays } from 'date-fns'
-import { ru } from 'date-fns/locale'
-import { getBestAndWorstDay } from '@/shared/lib/scoring-helpers'
+import { ru, enUS } from 'date-fns/locale'
+import { getBestAndWorstDayForMetric } from '@/shared/lib/scoring-helpers'
 import { Heart, Flame, Zap, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
@@ -45,6 +45,12 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
   const [loadingInsights, setLoadingInsights] = useState(true)
 
   useEffect(() => {
+    if (history.length === 0) {
+      setInsights(null)
+      setLoadingInsights(false)
+      return
+    }
+    setLoadingInsights(true)
     fetch(`/api/account/dynamics-insights?period=${period}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
@@ -52,7 +58,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
       })
       .catch(() => setInsights(null))
       .finally(() => setLoadingInsights(false))
-  }, [period])
+  }, [period, history.length])
 
   const handlePeriodChange = (p: Period) => {
     setPeriod(p)
@@ -65,9 +71,11 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
     return history.filter((r) => new Date(r.date) >= cutoff)
   }, [history, period])
 
+  const dateLocale = locale === 'ru' ? ru : enUS
+
   const toChartData = (records: HistoryRecord[], key: 'emotion' | 'stress' | 'energy' | 'support') => {
     return records.map((r) => ({
-      day: format(r.date, 'EEE', { locale: ru }),
+      day: format(r.date, 'EEE', { locale: dateLocale }),
       value: (r[key] ?? 3) as number,
     }))
   }
@@ -85,14 +93,14 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
                 : 'text-[#6b6b6b] hover:bg-[#f5f5f5] hover:text-[#2d2d2d]'
             }`}
           >
-            {p === '7d' ? '7 дней' : p === '14d' ? '2 недели' : 'Месяц'}
+            {p === '7d' ? t('dynamics.period7d') : p === '14d' ? t('dynamics.period14d') : t('dynamics.period30d')}
           </button>
         ))}
       </div>
 
       {METRICS_CONFIG.map((m) => {
         const data = toChartData(filtered, m.key)
-        const { best, worst } = getBestAndWorstDay(data)
+        const { best, worst } = getBestAndWorstDayForMetric(m.key, data)
         const Icon = m.icon
         const insightText = insights?.[m.key] || t('dynamics.analyzing')
         const theme = METRIC_THEMES[m.key]
@@ -145,9 +153,9 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-[#b0b0b0]">
-                    <p className="text-[13px] font-medium mb-1">Нет данных за период</p>
-                    <p className="text-[12px]">Пройди чек-ин, чтобы увидеть график</p>
+                  <div className="h-full flex flex-col items-center justify-center text-[#b0b0b0] px-4 text-center">
+                    <p className="text-[13px] font-medium mb-1">{t('dynamics.emptyChartTitle')}</p>
+                    <p className="text-[12px]">{t('dynamics.emptyChartHint')}</p>
                   </div>
                 )}
               </div>

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { CheckInQuestions } from '@/shared/components/chat/CheckInQuestions'
 import { saveCheckIn } from '@/app/actions/saveCheckIn'
 
@@ -12,10 +13,10 @@ interface DailyCheckInModalProps {
 
 export function DailyCheckInModal({ userName, hasCheckInToday }: DailyCheckInModalProps) {
   const t = useTranslations('profile.checkin')
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [done, setDone] = useState(false)
   const [hasCheckIn, setHasCheckIn] = useState(hasCheckInToday ?? false)
-  const locale = useLocale()
 
   useEffect(() => {
     if (hasCheckInToday != null) setHasCheckIn(hasCheckInToday)
@@ -45,9 +46,12 @@ export function DailyCheckInModal({ userName, hasCheckInToday }: DailyCheckInMod
             </p>
             <CheckInQuestions
               onComplete={async (answers) => {
-                await saveCheckIn(answers)
-                setDone(true)
-                setOpen(false)
+                const result = await saveCheckIn(answers)
+                if (result.ok) {
+                  router.refresh()
+                  setDone(true)
+                  setOpen(false)
+                }
               }}
             />
             <button

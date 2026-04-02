@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { routing } from '@/i18n/routing'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +22,20 @@ export async function POST(request: NextRequest) {
       }
       const today = new Date()
       today.setHours(0, 0, 0, 0)
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      const existing = await prisma.stressRating.findFirst({
+        where: {
+          userId: decoded.userId,
+          source: 'daily_checkin',
+          date: { gte: today, lt: tomorrow },
+        },
+      })
+      if (existing) {
+        return NextResponse.json({ error: 'Check-in already exists for today' }, { status: 409 })
+      }
+
       await prisma.stressRating.create({
         data: {
           userId: decoded.userId,
@@ -31,6 +47,11 @@ export async function POST(request: NextRequest) {
           support,
         },
       })
+
+      for (const loc of routing.locales) {
+        revalidatePath(`/${loc}/profile`, 'page')
+        revalidatePath(`/${loc}/dashboard`, 'page')
+      }
     } else {
       if (typeof rating !== 'number' || rating < 1 || rating > 5) {
         return NextResponse.json({ error: 'rating must be 1-5' }, { status: 400 })

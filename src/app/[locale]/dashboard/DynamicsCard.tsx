@@ -15,8 +15,8 @@ export function DynamicsCard({ variant = 'dark' }: DynamicsCardProps) {
 
   useEffect(() => {
     fetch('/api/dashboard/dynamics', { credentials: 'include' })
-      .then(res => res.json())
-      .then(res => {
+      .then((res) => res.json())
+      .then((res) => {
         if (res.ratings) setData(res.ratings)
       })
   }, [])

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { DaisySVG } from './DaisySVG'
 import { CheckInQuestions } from '@/shared/components/chat/CheckInQuestions'
@@ -34,6 +35,7 @@ function msUntilEveningWindow(): number {
 
 export function FloatingDaisy({ userName }: { userName: string }) {
   const t = useTranslations('profile.checkin')
+  const router = useRouter()
   const [visible, setVisible] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [done, setDone] = useState(false)
@@ -120,11 +122,14 @@ export function FloatingDaisy({ userName }: { userName: string }) {
           </p>
           <CheckInQuestions
             onComplete={async (answers) => {
-              await saveCheckIn(answers)
-              if (typeof window !== 'undefined') {
-                localStorage.setItem(SHOWN_TODAY_KEY, getTodayKey())
+              const result = await saveCheckIn(answers)
+              if (result.ok) {
+                router.refresh()
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem(SHOWN_TODAY_KEY, getTodayKey())
+                }
+                setDone(true)
               }
-              setDone(true)
             }}
           />
         </div>

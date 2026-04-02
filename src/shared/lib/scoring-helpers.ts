@@ -100,3 +100,17 @@ export function getBestAndWorstDay(
   const worst = data.reduce((a, b) => (a.value < b.value ? a : b))
   return { best: best.day, worst: worst.day }
 }
+
+/** Для стресса меньше = лучше; для эмоций/энергии/поддержки больше = лучше. */
+export function getBestAndWorstDayForMetric(
+  metric: 'emotion' | 'stress' | 'energy' | 'support',
+  data: { day: string; value: number }[]
+): { best: string; worst: string } {
+  if (!data.length) return { best: '—', worst: '—' }
+  if (metric === 'stress') {
+    const bestEntry = data.reduce((a, b) => (a.value < b.value ? a : b))
+    const worstEntry = data.reduce((a, b) => (a.value > b.value ? a : b))
+    return { best: bestEntry.day, worst: worstEntry.day }
+  }
+  return getBestAndWorstDay(data)
+}

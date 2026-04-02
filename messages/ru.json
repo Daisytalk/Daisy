@@ -416,7 +416,9 @@
         "stress": "Стресс",
         "energy": "Энергия",
         "support": "Поддержка"
-      }
+      },
+      "emptyChartTitle": "Нет данных за период",
+      "emptyChartHint": "Пройди чек-ин, чтобы увидеть график"
     },
     "weeklyReport": {
       "period7d": "7 дней",

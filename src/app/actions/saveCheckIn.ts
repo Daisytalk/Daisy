@@ -3,6 +3,7 @@
 import prisma from '@/shared/lib/database'
 import { getCurrentUserId } from '@/shared/lib/server-auth'
 import { revalidatePath } from 'next/cache'
+import { routing } from '@/i18n/routing'
 
 export type CheckInAnswers = {
   emotion: number
@@ -47,9 +48,10 @@ export async function saveCheckIn(answers: CheckInAnswers): Promise<{ ok: boolea
     },
   })
 
-  revalidatePath('/[locale]/profile', 'page')
-  revalidatePath('/ru/profile', 'page')
-  revalidatePath('/en/profile', 'page')
+  for (const loc of routing.locales) {
+    revalidatePath(`/${loc}/profile`, 'page')
+    revalidatePath(`/${loc}/dashboard`, 'page')
+  }
 
   return { ok: true }
 }

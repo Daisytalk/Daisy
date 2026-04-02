@@ -411,7 +411,9 @@
         "stress": "Stress",
         "energy": "Energy",
         "support": "Support"
-      }
+      },
+      "emptyChartTitle": "No data for this period",
+      "emptyChartHint": "Do a check-in to see your chart"
     },
     "weeklyReport": {
       "period7d": "7 days",
