@@ -34,7 +34,8 @@ export default function AdminMetricsClient() {
   const locale = useLocale()
   const [authState, setAuthState] = useState<'loading' | 'guest' | 'authed'>('loading')
   const [metrics, setMetrics] = useState<MetricsPayload | null>(null)
-  const [secret, setSecret] = useState('')
+  const [adminLogin, setAdminLogin] = useState('')
+  const [adminPassword, setAdminPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -78,7 +79,7 @@ export default function AdminMetricsClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ secret }),
+        body: JSON.stringify({ login: adminLogin, password: adminPassword }),
       })
       const j = await r.json().catch(() => ({}))
       if (r.status === 401 && j.code === 'user_auth') {
@@ -88,7 +89,8 @@ export default function AdminMetricsClient() {
       if (!r.ok) {
         throw new Error(typeof j.message === 'string' ? j.message : 'Вход не удался')
       }
-      setSecret('')
+      setAdminLogin('')
+      setAdminPassword('')
       await refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка')
@@ -122,25 +124,41 @@ export default function AdminMetricsClient() {
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
           <h1 className="text-xl font-semibold tracking-tight">Админка · метрики</h1>
           <p className="text-sm text-muted-foreground mt-1 mb-6">
-            Введите секрет из переменной окружения ADMIN_SECRET (доступ только для вошедших в аккаунт пользователей).
+            Логин и пароль задаются в переменных окружения ADMIN_LOGIN и ADMIN_PASSWORD (сначала войдите в аккаунт Daisy).
           </p>
           <form onSubmit={login} className="space-y-4">
             {error && (
               <div className="rounded-xl bg-destructive/10 text-destructive text-sm px-3 py-2">{error}</div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="admin-secret">Секрет</Label>
+              <Label htmlFor="admin-login">Логин</Label>
               <Input
-                id="admin-secret"
-                type="password"
-                autoComplete="off"
-                value={secret}
-                onChange={(e) => setSecret(e.target.value)}
+                id="admin-login"
+                type="text"
+                autoComplete="username"
+                value={adminLogin}
+                onChange={(e) => setAdminLogin(e.target.value)}
                 className="h-11 rounded-xl"
                 disabled={busy}
               />
             </div>
-            <Button type="submit" className="w-full h-11 rounded-xl" disabled={busy || !secret.trim()}>
+            <div className="space-y-2">
+              <Label htmlFor="admin-password">Пароль</Label>
+              <Input
+                id="admin-password"
+                type="password"
+                autoComplete="current-password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                className="h-11 rounded-xl"
+                disabled={busy}
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full h-11 rounded-xl"
+              disabled={busy || !adminLogin.trim() || !adminPassword}
+            >
               {busy ? 'Вход…' : 'Войти'}
             </Button>
           </form>
