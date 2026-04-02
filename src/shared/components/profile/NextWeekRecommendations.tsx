@@ -26,29 +26,6 @@ interface NextWeekRecommendationsProps {
   aiRecommendations?: string[]
 }
 
-const RECOMMENDATIONS: Record<string, string[]> = {
-  stress: [
-    'Попробуй технику STOP: остановись, сделай вдох, наблюдай',
-    'Сократи задачи в To-Do до 3 самых важных',
-    'Каждый вечер: 5 минут без телефона',
-  ],
-  emotion: [
-    'Утром: записать одну мысль которая беспокоит',
-    'Техника заземления: 5 вещей вокруг тебя',
-    'Поговори с Daisy если стало тяжело',
-  ],
-  energy: [
-    'Ложиться спать до 23:00 хотя бы 3 дня',
-    'Добавить 15 минут прогулки',
-    'Один час без задач — только для себя',
-  ],
-  support: [
-    'Написать кому-то близкому первой',
-    'Попробовать попросить о помощи в малом',
-    'Запланировать встречу с другом',
-  ],
-}
-
 export function NextWeekRecommendations({ snapshot, history, isPremium, aiRecommendations }: NextWeekRecommendationsProps) {
   const t = useTranslations('profile')
   const { recs } = useMemo(() => {
@@ -65,10 +42,12 @@ export function NextWeekRecommendations({ snapshot, history, isPremium, aiRecomm
     const top3 = sorted.slice(0, 3).map((m) => m.key)
     const fallbackRecs: string[] = []
     top3.forEach((k) => {
-      RECOMMENDATIONS[k].forEach((r) => fallbackRecs.push(r))
+      ;(['0', '1', '2'] as const).forEach((i) => {
+        fallbackRecs.push(t(`recommendations.fallback.${k}.${i}`))
+      })
     })
     return { recs: fallbackRecs.slice(0, 3) }
-  }, [snapshot, history, aiRecommendations])
+  }, [snapshot, history, aiRecommendations, t])
 
   if (recs.length === 0) return null
 

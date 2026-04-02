@@ -18,14 +18,14 @@ interface Session {
   persona: string
 }
 
-function groupSessionsByDate(sessions: Session[], locale: string) {
+function groupSessionsByDate(sessions: Session[], t: (key: string) => string) {
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const groups: { label: string; sessions: Session[] }[] = [
-    { label: locale === 'ru' ? 'Сегодня' : 'Today', sessions: [] },
-    { label: locale === 'ru' ? 'Вчера' : 'Yesterday', sessions: [] },
-    { label: locale === 'ru' ? 'На этой неделе' : 'This week', sessions: [] },
-    { label: locale === 'ru' ? 'Ранее' : 'Earlier', sessions: [] },
+    { label: t('groups.today'), sessions: [] },
+    { label: t('groups.yesterday'), sessions: [] },
+    { label: t('groups.thisWeek'), sessions: [] },
+    { label: t('groups.earlier'), sessions: [] },
   ]
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
@@ -51,7 +51,7 @@ function HistoryPageContent() {
   const router = useRouter()
   const locale = useLocale()
 
-  const groupedSessions = useMemo(() => groupSessionsByDate(sessions, locale), [sessions, locale])
+  const groupedSessions = useMemo(() => groupSessionsByDate(sessions, t), [sessions, t])
 
   useEffect(() => {
     loadSessions()
@@ -117,10 +117,10 @@ function HistoryPageContent() {
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
-    if (diffMins < 1) return locale === 'ru' ? 'Только что' : 'Just now'
-    if (diffMins < 60) return locale === 'ru' ? `${diffMins} мин. назад` : `${diffMins}m ago`
-    if (diffHours < 24) return locale === 'ru' ? `${diffHours} ч. назад` : `${diffHours}h ago`
-    if (diffDays < 7) return locale === 'ru' ? `${diffDays} дн. назад` : `${diffDays}d ago`
+    if (diffMins < 1) return t('time.justNow')
+    if (diffMins < 60) return t('time.minutesAgo', { n: diffMins })
+    if (diffHours < 24) return t('time.hoursAgo', { n: diffHours })
+    if (diffDays < 7) return t('time.daysAgo', { n: diffDays })
     return date.toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' })
   }
 
@@ -195,7 +195,7 @@ function HistoryPageContent() {
                                 {session.title}
                               </h3>
                               <p className="text-[13px] text-[#8e8e8e]">
-                                {session.messageCount} {locale === 'ru' ? 'сообщ.' : 'messages'} · {formatTime(session.updatedAt)}
+                                {t('messageCount', { count: session.messageCount })} · {formatTime(session.updatedAt)}
                               </p>
                             </div>
                             <button

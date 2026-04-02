@@ -1,30 +1,30 @@
-export type ScoreStatus = {
-  label: string
+export type MetricStatus = {
   tailwind: string
   bg: string
+  level: string
 }
 
-export function getStressStatus(bsi: number): ScoreStatus {
-  if (bsi < 45) return { label: 'В норме', tailwind: 'text-green-600', bg: 'bg-green-50' }
-  if (bsi < 65) return { label: 'Повышен', tailwind: 'text-yellow-600', bg: 'bg-yellow-50' }
-  return { label: 'Критический', tailwind: 'text-red-600', bg: 'bg-red-50' }
+export function getStressStatus(bsi: number): MetricStatus {
+  if (bsi < 45) return { tailwind: 'text-green-600', bg: 'bg-green-50', level: 'normal' }
+  if (bsi < 65) return { tailwind: 'text-yellow-600', bg: 'bg-yellow-50', level: 'elevated' }
+  return { tailwind: 'text-red-600', bg: 'bg-red-50', level: 'critical' }
 }
 
-export function getEmotionStatus(esi: number): ScoreStatus {
-  if (esi < 40) return { label: 'Нестабильно', tailwind: 'text-orange-500', bg: 'bg-orange-50' }
-  if (esi < 60) return { label: 'В норме', tailwind: 'text-green-600', bg: 'bg-green-50' }
-  return { label: 'Стабильно', tailwind: 'text-green-700', bg: 'bg-green-50' }
+export function getEmotionStatus(esi: number): MetricStatus {
+  if (esi < 40) return { tailwind: 'text-orange-500', bg: 'bg-orange-50', level: 'unstable' }
+  if (esi < 60) return { tailwind: 'text-green-600', bg: 'bg-green-50', level: 'normal' }
+  return { tailwind: 'text-green-700', bg: 'bg-green-50', level: 'stable' }
 }
 
-export function getSupportStatus(ssi: number): ScoreStatus {
-  if (ssi < 40) return { label: 'Недостаточная', tailwind: 'text-red-500', bg: 'bg-red-50' }
-  return { label: 'Достаточная', tailwind: 'text-green-600', bg: 'bg-green-50' }
+export function getSupportStatus(ssi: number): MetricStatus {
+  if (ssi < 40) return { tailwind: 'text-red-500', bg: 'bg-red-50', level: 'low' }
+  return { tailwind: 'text-green-600', bg: 'bg-green-50', level: 'adequate' }
 }
 
-export function getResourceStatus(mri: number): ScoreStatus {
-  if (mri < 40) return { label: 'Истощение', tailwind: 'text-red-600', bg: 'bg-red-50' }
-  if (mri < 60) return { label: 'Снижен', tailwind: 'text-yellow-600', bg: 'bg-yellow-50' }
-  return { label: 'В норме', tailwind: 'text-green-600', bg: 'bg-green-50' }
+export function getResourceStatus(mri: number): MetricStatus {
+  if (mri < 40) return { tailwind: 'text-red-600', bg: 'bg-red-50', level: 'depleted' }
+  if (mri < 60) return { tailwind: 'text-yellow-600', bg: 'bg-yellow-50', level: 'reduced' }
+  return { tailwind: 'text-green-600', bg: 'bg-green-50', level: 'normal' }
 }
 
 export type TrendDirection = 'up' | 'down' | 'stable'
@@ -39,57 +39,32 @@ export function getTrend(values: number[]): TrendDirection {
   return 'stable'
 }
 
-export function getTrendLabel(
-  metric: 'emotion' | 'stress' | 'energy' | 'support',
-  trend: TrendDirection
-): string {
-  const map = {
-    emotion: {
-      up: '↑ Стало лучше к концу недели',
-      down: '↓ Немного ухудшилось',
-      stable: '→ Остаётся стабильным',
-    },
-    stress: {
-      up: '↓ Стресс снизился',
-      down: '↑ Стресс вырос',
-      stable: '→ Остаётся стабильным',
-    },
-    energy: {
-      up: '↑ Энергия выросла',
-      down: '↓ Немного снизилась',
-      stable: '→ Остаётся стабильным',
-    },
-    support: {
-      up: '↑ Постепенно растёт',
-      down: '↓ Снизилась',
-      stable: '→ Остаётся стабильным',
-    },
-  }
-  return map[metric][trend]
+export type ProfileSummaryKey = 'burnout' | 'emotionUnstable' | 'stressHigh' | 'resourceLow' | 'ok'
+
+export function getProfileSummaryKey(bsi: number, esi: number, mri: number): ProfileSummaryKey {
+  if (bsi >= 65 && mri <= 40) return 'burnout'
+  if (esi <= 35) return 'emotionUnstable'
+  if (bsi >= 65) return 'stressHigh'
+  if (mri <= 40) return 'resourceLow'
+  return 'ok'
 }
 
-export function generateProfileSummary(bsi: number, esi: number, mri: number): string {
-  if (bsi >= 65 && mri <= 40)
-    return 'Сейчас у тебя повышен стресс и снижена энергия. Это похоже на начальную стадию выгорания.'
-  if (esi <= 35)
-    return 'Эмоциональное состояние сейчас нестабильно. Daisy рядом — давай замедлимся 🤍'
-  if (bsi >= 65) return 'Стресс сейчас выше нормы. Телу и уму нужна поддержка.'
-  if (mri <= 40) return 'Ресурс снижен. Стоит обратить внимание на восстановление.'
-  return 'Общее состояние в норме. Продолжай следить за собой 🤍'
-}
+export type WeeklyDeltaKind = 'down' | 'up' | 'stable'
 
 export function getWeeklyDelta(
   current: number,
   previous: number
 ): {
   delta: number
-  label: string
+  kind: WeeklyDeltaKind
+  absDelta: number
   tailwind: string
 } {
   const delta = Math.round(current - previous)
-  if (delta < -2) return { delta, label: `Снизился на ${Math.abs(delta)}%`, tailwind: 'text-green-600' }
-  if (delta > 2) return { delta, label: `Вырос на ${Math.abs(delta)}%`, tailwind: 'text-red-500' }
-  return { delta, label: 'Остаётся стабильным', tailwind: 'text-yellow-600' }
+  const absDelta = Math.abs(delta)
+  if (delta < -2) return { delta, kind: 'down', absDelta, tailwind: 'text-green-600' }
+  if (delta > 2) return { delta, kind: 'up', absDelta, tailwind: 'text-red-500' }
+  return { delta, kind: 'stable', absDelta: 0, tailwind: 'text-yellow-600' }
 }
 
 export function getBestAndWorstDay(

@@ -9,7 +9,7 @@ import {
   getEmotionStatus,
   getSupportStatus,
   getResourceStatus,
-  generateProfileSummary,
+  getProfileSummaryKey,
 } from '@/shared/lib/scoring-helpers'
 
 interface Snapshot {
@@ -35,7 +35,7 @@ export function ProfileStatusCard({ snapshot, locale }: ProfileStatusCardProps) 
     { key: 'emotion' as const, label: t('status.metrics.emotion'), icon: Heart, getStatus: getEmotionStatus, valueKey: 'ESI' as const },
     { key: 'support' as const, label: t('status.metrics.support'), icon: Users, getStatus: getSupportStatus, valueKey: 'SSI' as const },
     { key: 'resource' as const, label: t('status.metrics.resource'), icon: Leaf, getStatus: getResourceStatus, valueKey: 'MRI' as const },
-  ]
+  ] as const
 
   if (!snapshot) {
     return (
@@ -61,7 +61,8 @@ export function ProfileStatusCard({ snapshot, locale }: ProfileStatusCardProps) 
     )
   }
 
-  const summary = generateProfileSummary(snapshot.BSI, snapshot.ESI, snapshot.MRI)
+  const summaryKey = getProfileSummaryKey(snapshot.BSI, snapshot.ESI, snapshot.MRI)
+  const summary = t(`status.summary.${summaryKey}`)
 
   return (
     <section>
@@ -73,6 +74,7 @@ export function ProfileStatusCard({ snapshot, locale }: ProfileStatusCardProps) 
           {ITEMS.map((item) => {
             const status = item.getStatus(snapshot[item.valueKey])
             const Icon = item.icon
+            const levelLabel = t(`status.levels.${item.key}.${status.level}`)
             return (
               <div key={item.key} className="flex items-center gap-3 p-4 rounded-xl bg-[#fafafa] hover:bg-[#f5f5f5] border border-[#f0f0f0] transition-colors">
                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${status.bg}`}>
@@ -80,7 +82,7 @@ export function ProfileStatusCard({ snapshot, locale }: ProfileStatusCardProps) 
                 </div>
                 <div className="min-w-0">
                   <p className="text-[13px] text-[#6b6b6b] truncate">{item.label}</p>
-                  <p className={`text-[15px] font-semibold ${status.tailwind}`}>{status.label}</p>
+                  <p className={`text-[15px] font-semibold ${status.tailwind}`}>{levelLabel}</p>
                 </div>
               </div>
             )

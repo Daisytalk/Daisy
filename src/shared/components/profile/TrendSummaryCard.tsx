@@ -1,10 +1,10 @@
 'use client'
 
 import { LineChart, Line, ResponsiveContainer } from 'recharts'
-import { getTrend, getTrendLabel } from '@/shared/lib/scoring-helpers'
+import { getTrend } from '@/shared/lib/scoring-helpers'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { enUS, ru } from 'date-fns/locale'
 import { useTranslations } from 'next-intl'
 
 interface HistoryRecord {
@@ -56,10 +56,11 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
     )
   }
 
+  const dfLocale = locale === 'ru' ? ru : enUS
   const toChartData = (records: HistoryRecord[], key: 'emotion' | 'stress' | 'energy' | 'support') => {
     return records.map((r) => {
       const val = r[key]
-      return { day: format(r.date, 'EEE', { locale: ru }), value: val ?? 3 }
+      return { day: format(r.date, 'EEE', { locale: dfLocale }), value: val ?? 3 }
     })
   }
 
@@ -74,7 +75,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
             const data = toChartData(history7d, m.key)
             const values = data.map((d) => d.value)
             const trend = getTrend(values)
-            const trendLabel = getTrendLabel(m.key, trend)
+            const trendLabel = t(`trend.directions.${m.key}.${trend}`)
             return (
               <div key={m.key} className="px-6 py-5">
                 <p className="text-[14px] font-medium text-[#6b6b6b] mb-3">{m.label}</p>

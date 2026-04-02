@@ -205,7 +205,20 @@
     "emptyTitle": "No conversations yet",
     "emptyDesc": "Start your first conversation with Daisy whenever you're ready.",
     "startChatting": "Start chatting",
-    "newChat": "New chat"
+    "newChat": "New chat",
+    "groups": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "thisWeek": "This week",
+      "earlier": "Earlier"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{n}m ago",
+      "hoursAgo": "{n}h ago",
+      "daysAgo": "{n}d ago"
+    },
+    "messageCount": "{count, plural, one {# message} other {# messages}}"
   },
   "chat": {
     "title": "Chat with Daisy",
@@ -214,7 +227,20 @@
     "newChat": "New chat",
     "thinking": "Daisy is thinking...",
     "error": "Something went wrong. Please try again.",
-    "disclaimer": "Note: Daisy is an AI companion for emotional support, not a substitute for professional medical care; in crisis or clinical situations, please contact a qualified professional."
+    "disclaimer": "Note: Daisy is an AI companion for emotional support, not a substitute for professional medical care; in crisis or clinical situations, please contact a qualified professional.",
+    "trialExpired": "Your trial has ended. Choose a plan to continue.",
+    "emptyHeroNamed": "Hi, {name}!",
+    "emptyHero": "Hi there!",
+    "emptyHeroSubtitle": "How are you feeling today? Write to me or pick a topic below.",
+    "suggestedPrompt1": "I'm feeling anxious today",
+    "suggestedPrompt2": "Let's talk about stress",
+    "suggestedPrompt3": "I need motivation",
+    "suggestedPrompt4": "Help me sort out my thoughts",
+    "userAvatarAlt": "You"
+  },
+  "premiumBanner": {
+    "notNow": "Not now",
+    "closeAria": "Close"
   },
   "onboarding": {
     "welcome": "Welcome to Daisy",
@@ -355,6 +381,11 @@
     "message6Bot": "I see something really important here - walks and spending time with your friend bring you some relief, even if it's rare. These are clues from your body about what it needs. Right now you're living in survival mode: work - exhaustion - work. It's like a closed loop where you only give and nothing comes back, so your energy never gets restored. I want to remind you that you deserve to take care of yourself - not as a reward for being productive, but as part of your routine, where you actively care for yourself. Let's think together: what would be one small step you could take this week to give yourself even a little space to recover? No pressure, let's just look at what possibilities you have right now."
   },
   "profile": {
+    "dashboard": {
+      "greeting": "Hi 🤍",
+      "greetingNamed": "Hi, {name} 🤍",
+      "subtitle": "Your space for support and growth"
+    },
     "quickActions": "Quick actions",
     "weeklyReportTitle": "Weekly report",
     "talkToDaisyShort": "Talk to Daisy",
@@ -377,7 +408,35 @@
       },
       "explainProfile": "Explain my profile",
       "daisyNotices": "Daisy notices:",
-      "talkToDaisy": "→ Talk to Daisy about this"
+      "talkToDaisy": "→ Talk to Daisy about this",
+      "levels": {
+        "stress": {
+          "normal": "OK",
+          "elevated": "Elevated",
+          "critical": "High"
+        },
+        "emotion": {
+          "unstable": "Unstable",
+          "normal": "OK",
+          "stable": "Stable"
+        },
+        "support": {
+          "low": "Low",
+          "adequate": "Adequate"
+        },
+        "resource": {
+          "depleted": "Depleted",
+          "reduced": "Low",
+          "normal": "OK"
+        }
+      },
+      "summary": {
+        "burnout": "Stress is high and your energy is low right now. This can look like early burnout.",
+        "emotionUnstable": "Your emotional state feels unstable. Daisy is here — let's slow down 🤍",
+        "stressHigh": "Stress is above a comfortable range. Your body and mind need support.",
+        "resourceLow": "Your resources are low. Focus on recovery when you can.",
+        "ok": "Overall you're in an OK range. Keep checking in with yourself 🤍"
+      }
     },
     "trend": {
       "title": "📈 My dynamics — Last 7 days",
@@ -389,6 +448,28 @@
         "stress": "Stress level",
         "energy": "Energy",
         "support": "Support level"
+      },
+      "directions": {
+        "emotion": {
+          "up": "↑ Feeling better toward the end of the week",
+          "down": "↓ A bit harder lately",
+          "stable": "→ Fairly stable"
+        },
+        "stress": {
+          "up": "↑ Stress increased",
+          "down": "↓ Stress eased",
+          "stable": "→ Fairly stable"
+        },
+        "energy": {
+          "up": "↑ Energy is up",
+          "down": "↓ Energy dipped a bit",
+          "stable": "→ Fairly stable"
+        },
+        "support": {
+          "up": "↑ Support feels a bit stronger",
+          "down": "↓ Support feels lower",
+          "stable": "→ Fairly stable"
+        }
       }
     },
     "dynamics": {
@@ -437,18 +518,69 @@
       "fallbackSummaryNormal": "The week was relatively stable 🤍",
       "fallbackRec1": "Try the STOP technique when stressed",
       "fallbackRec2": "Add 15 minutes of walking",
-      "fallbackRec3": "Talk to Daisy if it gets hard"
+      "fallbackRec3": "Talk to Daisy if it gets hard",
+      "delta": {
+        "down": "Down {n}%",
+        "up": "Up {n}%",
+        "stable": "Fairly stable"
+      }
     },
     "recommendations": {
       "title": "3 recommendations for next week",
       "premiumLock": "Unlock in Premium",
-      "upgradePlan": "Upgrade plan"
+      "upgradePlan": "Upgrade plan",
+      "fallback": {
+        "stress": {
+          "0": "Try the STOP technique: pause, breathe, observe",
+          "1": "Trim your to-do list to the 3 most important tasks",
+          "2": "Each evening: 5 minutes without your phone"
+        },
+        "emotion": {
+          "0": "In the morning: write down one worrying thought",
+          "1": "Grounding: name 5 things around you",
+          "2": "Talk to Daisy if it feels heavy"
+        },
+        "energy": {
+          "0": "Aim to sleep before 11 pm at least 3 nights",
+          "1": "Add a 15-minute walk",
+          "2": "One hour with no tasks — just for you"
+        },
+        "support": {
+          "0": "Message someone close first",
+          "1": "Try asking for a small bit of help",
+          "2": "Plan time with a friend"
+        }
+      }
     },
     "programs": {
       "title": "Personal programs",
       "badge": "Just for you",
       "startProgram": "→ Start program",
-      "premiumLock": "Available in Premium"
+      "premiumLock": "Available in Premium",
+      "cards": {
+        "resource": {
+          "title": "🌿 Restore your energy",
+          "item0": "Rest without guilt",
+          "item1": "Refill your battery"
+        },
+        "burnout": {
+          "title": "🔥 Anti-burnout — 14 days",
+          "item0": "Daily micro-steps",
+          "item1": "Morning check-in",
+          "item2": "Evening regulation"
+        },
+        "support": {
+          "title": "🤝 Easing loneliness",
+          "item0": "Work with beliefs",
+          "item1": "Small safe steps in connection"
+        },
+        "emotion": {
+          "title": "🌊 Emotional steadiness",
+          "item0": "DBT skills",
+          "item1": "Grounding",
+          "item2": "Working with triggers"
+        }
+      }
     },
     "premium": {
       "title": "✨ Deep analysis",
@@ -521,6 +653,21 @@
         "yes": "Yes",
         "no": "No",
         "score": "Score:"
+      },
+      "questionLabels": {
+        "mood_today": "How are you feeling today?",
+        "support_needs": "Where do you need support?",
+        "work_state": "Work / studies",
+        "relationships": "Relationships",
+        "family_support": "Support from loved ones",
+        "solo_comfort": "Comfort being alone with yourself",
+        "physical_state": "Physical wellbeing",
+        "emo_state": "Emotional state"
+      },
+      "answers": {
+        "unsure": "Hard to say",
+        "unsureWithOther": "Hard to say: {other}",
+        "noRelationship": "Not in a relationship"
       }
     },
     "privacy": {
@@ -538,7 +685,12 @@
       "deactivateBtn": "Delete",
       "deactivateLoading": "Deleting...",
       "confirm": "Confirm",
-      "cancelBtn": "Cancel"
+      "cancelBtn": "Cancel",
+      "errors": {
+        "exportFailed": "Export failed",
+        "generic": "Something went wrong",
+        "deleteFailed": "Could not delete account"
+      }
     },
     "communicationStyles": {
       "warm_friend": { "name": "Warm friend", "keywords": "Supportive, understanding, gentle" },

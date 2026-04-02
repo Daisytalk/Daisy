@@ -18,30 +18,30 @@ interface RecommendedProgramsProps {
   locale: string
 }
 
-const PROGRAMS = [
+const PROGRAMS: {
+  id: 'resource' | 'burnout' | 'support' | 'emotion'
+  condition: (s: Snapshot) => boolean
+  itemCount: number
+}[] = [
   {
-    condition: (s: Snapshot) => s.BSI >= 65 && s.MRI <= 40,
-    title: '🌿 Восстановление ресурса',
-    items: ['отдых без вины', 'восполнение энергии'],
     id: 'resource',
+    condition: (s: Snapshot) => s.BSI >= 65 && s.MRI <= 40,
+    itemCount: 2,
   },
   {
-    condition: (s: Snapshot) => s.BSI >= 65,
-    title: '🔥 Анти-выгорание 14 дней',
-    items: ['ежедневные микро-шаги', 'утренний чек-ин', 'вечерняя регуляция'],
     id: 'burnout',
+    condition: (s: Snapshot) => s.BSI >= 65,
+    itemCount: 3,
   },
   {
-    condition: (s: Snapshot) => s.SSI <= 40,
-    title: '🤝 Снижение одиночества',
-    items: ['работа с установками', 'безопасные шаги в общении'],
     id: 'support',
+    condition: (s: Snapshot) => s.SSI <= 40,
+    itemCount: 2,
   },
   {
-    condition: (s: Snapshot) => s.ESI <= 40,
-    title: '🌊 Стабилизация эмоций',
-    items: ['техники DBT', 'заземление', 'работа с триггерами'],
     id: 'emotion',
+    condition: (s: Snapshot) => s.ESI <= 40,
+    itemCount: 3,
   },
 ]
 
@@ -68,12 +68,12 @@ export function RecommendedPrograms({ snapshot, isPremium, locale }: Recommended
               <span className="text-[11px] font-semibold text-[#5ba3c6] bg-[#e0f7fa] px-3 py-1.5 rounded-lg">
                 {t('programs.badge')}
               </span>
-              <h3 className="text-[17px] font-semibold text-[#2d2d2d] mt-4">{prog.title}</h3>
+              <h3 className="text-[17px] font-semibold text-[#2d2d2d] mt-4">{t(`programs.cards.${prog.id}.title`)}</h3>
               <ul className="mt-4 text-[15px] text-[#6b6b6b] space-y-2.5">
-                {prog.items.map((item) => (
-                  <li key={item} className="flex items-center gap-2.5">
+                {Array.from({ length: prog.itemCount }, (_, i) => (
+                  <li key={i} className="flex items-center gap-2.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#5ba3c6]/70 shrink-0" />
-                    {item}
+                    {t(`programs.cards.${prog.id}.item${i}`)}
                   </li>
                 ))}
               </ul>

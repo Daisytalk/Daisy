@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 
 interface PremiumOffer {
   triggerType: string
@@ -13,6 +14,8 @@ interface PremiumOffer {
 }
 
 export function PremiumBanner() {
+  const locale = useLocale()
+  const t = useTranslations('premiumBanner')
   const [offer, setOffer] = useState<PremiumOffer | null>(null)
   const [dismissed, setDismissed] = useState(false)
 
@@ -30,8 +33,8 @@ export function PremiumBanner() {
 
   useEffect(() => {
     if (dismissed) return
-    const t = setTimeout(checkOffer, 2000)
-    return () => clearTimeout(t)
+    const timer = setTimeout(checkOffer, 2000)
+    return () => clearTimeout(timer)
   }, [checkOffer, dismissed])
 
   const handleDismiss = async () => {
@@ -63,23 +66,25 @@ export function PremiumBanner() {
           <p className="text-xs text-muted-foreground mt-0.5">{offer.description}</p>
           <div className="flex items-center gap-2 mt-2">
             <Link
-              href="/ru/pricing"
+              href={`/${locale}/pricing`}
               className="text-xs font-medium text-primary hover:text-primary/80 underline underline-offset-2"
             >
               {offer.cta}
             </Link>
             <button
+              type="button"
               onClick={handleDismiss}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              Не сейчас
+              {t('notNow')}
             </button>
           </div>
         </div>
         <button
+          type="button"
           onClick={handleDismiss}
           className="shrink-0 p-1 rounded-lg hover:bg-muted/50 text-muted-foreground"
-          aria-label="Закрыть"
+          aria-label={t('closeAria')}
         >
           <X className="w-4 h-4" />
         </button>

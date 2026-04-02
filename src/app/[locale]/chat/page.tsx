@@ -176,7 +176,7 @@ function ChatPageContent() {
           setMessages(prev => [...prev, {
             id: `trial_${Date.now()}`,
             role: 'assistant',
-            content: (errData.error as string) || 'Пробный период истёк. Выберите план для продолжения.',
+            content: (errData.error as string) || t('trialExpired'),
             timestamp: new Date(),
           }])
           return
@@ -312,10 +312,10 @@ function ChatPageContent() {
   }
 
   const suggestedPrompts = [
-    "Мне тревожно сегодня",
-    "Давай поговорим о стрессе",
-    "Мне нужна мотивация",
-    "Помоги разобраться в мыслях"
+    t('suggestedPrompt1'),
+    t('suggestedPrompt2'),
+    t('suggestedPrompt3'),
+    t('suggestedPrompt4'),
   ]
 
   return (
@@ -351,11 +351,11 @@ function ChatPageContent() {
                   />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight mb-2">
-                  {user?.name?.split(' ')[0] || 'there'}, привет!
+                  {user?.name?.split(' ')[0]
+                    ? t('emptyHeroNamed', { name: user.name.split(' ')[0] })
+                    : t('emptyHero')}
                 </h2>
-                <p className="text-muted-foreground mb-8 max-w-sm">
-                  Как ты себя чувствуешь сегодня? Напиши мне или выбери тему ниже.
-                </p>
+                <p className="text-muted-foreground mb-8 max-w-sm">{t('emptyHeroSubtitle')}</p>
                 <div className="flex flex-wrap justify-center gap-2 w-full max-w-xl">
                   {suggestedPrompts.map((prompt, index) => (
                     <button
@@ -449,7 +449,7 @@ function ChatPageContent() {
                       </div>
                       {message.role === 'user' && (
                         <Avatar className="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden">
-                          <AvatarImage src="/images/user-icon.png" alt="Вы" className="object-cover" />
+                          <AvatarImage src="/images/user-icon.png" alt={t('userAvatarAlt')} className="object-cover" />
                           <AvatarFallback className="bg-muted text-muted-foreground rounded-full text-xs font-medium">
                             {user?.name?.charAt(0).toUpperCase() || 'U'}
                           </AvatarFallback>

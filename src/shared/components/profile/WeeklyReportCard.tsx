@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, Legend, ResponsiveContainer, Tooltip } from 'recharts'
 import { format, subDays } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { enUS, ru } from 'date-fns/locale'
 import { Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
@@ -30,6 +30,7 @@ interface WeeklyReportCardProps {
 
 export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = defaultLocale }: WeeklyReportCardProps) {
   const t = useTranslations('profile')
+  const dfLocale = locale === 'ru' ? ru : enUS
   const [period, setPeriod] = useState<Period>('7d')
   const [aiReport, setAiReport] = useState<{ summary: string; recommendations: string[] } | null>(null)
   const [fetchLoading, setFetchLoading] = useState(true)
@@ -64,7 +65,7 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
       return acc
     }, {} as Record<string, { date: string; emotion: number; stress: number; energy: number; support: number; count: number }>)
     return Object.values(byDay).map((v) => ({
-      day: format(new Date(v.date), 'EEE', { locale: ru }),
+      day: format(new Date(v.date), 'EEE', { locale: dfLocale }),
       emotion: v.count ? v.emotion / v.count : 3,
       stress: v.count ? v.stress / v.count : 3,
       energy: v.count ? v.energy / v.count : 3,
@@ -101,7 +102,14 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
     { metric: t('weeklyReport.metrics.energy'), ...getWeeklyDelta(currWeek.energy, prevWeek.energy) },
     { metric: t('weeklyReport.metrics.support'), ...getWeeklyDelta(currWeek.support, prevWeek.support) },
     { metric: t('weeklyReport.metrics.emotion'), ...getWeeklyDelta(currWeek.emotion, prevWeek.emotion) },
-  ]
+  ].map((d) => ({
+    metric: d.metric,
+    tailwind: d.tailwind,
+    label:
+      d.kind === 'stable'
+        ? t('weeklyReport.delta.stable')
+        : t(`weeklyReport.delta.${d.kind}`, { n: d.absDelta }),
+  }))
 
   const fallbackSummary =
     currWeek.stress >= 60

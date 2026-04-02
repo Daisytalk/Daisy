@@ -93,11 +93,9 @@ export function ProfileDashboard({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-semibold text-[#1a1a1a] tracking-tight">
-                Привет{firstName ? `, ${firstName}` : ''} 🤍
+                {firstName ? tp('dashboard.greetingNamed', { name: firstName }) : tp('dashboard.greeting')}
               </h1>
-              <p className="text-[15px] text-[#6b6b6b] mt-1">
-                Твоё пространство для поддержки и роста
-              </p>
+              <p className="text-[15px] text-[#6b6b6b] mt-1">{tp('dashboard.subtitle')}</p>
             </div>
             <Link
               href={`/${locale}/settings`}

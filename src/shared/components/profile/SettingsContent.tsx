@@ -29,10 +29,13 @@ import { ProtectedRoute } from '@/shared/components/ProtectedRoute'
 import { AppLayout } from '@/shared/components/AppLayout'
 import { COMMUNICATION_STYLE_IDS } from '@/shared/constants/communication-styles'
 
-function formatAnswer(answer: unknown, t?: (k: string) => string): string {
-  const yes = t ? t('onboarding.labels.yes') : 'Да'
-  const no = t ? t('onboarding.labels.no') : 'Нет'
-  const score = t ? t('onboarding.labels.score') : 'Оценка:'
+function formatAnswer(
+  answer: unknown,
+  t: (key: string, values?: Record<string, string | number>) => string
+): string {
+  const yes = t('onboarding.labels.yes')
+  const no = t('onboarding.labels.no')
+  const score = t('onboarding.labels.score')
   if (answer === null || answer === undefined) return '-'
   if (Array.isArray(answer)) return answer.join(', ')
   if (typeof answer === 'boolean') return answer ? yes : no
@@ -42,10 +45,13 @@ function formatAnswer(answer: unknown, t?: (k: string) => string): string {
     if (typeof o.rating === 'number') return `${score} ${o.rating}/5${o.comment ? ` - ${o.comment}` : ''}`
     if (o.value === 'yes') return typeof o.rel_quality === 'number' ? `${yes}, ${score} ${o.rel_quality}/5` : yes
     if (o.value === 'no') return no
-    if (o.value === 'unsure') return o.other ? `Сложно сказать: ${o.other}` : 'Сложно сказать'
+    if (o.value === 'unsure')
+      return o.other
+        ? t('onboarding.answers.unsureWithOther', { other: String(o.other) })
+        : t('onboarding.answers.unsure')
     if (o.yes === true) return o.detail ? `${yes} - ${o.detail}` : yes
     if (o.yes === false) return no
-    if (o.hasRelationship === false) return 'Нет отношений'
+    if (o.hasRelationship === false) return t('onboarding.answers.noRelationship')
     if (o.hasRelationship === true) return typeof o.rating === 'number' ? `${score} ${o.rating}/5` : yes
     return JSON.stringify(answer)
   }
@@ -95,16 +101,19 @@ export function SettingsContent() {
     if (user) loadData()
   }, [user, loadData])
 
-  const QUESTION_LABELS: Record<string, string> = {
-    mood_today: 'Как ты себя чувствуешь сегодня?',
-    support_needs: 'Где тебе нужна поддержка?',
-    work_state: 'Работа / учёба',
-    relationships: 'Отношения',
-    family_support: 'Поддержка близких',
-    solo_comfort: 'Комфорт наедине с собой',
-    physical_state: 'Физическое самочувствие',
-    emo_state: 'Эмоциональное состояние',
-  }
+  const questionLabels = useMemo(
+    () => ({
+      mood_today: t('onboarding.questionLabels.mood_today'),
+      support_needs: t('onboarding.questionLabels.support_needs'),
+      work_state: t('onboarding.questionLabels.work_state'),
+      relationships: t('onboarding.questionLabels.relationships'),
+      family_support: t('onboarding.questionLabels.family_support'),
+      solo_comfort: t('onboarding.questionLabels.solo_comfort'),
+      physical_state: t('onboarding.questionLabels.physical_state'),
+      emo_state: t('onboarding.questionLabels.emo_state'),
+    }),
+    [t]
+  )
 
   const trialDaysLeft = user?.trialEndsAt
     ? Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -314,9 +323,9 @@ export function SettingsContent() {
                 .map((answer, index) => (
                   <div key={index} className="px-6 py-5">
                     <p className="text-[13px] text-[#8e8e8e] mb-2">
-                      {QUESTION_LABELS[answer.questionId] ?? answer.questionId}
+                      {questionLabels[answer.questionId as keyof typeof questionLabels] ?? answer.questionId}
                     </p>
-                    <p className="text-[16px] text-[#2d2d2d] leading-relaxed">{formatAnswer(answer.answer, (k) => t(k))}</p>
+                    <p className="text-[16px] text-[#2d2d2d] leading-relaxed">{formatAnswer(answer.answer, t)}</p>
                   </div>
                 ))}
             </div>
@@ -369,7 +378,7 @@ export function SettingsContent() {
                     a.click()
                     URL.revokeObjectURL(url)
                   } catch (e) {
-                    setAccountError(e instanceof Error ? e.message : 'Ошибка экспорта')
+                    setAccountError(e instanceof Error ? e.message : t('privacy.errors.exportFailed'))
                   } finally {
                     setAccountAction('idle')
                   }
@@ -398,7 +407,7 @@ export function SettingsContent() {
                     const authService = new AuthApiService()
                     await authService.clearMemory()
                   } catch (e) {
-                    setAccountError(e instanceof Error ? e.message : 'Ошибка')
+                    setAccountError(e instanceof Error ? e.message : t('privacy.errors.generic'))
                   } finally {
                     setAccountAction('idle')
                   }
@@ -433,7 +442,7 @@ export function SettingsContent() {
                         await logout()
                         window.location.href = `/${locale}`
                       } catch (e) {
-                        setAccountError(e instanceof Error ? e.message : 'Ошибка удаления')
+                        setAccountError(e instanceof Error ? e.message : t('privacy.errors.deleteFailed'))
                       } finally {
                         setAccountAction('idle')
                         setShowDeleteConfirm(false)
