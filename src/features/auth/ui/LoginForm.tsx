@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { AuthApiService } from '@/shared/services/auth'
+import { defaultLocale } from '@/i18n'
 
 export function LoginForm() {
   const t = useTranslations('auth')
@@ -25,7 +26,7 @@ export function LoginForm() {
       localStorage.setItem('user', JSON.stringify(data.user))
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
       // Full page redirect so AuthProvider re-runs and sees the auth cookie
-      window.location.href = `/${locale || 'ru'}/profile`
+      window.location.href = `/${locale || defaultLocale}/profile`
     } catch (err: any) {
       setError(err.message || 'Login failed')
     } finally {

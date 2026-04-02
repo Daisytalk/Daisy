@@ -4,6 +4,7 @@ import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
 import { subDays, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { defaultLocale } from '@/i18n'
 
 type Period = '7d' | '14d' | '30d'
 
@@ -24,14 +25,23 @@ export async function GET(request: NextRequest) {
     const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
     const cutoff = subDays(new Date(), days)
 
-    const history = await prisma.stressRating.findMany({
-      where: {
-        userId: decoded.userId,
-        source: 'daily_checkin',
-        date: { gte: cutoff },
-      },
-      orderBy: { date: 'asc' },
-    })
+    const [history, userRow] = await Promise.all([
+      prisma.stressRating.findMany({
+        where: {
+          userId: decoded.userId,
+          source: 'daily_checkin',
+          date: { gte: cutoff },
+        },
+        orderBy: { date: 'asc' },
+      }),
+      prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { locale: true },
+      }),
+    ])
+
+    const aiLocale =
+      userRow?.locale === 'ru' || userRow?.locale === 'en' ? userRow.locale : defaultLocale
 
     if (!history.length) {
       return NextResponse.json({
@@ -58,7 +68,7 @@ export async function GET(request: NextRequest) {
         user_id: decoded.userId,
         period_days: days,
         checkins,
-        locale: 'ru',
+        locale: aiLocale,
       })
       fromAI = true
     } catch (err) {

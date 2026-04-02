@@ -4,6 +4,7 @@ import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
 import { subDays, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { defaultLocale } from '@/i18n'
 
 function toStructuredRecommendations(items: string[]): { title: string; description: string }[] {
   return items.map((text) => {
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
       }),
       prisma.user.findUnique({
         where: { id: decoded.userId },
-        select: { name: true }
+        select: { name: true, locale: true },
       })
     ])
 
@@ -90,6 +91,9 @@ export async function GET(request: NextRequest) {
         }
       : undefined
 
+    const aiLocale =
+      user?.locale === 'ru' || user?.locale === 'en' ? user.locale : defaultLocale
+
     let summary: string
     let topicsInsight: string
     let recommendations: { title: string; description: string }[]
@@ -101,7 +105,7 @@ export async function GET(request: NextRequest) {
         checkins,
         profile,
         memory_topics: memoryTopics,
-        locale: 'ru',
+        locale: aiLocale,
       })
       summary = ai.summary
       topicsInsight = ai.insights?.length ? ai.insights.join(' ') : ''

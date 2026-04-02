@@ -5,6 +5,7 @@ import { AuthService } from '@/shared/lib/auth'
 import type { User } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
 import { resolveAcquisitionFromRequest } from '@/shared/lib/attribution'
+import { defaultLocale } from '@/i18n'
 
 /**
  * Альтернативный callback (/api/auth/google/callback).
@@ -100,7 +101,14 @@ export async function GET(req: NextRequest) {
     }
     const authToken = AuthService.generateToken(tokenPayload)
 
-    const locale = 'ru'
+    const userWithLocale = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { locale: true },
+    })
+    const locale =
+      userWithLocale?.locale === 'ru' || userWithLocale?.locale === 'en'
+        ? userWithLocale.locale
+        : defaultLocale
     const redirectPath = !isOnboarded ? `/${locale}/onboarding` : `/${locale}/chat`
 
     // Set httpOnly cookie — no localStorage, no XSS exposure
@@ -117,6 +125,6 @@ export async function GET(req: NextRequest) {
     return redirectResponse
   } catch (err) {
     console.error('OAuth callback error', err)
-    return NextResponse.redirect(new URL('/ru/login?error=oauth_failed', baseUrl))
+    return NextResponse.redirect(new URL(`/${defaultLocale}/login?error=oauth_failed`, baseUrl))
   }
 }

@@ -4,21 +4,25 @@ import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { canonicalUrl } from '@/shared/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Кризисная помощь и горячие линии',
-  description:
-    'Контакты экстренной психологической помощи и кризисных служб. Daisy не заменяет экстренную медицинскую помощь.',
-  alternates: {
-    canonical: canonicalUrl('ru', '/crisis-resources'),
-  },
-  openGraph: {
-    title: 'Кризисная помощь | Daisy',
-    url: canonicalUrl('ru', '/crisis-resources'),
-  },
-}
-
 interface PageProps {
   params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'crisisResources' })
+  const path = '/crisis-resources'
+  return {
+    title: t('title'),
+    description: t('subtitle'),
+    alternates: {
+      canonical: canonicalUrl(locale, path),
+    },
+    openGraph: {
+      title: `${t('title')} | Daisy`,
+      url: canonicalUrl(locale, path),
+    },
+  }
 }
 
 export default async function CrisisResourcesPage({ params }: PageProps) {

@@ -8,13 +8,17 @@ interface PageProps {
   params: Promise<{ locale: string }>
 }
 
-export const metadata: Metadata = {
-  title: 'Политика конфиденциальности',
-  description: 'Политика конфиденциальности и обработки персональных данных сервиса Daisy. Дата вступления в силу: 10.02.2026.',
-  alternates: {
-    canonical: canonicalUrl('ru', '/privacy'),
-  },
-  robots: { index: true, follow: true },
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  return {
+    title: 'Политика конфиденциальности',
+    description:
+      'Политика конфиденциальности и обработки персональных данных сервиса Daisy. Дата вступления в силу: 10.02.2026.',
+    alternates: {
+      canonical: canonicalUrl(locale, '/privacy'),
+    },
+    robots: { index: true, follow: true },
+  }
 }
 
 const privacyText = {

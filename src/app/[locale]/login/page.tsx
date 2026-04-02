@@ -12,6 +12,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
+import { defaultLocale } from '@/i18n'
 
 /** Защита от open redirect: только относительные пути с префиксом локали. */
 function safeRedirectAfterLogin(next: string | null, locale: string): string {
@@ -47,10 +48,10 @@ function LoginPageContent() {
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
 
       if (data.requiresRestore) {
-        window.location.href = `/${locale || 'ru'}/restore-account`
+        window.location.href = `/${locale || defaultLocale}/restore-account`
         return
       }
-      window.location.href = safeRedirectAfterLogin(nextAfterLogin, locale || 'ru')
+      window.location.href = safeRedirectAfterLogin(nextAfterLogin, locale || defaultLocale)
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loginFailed'))
     } finally {

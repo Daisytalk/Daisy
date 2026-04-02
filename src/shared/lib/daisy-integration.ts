@@ -7,6 +7,7 @@
 import type { Prisma } from '@prisma/client'
 import prisma from '@/shared/lib/database'
 import type { AIApiResponse } from '@/shared/lib/ai-api'
+import { defaultLocale } from '@/i18n'
 import { getMemoryBundle, getPrefetchPack, updateConversationState, processMemoryUpdateToEpisodic } from '@/shared/lib/memory'
 import { prepareContentForStorage, getDecryptedContent } from '@/shared/lib/cbt-message-content'
 
@@ -51,10 +52,10 @@ interface BuildDaisyRequestInput {
  * - user_context: User.conversationMemory (накопленные факты)
  * - history: CbtMessage последние 30
  * - persona: User.aiProfile.communication_style[0] (приоритет) или CbtConversation.persona
- * - locale: настройки пользователя или "ru"
+ * - locale: настройки пользователя или дефолт из i18n
  */
 export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<DaisyRequestPayload> {
-  const { userId, conversationId, userMessage, locale = 'ru' } = input
+  const { userId, conversationId, userMessage, locale = defaultLocale } = input
 
   const [conversation, user, onboardingData, psychSnapshot] = await Promise.all([
     prisma.cbtConversation.findUnique({

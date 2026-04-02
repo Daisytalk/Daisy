@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { researchPapers } from '@/shared/data/research-papers'
 import { getSiteUrl } from '@/shared/lib/seo'
+import { defaultLocale } from '@/i18n'
 
 /** Публичные маршруты для индексации (без кабинета и чата) */
 const PUBLIC_PATHS: { path: string; changeFrequency: MetadataRoute.Sitemap[0]['changeFrequency']; priority: number }[] = [
@@ -14,7 +15,7 @@ const PUBLIC_PATHS: { path: string; changeFrequency: MetadataRoute.Sitemap[0]['c
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = getSiteUrl()
-  const locale = 'ru'
+  const locale = defaultLocale
   const prefix = `/${locale}`
 
   const entries: MetadataRoute.Sitemap = []

@@ -1,4 +1,6 @@
 // CBT Therapy API Client via Azure
+import { defaultLocale } from '@/i18n'
+
 interface CBTChatRequest {
   text: string;
   user_id: string;
@@ -225,7 +227,7 @@ export class CBTApiClient {
       user_id: request.user_id,
       period_days: request.period_days,
       checkins: request.checkins,
-      locale: request.locale || 'ru',
+      locale: request.locale || defaultLocale,
     };
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (this.apiKey) headers['x-api-key'] = this.apiKey;
@@ -250,7 +252,7 @@ export class CBTApiClient {
       checkins: request.checkins,
       profile: request.profile || {},
       memory_topics: request.memory_topics || [],
-      locale: request.locale || 'ru',
+      locale: request.locale || defaultLocale,
     };
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (this.apiKey) headers['x-api-key'] = this.apiKey;

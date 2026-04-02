@@ -23,7 +23,7 @@ model User {
   passwordResetExpires DateTime?         @map("password_reset_expires")
   deactivatedAt        DateTime?         @map("deactivated_at")
   currentStressRating  Int?              @map("current_stress_rating") // 1-5, для weekly report
-  locale              String?           @default("ru")
+  locale              String?           @default("en")
   timezone            String?
   /** Нормализованный источник: instagram, vk, direct, utm-метка и т.д. */
   acquisitionSource   String?           @map("acquisition_source")

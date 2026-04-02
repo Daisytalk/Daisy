@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cbtApi } from '@/shared/lib/cbt-api'
+import { defaultLocale } from '@/i18n'
 
 /**
  * GET /api/debug/ai-status
@@ -20,7 +21,7 @@ export async function GET() {
       period_days: 7,
       checkins: [{ date: '1 янв', emotion: 4, stress: 2, energy: 4, support: 5 }],
       memory_topics: ['Тест'],
-      locale: 'ru',
+      locale: defaultLocale,
     })
     results.weeklyReport = {
       ok: true,
@@ -39,7 +40,7 @@ export async function GET() {
       user_id: 'debug-test',
       period_days: 7,
       checkins: [{ date: '1 янв', emotion: 4, stress: 2, energy: 4, support: 5 }],
-      locale: 'ru',
+      locale: defaultLocale,
     })
     results.dynamicsInsights = {
       ok: true,

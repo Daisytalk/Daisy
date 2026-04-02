@@ -16,11 +16,13 @@ import {
   CreditCard,
   PanelLeftClose,
   PanelLeftOpen,
+  User,
 } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/shared/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar'
 import { cn } from '@/shared/lib/utils'
+import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 interface AppLayoutProps {
   children: ReactNode
 }
@@ -38,6 +40,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const navigation = [
     { name: t('chat'), href: `/${locale}/chat`, icon: MessageSquare },
     { name: t('history'), href: `/${locale}/history`, icon: History },
+    { name: t('profile'), href: `/${locale}/profile`, icon: User },
     { name: t('settings'), href: `/${locale}/settings`, icon: Settings },
     { name: t('upgradePlan'), href: `/${locale}/pricing`, icon: CreditCard },
   ]
@@ -86,6 +89,9 @@ export function AppLayout({ children }: AppLayoutProps) {
               </div>
             </Link>
             <div className="flex items-center gap-1">
+              <div className="hidden lg:flex items-center">
+                <LanguageSwitcher variant="light" />
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
@@ -102,6 +108,24 @@ export function AppLayout({ children }: AppLayoutProps) {
               >
                 <X className="w-5 h-5" />
               </Button>
+            </div>
+          </div>
+
+          <div className="px-3 pb-3 pt-1 border-b border-[hsl(var(--app-border))]">
+            <div
+              className="flex items-center gap-2 p-2 rounded-[20px] bg-[#f7f7f7] cursor-default select-none"
+              aria-label={user?.email ? `${user?.name || 'User'}, ${user.email}` : undefined}
+            >
+              <Avatar className="h-10 w-10 rounded-full overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center pointer-events-none">
+                <AvatarImage src="/images/user-icon.png" alt="" className="object-cover" />
+                <AvatarFallback className="bg-white text-pink-500 text-sm font-medium rounded-full">
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[15px] font-medium text-[#2d2d2d] truncate">{user?.name || 'User'}</p>
+                <p className="text-[13px] text-[#6b6b6b] truncate">{user?.email}</p>
+              </div>
             </div>
           </div>
 
@@ -131,25 +155,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           </nav>
 
           <div className="p-3 mt-auto">
-            <Link
-              href={`/${locale}/profile`}
-              className={cn(
-                'flex items-center gap-2 p-2 rounded-[20px] transition-colors',
-                pathname.startsWith(`/${locale}/profile`) ? 'bg-primary/10' : 'bg-[#f7f7f7] hover:bg-[#ebebeb]'
-              )}
-            >
-              <Avatar className="h-10 w-10 rounded-full overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center">
-                <AvatarImage src="/images/user-icon.png" alt={user?.name || 'User'} className="object-cover" />
-                <AvatarFallback className="bg-white text-pink-500 text-sm font-medium rounded-full">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-[15px] font-medium text-[#2d2d2d] truncate">{user?.name || 'User'}</p>
-                <p className="text-[13px] text-[#6b6b6b] truncate">{user?.email}</p>
-              </div>
-            </Link>
-
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#e57373] hover:text-red-400 transition-colors mt-2"
@@ -163,31 +168,34 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative">
         {isCollapsed && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden lg:flex absolute top-4 left-4 z-40 rounded-xl text-muted-foreground hover:bg-muted/60"
-            onClick={() => setIsCollapsed(false)}
-          >
-            <PanelLeftOpen className="w-5 h-5" />
-          </Button>
+          <div className="hidden lg:flex absolute top-4 left-4 z-40 items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-xl text-muted-foreground hover:bg-muted/60"
+              onClick={() => setIsCollapsed(false)}
+            >
+              <PanelLeftOpen className="w-5 h-5" />
+            </Button>
+            <LanguageSwitcher variant="light" />
+          </div>
         )}
-        <header className="lg:hidden bg-white border-b border-[hsl(var(--app-border))] px-4 py-3 flex items-center justify-between shrink-0">
+        <header className="lg:hidden bg-white border-b border-[hsl(var(--app-border))] px-4 py-3 flex items-center justify-between gap-2 shrink-0">
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-xl text-muted-foreground"
+            className="rounded-xl text-muted-foreground shrink-0"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="w-5 h-5" />
           </Button>
-          <Link href={`/${locale}`} className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-full overflow-hidden shadow-sm flex items-center justify-center bg-white">
+          <Link href={`/${locale}`} className="flex items-center gap-2 min-w-0">
+            <div className="w-11 h-11 rounded-full overflow-hidden shadow-sm flex items-center justify-center bg-white shrink-0">
               <Image src="/images/daisy-icon.svg" alt="Daisy" width={44} height={44} className="object-contain" />
             </div>
-            <span className="font-semibold text-foreground">Daisy</span>
+            <span className="font-semibold text-foreground truncate">Daisy</span>
           </Link>
-          <div className="w-10" />
+          <LanguageSwitcher variant="light" />
         </header>
 
         <main className="flex-1 overflow-auto">

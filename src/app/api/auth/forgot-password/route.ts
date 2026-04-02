@@ -5,6 +5,7 @@ import { getEmailService } from '@/shared/services/email'
 import { env } from '@/shared/config/env'
 import { rateLimit } from '@/shared/lib/rate-limit'
 import { getClientIP } from '@/shared/lib/get-client-ip'
+import { defaultLocale } from '@/i18n'
 
 /**
  * POST /api/auth/forgot-password
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
     })
 
     const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin') || 'http://localhost:3000'
-    const safeLocale = typeof locale === 'string' && /^[a-z]{2}$/.test(locale) ? locale : 'ru'
+    const safeLocale = typeof locale === 'string' && /^[a-z]{2}$/.test(locale) ? locale : defaultLocale
     const resetUrl = `${origin}/${safeLocale}/reset-password?token=${resetToken}`
 
     const subject = 'Daisy - сброс пароля'

@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
+import type { Locale } from '@/i18n';
 import { Inter } from 'next/font/google'
 import '../globals.css';
 import { ContextualProviders } from '../ContextualProviders'
@@ -61,7 +62,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'ru_RU',
+    locale: 'en_US',
     url: SITE_URL,
     siteName: 'Daisy',
     title: DEFAULT_SITE_TITLE,
@@ -120,7 +121,7 @@ export default async function LocaleLayout({
   const { locale } = await params;
   
   // Validate locale
-  if (!routing.locales.includes(locale as 'ru')) {
+  if (!routing.locales.includes(locale as Locale)) {
     notFound();
   }
 

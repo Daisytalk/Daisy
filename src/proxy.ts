@@ -7,7 +7,7 @@ const intlMiddleware = createIntlMiddleware(routing)
 
 /**
  * Next.js 16: используем только `proxy.ts` (не `middleware.ts`).
- * Корень `/` → редирект на `/ru` или `/en` по cookie / гео / Accept-Language.
+ * Корень `/` → редирект на `/en` или `/ru` по cookie / гео / Accept-Language.
  */
 export default function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname

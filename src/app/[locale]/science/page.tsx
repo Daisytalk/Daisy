@@ -6,25 +6,28 @@ import { localizeDate, localizeReadTime } from '@/shared/lib/research-i18n'
 import Image from 'next/image'
 import { canonicalUrl } from '@/shared/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Наука за Daisy',
-  description:
-    'Научные публикации об ИИ и цифровых решениях в поддержке ментального благополучия: обзоры исследований, к которым опирается Daisy.',
-  alternates: {
-    canonical: canonicalUrl('ru', '/science'),
-  },
-  openGraph: {
-    title: 'Наука за Daisy',
-    description:
-      'Читай последние научные публикации о роли ИИ в поддержке ментального здоровья.',
-    url: canonicalUrl('ru', '/science'),
-  },
-}
-
 interface PageProps {
   params: Promise<{
     locale: string
   }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  return {
+    title: 'Наука за Daisy',
+    description:
+      'Научные публикации об ИИ и цифровых решениях в поддержке ментального благополучия: обзоры исследований, к которым опирается Daisy.',
+    alternates: {
+      canonical: canonicalUrl(locale, '/science'),
+    },
+    openGraph: {
+      title: 'Наука за Daisy',
+      description:
+        'Читай последние научные публикации о роли ИИ в поддержке ментального здоровья.',
+      url: canonicalUrl(locale, '/science'),
+    },
+  }
 }
 
 const sciencePageText = {

@@ -1,9 +1,9 @@
 import { defineRouting } from 'next-intl/routing';
 
-// ru — по умолчанию; en — английский сайт и интерфейс (/en/...)
+// en — локаль по умолчанию; ru — русский интерфейс (/ru/...)
 export const routing = defineRouting({
-  locales: ['ru', 'en'],
-  defaultLocale: 'ru',
+  locales: ['en', 'ru'],
+  defaultLocale: 'en',
   localePrefix: 'always',
 })
 

@@ -8,6 +8,7 @@ import { Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { getWeeklyDelta } from '@/shared/lib/scoring-helpers'
+import { defaultLocale } from '@/i18n'
 
 type Period = '7d' | '14d' | '30d'
 
@@ -27,7 +28,7 @@ interface WeeklyReportCardProps {
   locale?: string
 }
 
-export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = 'ru' }: WeeklyReportCardProps) {
+export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = defaultLocale }: WeeklyReportCardProps) {
   const t = useTranslations('profile')
   const [period, setPeriod] = useState<Period>('7d')
   const [aiReport, setAiReport] = useState<{ summary: string; recommendations: string[] } | null>(null)

@@ -1,9 +1,10 @@
 import type { MetadataRoute } from 'next'
 import { getSiteUrl } from '@/shared/lib/seo'
+import { defaultLocale } from '@/i18n'
 
 export default function robots(): MetadataRoute.Robots {
   const base = getSiteUrl()
-  const locale = 'ru'
+  const locale = defaultLocale
   const p = `/${locale}`
 
   return {

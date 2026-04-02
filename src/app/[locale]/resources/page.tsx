@@ -3,21 +3,24 @@ import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 import { canonicalUrl } from '@/shared/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Безопасность и соответствие',
-  description:
-    'Как Daisy защищает данные: шифрование, GDPR, приватность диалогов и этика ИИ в ментальной поддержке.',
-  alternates: {
-    canonical: canonicalUrl('ru', '/resources'),
-  },
-  openGraph: {
-    title: 'Безопасность и соответствие | Daisy',
-    url: canonicalUrl('ru', '/resources'),
-  },
-}
-
 interface PageProps {
   params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  return {
+    title: 'Безопасность и соответствие',
+    description:
+      'Как Daisy защищает данные: шифрование, GDPR, приватность диалогов и этика ИИ в ментальной поддержке.',
+    alternates: {
+      canonical: canonicalUrl(locale, '/resources'),
+    },
+    openGraph: {
+      title: 'Безопасность и соответствие | Daisy',
+      url: canonicalUrl(locale, '/resources'),
+    },
+  }
 }
 
 const complianceItems = [

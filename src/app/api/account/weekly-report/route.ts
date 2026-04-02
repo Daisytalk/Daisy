@@ -4,6 +4,7 @@ import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
 import { subDays, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { defaultLocale } from '@/i18n'
 
 type Period = '7d' | '14d' | '30d'
 
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
     const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
     const cutoff = subDays(new Date(), days)
 
-    const [snapshot, history, memoryItems] = await Promise.all([
+    const [snapshot, history, memoryItems, userRow] = await Promise.all([
       prisma.psychProfileSnapshot.findFirst({
         where: { userId: decoded.userId },
         orderBy: { createdAt: 'desc' },
@@ -42,7 +43,14 @@ export async function GET(request: NextRequest) {
         },
         select: { topic: true, summary: true },
       }),
+      prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { locale: true },
+      }),
     ])
+
+    const aiLocale =
+      userRow?.locale === 'ru' || userRow?.locale === 'en' ? userRow.locale : defaultLocale
 
     const checkins = history.map((r) => ({
       date: format(r.date, 'd MMM', { locale: ru }),
@@ -71,7 +79,7 @@ export async function GET(request: NextRequest) {
         checkins,
         profile,
         memory_topics: memoryTopics,
-        locale: 'ru',
+        locale: aiLocale,
       })
       fromAI = true
     } catch (err) {
