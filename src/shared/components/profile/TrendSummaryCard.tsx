@@ -1,7 +1,7 @@
 'use client'
 
 import { LineChart, Line, ResponsiveContainer } from 'recharts'
-import { getTrend } from '@/shared/lib/scoring-helpers'
+import { getTrend, normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { enUS, ru } from 'date-fns/locale'
@@ -59,8 +59,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
   const dfLocale = locale === 'ru' ? ru : enUS
   const toChartData = (records: HistoryRecord[], key: 'emotion' | 'stress' | 'energy' | 'support') => {
     return records.map((r) => {
-      const val = r[key]
-      return { day: format(r.date, 'EEE', { locale: dfLocale }), value: val ?? 3 }
+      return { day: format(r.date, 'EEE', { locale: dfLocale }), value: normalizeScoreTo100(r[key]) }
     })
   }
 

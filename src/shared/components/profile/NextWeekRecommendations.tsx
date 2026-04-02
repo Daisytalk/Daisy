@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import { Lock } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
@@ -33,10 +34,28 @@ export function NextWeekRecommendations({ snapshot, history, isPremium, aiRecomm
       return { recs: aiRecommendations.slice(0, 3) }
     }
     const metrics = [
-      { key: 'stress' as const, avg: history.length ? history.reduce((a, r) => a + (r.stress ?? 3), 0) / history.length : snapshot?.BSI ?? 50 },
-      { key: 'emotion' as const, avg: history.length ? history.reduce((a, r) => a + (r.emotion ?? 3), 0) / history.length : snapshot?.ESI ?? 50 },
-      { key: 'energy' as const, avg: history.length ? history.reduce((a, r) => a + (r.energy ?? 3), 0) / history.length : 50 },
-      { key: 'support' as const, avg: history.length ? history.reduce((a, r) => a + (r.support ?? 3), 0) / history.length : snapshot?.SSI ?? 50 },
+      {
+        key: 'stress' as const,
+        avg: history.length
+          ? history.reduce((a, r) => a + normalizeScoreTo100(r.stress), 0) / history.length
+          : snapshot?.BSI ?? 50,
+      },
+      {
+        key: 'emotion' as const,
+        avg: history.length
+          ? history.reduce((a, r) => a + normalizeScoreTo100(r.emotion), 0) / history.length
+          : snapshot?.ESI ?? 50,
+      },
+      {
+        key: 'energy' as const,
+        avg: history.length ? history.reduce((a, r) => a + normalizeScoreTo100(r.energy), 0) / history.length : 50,
+      },
+      {
+        key: 'support' as const,
+        avg: history.length
+          ? history.reduce((a, r) => a + normalizeScoreTo100(r.support), 0) / history.length
+          : snapshot?.SSI ?? 50,
+      },
     ]
     const sorted = [...metrics].sort((a, b) => a.avg - b.avg)
     const top3 = sorted.slice(0, 3).map((m) => m.key)

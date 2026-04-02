@@ -41,10 +41,10 @@ export async function saveCheckIn(answers: CheckInAnswers): Promise<{ ok: boolea
       userId,
       source: 'daily_checkin',
       date: today,
-      emotion,
-      stress,
-      energy,
-      support,
+      emotion: emotion * 20,
+      stress: stress * 20,
+      energy: energy * 20,
+      support: support * 20,
     },
   })
 

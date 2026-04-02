@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 
 type Variant = 'dark' | 'light'
 
@@ -59,7 +60,7 @@ export function DynamicsCard({ variant = 'dark' }: DynamicsCardProps) {
             </div>
             <div className="flex items-end justify-between h-12 gap-1.5">
               {data.map((r, i) => (
-                <div key={i} className="flex-1 bg-gradient-to-t from-rose-400 to-rose-300 rounded-t-lg min-h-[6px] transition-all" style={{ height: `${Math.max(((r.emotion || 3) / 5) * 100, 12)}%` }} />
+                <div key={i} className="flex-1 bg-gradient-to-t from-rose-400 to-rose-300 rounded-t-lg min-h-[6px] transition-all" style={{ height: `${Math.max(normalizeScoreTo100(r.emotion), 12)}%` }} />
               ))}
             </div>
           </div>
@@ -69,7 +70,7 @@ export function DynamicsCard({ variant = 'dark' }: DynamicsCardProps) {
             </div>
             <div className="flex items-end justify-between h-12 gap-1.5">
               {data.map((r, i) => (
-                <div key={i} className="flex-1 bg-gradient-to-t from-amber-400 to-amber-300 rounded-t-lg min-h-[6px] transition-all" style={{ height: `${Math.max(((r.stress || 3) / 5) * 100, 12)}%` }} />
+                <div key={i} className="flex-1 bg-gradient-to-t from-amber-400 to-amber-300 rounded-t-lg min-h-[6px] transition-all" style={{ height: `${Math.max(normalizeScoreTo100(r.stress), 12)}%` }} />
               ))}
             </div>
           </div>
@@ -79,7 +80,7 @@ export function DynamicsCard({ variant = 'dark' }: DynamicsCardProps) {
             </div>
             <div className="flex items-end justify-between h-12 gap-1.5">
               {data.map((r, i) => (
-                <div key={i} className="flex-1 bg-gradient-to-t from-emerald-400 to-emerald-300 rounded-t-lg min-h-[6px] transition-all" style={{ height: `${Math.max(((r.energy || 3) / 5) * 100, 12)}%` }} />
+                <div key={i} className="flex-1 bg-gradient-to-t from-emerald-400 to-emerald-300 rounded-t-lg min-h-[6px] transition-all" style={{ height: `${Math.max(normalizeScoreTo100(r.energy), 12)}%` }} />
               ))}
             </div>
           </div>

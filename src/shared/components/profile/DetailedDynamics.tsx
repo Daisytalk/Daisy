@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { format, subDays } from 'date-fns'
 import { ru, enUS } from 'date-fns/locale'
-import { getBestAndWorstDayForMetric } from '@/shared/lib/scoring-helpers'
+import { getBestAndWorstDayForMetric, normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import { Heart, Flame, Zap, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
@@ -76,7 +76,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
   const toChartData = (records: HistoryRecord[], key: 'emotion' | 'stress' | 'energy' | 'support') => {
     return records.map((r) => ({
       day: format(r.date, 'EEE', { locale: dateLocale }),
-      value: (r[key] ?? 3) as number,
+      value: normalizeScoreTo100(r[key]),
     }))
   }
 
@@ -140,7 +140,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
                         activeDot={{ r: 5, fill: theme.stroke, stroke: 'white', strokeWidth: 2 }}
                       />
                       <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} />
-                      <YAxis domain={[1, 5]} tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} width={24} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} width={28} />
                       <Tooltip
                         contentStyle={{
                           borderRadius: '12px',

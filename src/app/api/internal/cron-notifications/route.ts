@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/shared/lib/database'
+import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import { subDays } from 'date-fns'
 
 /**
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
 
     // ESI falling 3 days in a row (simplified: check last 3 stress ratings for emotion trend)
     if (stressRatings.length >= 3) {
-      const emotions = stressRatings.slice(0, 3).map((r) => r.emotion ?? 3)
+      const emotions = stressRatings.slice(0, 3).map((r) => normalizeScoreTo100(r.emotion))
       const falling = emotions[0] < emotions[1] && emotions[1] < emotions[2]
       if (falling) {
         notifications.push({

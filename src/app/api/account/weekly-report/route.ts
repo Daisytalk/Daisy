@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { PrismaClient } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
 import { subDays, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { defaultLocale } from '@/i18n'
+import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 
 type Period = '7d' | '14d' | '30d'
+
+/** Accelerate $extends loses some model delegates in TS; merge back for WeeklyReportSnapshot. */
+type PrismaWithWeeklySnapshot = PrismaClient & {
+  weeklyReportSnapshot: Prisma.WeeklyReportSnapshotDelegate
+}
 
 /**
  * GET /api/account/weekly-report?period=7d|14d|30d
@@ -23,18 +31,13 @@ export async function GET(request: NextRequest) {
     const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
     const cutoff = subDays(new Date(), days)
 
-    const [snapshot, history, memoryItems, userRow] = await Promise.all([
-      prisma.psychProfileSnapshot.findFirst({
-        where: { userId: decoded.userId },
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.stressRating.findMany({
+    const db = prisma as unknown as PrismaWithWeeklySnapshot
+
+    const [seedSnapshot, memoryItems, userRow] = await Promise.all([
+      db.weeklyReportSnapshot.findUnique({
         where: {
-          userId: decoded.userId,
-          source: 'daily_checkin',
-          date: { gte: cutoff },
+          userId_period: { userId: decoded.userId, period },
         },
-        orderBy: { date: 'asc' },
       }),
       prisma.memoryItem.findMany({
         where: {
@@ -49,17 +52,50 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
+    if (seedSnapshot?.source === 'seed') {
+      const memoryTopics = [...new Set<string>(memoryItems.map((m) => m.topic))].slice(0, 10)
+      const insights = Array.isArray(seedSnapshot.insights)
+        ? (seedSnapshot.insights as string[])
+        : []
+      const recommendations = Array.isArray(seedSnapshot.recommendations)
+        ? (seedSnapshot.recommendations as string[])
+        : []
+      return NextResponse.json({
+        period,
+        summary: seedSnapshot.summary,
+        insights,
+        recommendations,
+        topics: memoryTopics,
+        fromAI: false,
+      })
+    }
+
+    const [snapshot, history] = await Promise.all([
+      prisma.psychProfileSnapshot.findFirst({
+        where: { userId: decoded.userId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.stressRating.findMany({
+        where: {
+          userId: decoded.userId,
+          source: 'daily_checkin',
+          date: { gte: cutoff },
+        },
+        orderBy: { date: 'asc' },
+      }),
+    ])
+
     const aiLocale =
       userRow?.locale === 'ru' || userRow?.locale === 'en' ? userRow.locale : defaultLocale
 
     const checkins = history.map((r) => ({
       date: format(r.date, 'd MMM', { locale: ru }),
-      emotion: r.emotion ?? undefined,
-      stress: r.stress ?? undefined,
-      energy: r.energy ?? undefined,
-      support: r.support ?? undefined,
+      emotion: r.emotion != null ? normalizeScoreTo100(r.emotion) : undefined,
+      stress: r.stress != null ? normalizeScoreTo100(r.stress) : undefined,
+      energy: r.energy != null ? normalizeScoreTo100(r.energy) : undefined,
+      support: r.support != null ? normalizeScoreTo100(r.support) : undefined,
     }))
-    const memoryTopics = [...new Set(memoryItems.map((m) => m.topic))].slice(0, 10)
+    const memoryTopics = [...new Set<string>(memoryItems.map((m) => m.topic))].slice(0, 10)
     const profile = snapshot
       ? {
           ESI: snapshot.ESI ?? undefined,
@@ -97,13 +133,42 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    try {
+      await db.weeklyReportSnapshot.upsert({
+        where: {
+          userId_period: {
+            userId: decoded.userId,
+            period,
+          },
+        },
+        create: {
+          userId: decoded.userId,
+          period,
+          summary: result.summary,
+          insights: result.insights ?? [],
+          recommendations: result.recommendations,
+          source: fromAI ? 'ai' : 'fallback',
+          locale: aiLocale,
+        },
+        update: {
+          summary: result.summary,
+          insights: result.insights ?? [],
+          recommendations: result.recommendations,
+          source: fromAI ? 'ai' : 'fallback',
+          locale: aiLocale,
+        },
+      })
+    } catch (persistErr) {
+      console.error('Weekly report snapshot persist error:', persistErr)
+    }
+
     return NextResponse.json({
       period,
       summary: result.summary,
       insights: result.insights,
       recommendations: result.recommendations,
       topics: memoryTopics,
-      fromAI, // true = ответ от ИИ, false = fallback (ошибка или недоступность API)
+      fromAI,
     })
   } catch (error) {
     console.error('Weekly report error:', error)

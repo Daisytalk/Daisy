@@ -5,6 +5,7 @@ import { cbtApi } from '@/shared/lib/cbt-api'
 import { subDays, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { defaultLocale } from '@/i18n'
+import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 
 type Period = '7d' | '14d' | '30d'
 
@@ -55,10 +56,10 @@ export async function GET(request: NextRequest) {
 
     const checkins = history.map((r) => ({
       date: format(r.date, 'd MMM', { locale: ru }),
-      emotion: r.emotion ?? undefined,
-      stress: r.stress ?? undefined,
-      energy: r.energy ?? undefined,
-      support: r.support ?? undefined,
+      emotion: r.emotion != null ? normalizeScoreTo100(r.emotion) : undefined,
+      stress: r.stress != null ? normalizeScoreTo100(r.stress) : undefined,
+      energy: r.energy != null ? normalizeScoreTo100(r.energy) : undefined,
+      support: r.support != null ? normalizeScoreTo100(r.support) : undefined,
     }))
 
     let result: { emotion: string; stress: string; energy: string; support: string }

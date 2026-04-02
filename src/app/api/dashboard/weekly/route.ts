@@ -5,6 +5,7 @@ import { cbtApi } from '@/shared/lib/cbt-api'
 import { subDays, format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { defaultLocale } from '@/i18n'
+import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 
 function toStructuredRecommendations(items: string[]): { title: string; description: string }[] {
   return items.map((text) => {
@@ -76,10 +77,10 @@ export async function GET(request: NextRequest) {
     const memoryTopics = [...new Set(memoryItems.map((m) => m.topic))].slice(0, 10)
     const checkins = stressRatings.map((r) => ({
       date: format(r.date, 'd MMM', { locale: ru }),
-      emotion: r.emotion ?? undefined,
-      stress: r.stress ?? undefined,
-      energy: r.energy ?? undefined,
-      support: r.support ?? undefined,
+      emotion: r.emotion != null ? normalizeScoreTo100(r.emotion) : undefined,
+      stress: r.stress != null ? normalizeScoreTo100(r.stress) : undefined,
+      energy: r.energy != null ? normalizeScoreTo100(r.energy) : undefined,
+      support: r.support != null ? normalizeScoreTo100(r.support) : undefined,
     }))
     const profile = snapshot
       ? {
@@ -125,19 +126,19 @@ export async function GET(request: NextRequest) {
 
     let chart: { day: string; value: number }[]
     if (stressRatings.length >= 7) {
-      chart = stressRatings.map(s => ({
+      chart = stressRatings.map((s) => ({
         day: format(s.date, 'eee', { locale: ru }),
-        value: s.emotion ?? 3
+        value: normalizeScoreTo100(s.emotion),
       }))
     } else {
       chart = [
-        { day: 'пн', value: 1.5 },
-        { day: 'вт', value: 2.5 },
-        { day: 'ср', value: 4.0 },
-        { day: 'чт', value: 3.2 },
-        { day: 'пт', value: 3.5 },
-        { day: 'сб', value: 4.2 },
-        { day: 'вс', value: 4.5 },
+        { day: 'пн', value: 30 },
+        { day: 'вт', value: 50 },
+        { day: 'ср', value: 80 },
+        { day: 'чт', value: 64 },
+        { day: 'пт', value: 70 },
+        { day: 'сб', value: 84 },
+        { day: 'вс', value: 90 },
       ]
     }
 

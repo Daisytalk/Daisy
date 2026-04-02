@@ -7,7 +7,7 @@ import { enUS, ru } from 'date-fns/locale'
 import { Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { getWeeklyDelta } from '@/shared/lib/scoring-helpers'
+import { getWeeklyDelta, normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import { defaultLocale } from '@/i18n'
 
 type Period = '7d' | '14d' | '30d'
@@ -57,21 +57,21 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
     const byDay = week.reduce((acc, r) => {
       const d = format(r.date, 'yyyy-MM-dd')
       if (!acc[d]) acc[d] = { date: d, emotion: 0, stress: 0, energy: 0, support: 0, count: 0 }
-      acc[d].emotion += r.emotion ?? 3
-      acc[d].stress += r.stress ?? 3
-      acc[d].energy += r.energy ?? 3
-      acc[d].support += r.support ?? 3
+      acc[d].emotion += normalizeScoreTo100(r.emotion)
+      acc[d].stress += normalizeScoreTo100(r.stress)
+      acc[d].energy += normalizeScoreTo100(r.energy)
+      acc[d].support += normalizeScoreTo100(r.support)
       acc[d].count += 1
       return acc
     }, {} as Record<string, { date: string; emotion: number; stress: number; energy: number; support: number; count: number }>)
     return Object.values(byDay).map((v) => ({
       day: format(new Date(v.date), 'EEE', { locale: dfLocale }),
-      emotion: v.count ? v.emotion / v.count : 3,
-      stress: v.count ? v.stress / v.count : 3,
-      energy: v.count ? v.energy / v.count : 3,
-      support: v.count ? v.support / v.count : 3,
+      emotion: v.count ? v.emotion / v.count : 50,
+      stress: v.count ? v.stress / v.count : 50,
+      energy: v.count ? v.energy / v.count : 50,
+      support: v.count ? v.support / v.count : 50,
     }))
-  }, [history, daysForPeriod])
+  }, [history, daysForPeriod, dfLocale])
 
   const prevWeek = useMemo(() => {
     const prev = history.filter(
@@ -81,7 +81,7 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
     )
     const avg = (key: 'emotion' | 'stress' | 'energy' | 'support') => {
       if (!prev.length) return 50
-      const sum = prev.reduce((a, r) => a + (r[key] ?? 3) * 20, 0)
+      const sum = prev.reduce((a, r) => a + normalizeScoreTo100(r[key]), 0)
       return sum / prev.length
     }
     return { emotion: avg('emotion'), stress: avg('stress'), energy: avg('energy'), support: avg('support') }
@@ -91,7 +91,7 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
     const curr = history.filter((r) => new Date(r.date) >= subDays(new Date(), 7))
     if (!curr.length) return { emotion: 50, stress: 50, energy: 50, support: 50 }
     const avg = (key: 'emotion' | 'stress' | 'energy' | 'support') => {
-      const sum = curr.reduce((a, r) => a + (r[key] ?? 3) * 20, 0)
+      const sum = curr.reduce((a, r) => a + normalizeScoreTo100(r[key]), 0)
       return sum / curr.length
     }
     return { emotion: avg('emotion'), stress: avg('stress'), energy: avg('energy'), support: avg('support') }
@@ -155,9 +155,9 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
           <div className="p-8 border-b border-[#f0f0f0] bg-[#fafafa]">
             <h3 className="text-[15px] font-medium text-[#6b6b6b] mb-4">{t('weeklyReport.topicsTitle')}</h3>
             <div className="flex flex-wrap gap-2">
-              {memoryTopics.slice(0, 5).map((t, i) => (
+              {memoryTopics.slice(0, 5).map((topic, i) => (
                 <span key={i} className="px-3 py-1.5 rounded-[12px] bg-white text-[#4a4a4a] text-[14px] shadow-sm">
-                  {t}
+                  {topic}
                 </span>
               ))}
             </div>
@@ -184,7 +184,7 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={weekData}>
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} />
-                <YAxis domain={[1, 5]} tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
                     borderRadius: '16px',

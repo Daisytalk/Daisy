@@ -37,12 +37,32 @@ model User {
   memoryItems            MemoryItem[]
   conversationState      ConversationState?
   premiumOfferLogs      PremiumOfferLog[]
-  stressRatings         StressRating[]
+  stressRatings            StressRating[]
+  weeklyReportSnapshots    WeeklyReportSnapshot[]
   interventionFeedbacks InterventionFeedback[]
   payments              Payment[]
 
   @@index([acquisitionSource])
   @@map("users")
+}
+
+/// Последний сохранённый недельный отчёт (summary + рекомендации) по периоду 7d / 14d / 30d
+model WeeklyReportSnapshot {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  period          String
+  summary         String   @db.Text
+  insights        Json
+  recommendations Json
+  source          String   @default("ai")
+  locale          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, period])
+  @@index([userId])
+  @@map("weekly_report_snapshots")
 }
 
 model OnboardingData {
@@ -235,10 +255,10 @@ model StressRating {
   rating    Int?     // 1-5 (post_session)
   source    String?  // post_session | daily_checkin
   date      DateTime @default(now()) // calendar date for daily check-in
-  emotion   Int?     // 1-5 (daily_checkin)
-  stress    Int?     // 1-5 (daily_checkin)
-  energy    Int?     // 1-5 (daily_checkin)
-  support   Int?     // 1-5 (daily_checkin)
+  emotion   Int?     // daily_checkin: 0–100 index (UI sliders 1–5 saved as 20–100; legacy 1–5 still read)
+  stress    Int?
+  energy    Int?
+  support   Int?
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

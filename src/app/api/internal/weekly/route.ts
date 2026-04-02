@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/shared/lib/database'
 import { subDays } from 'date-fns'
+import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 
 /**
  * POST /api/internal/weekly
@@ -61,8 +62,8 @@ export async function POST(req: NextRequest) {
     // stress_today = avg(last 3 stress ratings)
     // stress_week_avg = avg(week stress_today)
     // Let's simplify: average stress for the week
-    const stressSum = stressRatings.reduce((acc, curr) => acc + (curr.stress || 3), 0)
-    const stressWeekAvg = stressSum / stressRatings.length
+    const stressSum = stressRatings.reduce((acc, curr) => acc + normalizeScoreTo100(curr.stress), 0)
+    const stressWeekAvg = stressSum / stressRatings.length / 20
 
     // delta = baseline_stress - stress_week_avg
     // If stress 5 = calm, 1 = high stress.

@@ -29,13 +29,21 @@ export function getResourceStatus(mri: number): MetricStatus {
 
 export type TrendDirection = 'up' | 'down' | 'stable'
 
+/** Daily check-in metrics: legacy 1–5 in DB, or 0–100 index. */
+export function normalizeScoreTo100(v: number | null): number {
+  if (v == null) return 50
+  if (v >= 1 && v <= 5) return v * 20
+  return Math.max(0, Math.min(100, v))
+}
+
 export function getTrend(values: number[]): TrendDirection {
   if (values.length < 2) return 'stable'
   const first = values.slice(0, 2).reduce((a, b) => a + b, 0) / 2
   const last = values.slice(-2).reduce((a, b) => a + b, 0) / 2
   const delta = last - first
-  if (delta > 3) return 'up'
-  if (delta < -3) return 'down'
+  const threshold = values.some((x) => x > 5) ? 10 : 3
+  if (delta > threshold) return 'up'
+  if (delta < -threshold) return 'down'
   return 'stable'
 }
 
