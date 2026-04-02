@@ -43,7 +43,8 @@ export interface FreedomPayCreatePaymentParams {
   notifyUrl?: string
 }
 
-const STUB_PREFIX = 'fp_stub_'
+export const FREEDOM_PAY_STUB_PREFIX = 'fp_stub_'
+const STUB_PREFIX = FREEDOM_PAY_STUB_PREFIX
 
 /**
  * Заглушка клиента Freedom Pay. Не выполняет реальных запросов к api.freedompay.kz.
@@ -53,11 +54,26 @@ export class FreedomPayStubService {
   /** Create payment — заглушка, возвращает мок paymentId и status */
   async createPayment(params: FreedomPayCreatePaymentParams): Promise<FreedomPayCreatePaymentResult> {
     const id = `${STUB_PREFIX}${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+    const amountMinor = Math.round(params.amount)
+    const currency = (params.currency || 'USD').toUpperCase()
+    let redirectUrl: string | undefined
+    if (params.returnUrl) {
+      try {
+        const u = new URL(params.returnUrl)
+        u.searchParams.set('payment_id', id)
+        u.searchParams.set('amount_minor', String(amountMinor))
+        u.searchParams.set('currency', currency)
+        redirectUrl = u.toString()
+      } catch {
+        const sep = params.returnUrl.includes('?') ? '&' : '?'
+        redirectUrl = `${params.returnUrl}${sep}payment_id=${encodeURIComponent(id)}&amount_minor=${encodeURIComponent(String(amountMinor))}&currency=${encodeURIComponent(currency)}`
+      }
+    }
     return {
       paymentId: id,
       status: 'created',
       orderId: params.orderId ?? id,
-      redirectUrl: params.returnUrl ? `${params.returnUrl}?payment_id=${id}` : undefined,
+      redirectUrl,
     }
   }
 

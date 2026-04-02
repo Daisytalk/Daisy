@@ -6,22 +6,52 @@ import { routing } from '@/i18n/routing';
 import { Inter } from 'next/font/google'
 import '../globals.css';
 import { ContextualProviders } from '../ContextualProviders'
+import { SiteJsonLd } from '@/shared/components/seo/SiteJsonLd'
+import { getSiteUrl, DEFAULT_SITE_TITLE, DEFAULT_SITE_DESCRIPTION } from '@/shared/lib/seo'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://talktodaisy.com'
-const SITE_TITLE = 'Daisy - качественные разговоры о ментальном здоровье'
-const SITE_DESCRIPTION = 'Безопасное пространство без осуждения: поддержка и ясные шаги к внутреннему балансу. На основе научных подходов, 24/7.'
+const SITE_URL = getSiteUrl()
+
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: SITE_TITLE,
+    default: DEFAULT_SITE_TITLE,
     template: `%s | Daisy`,
   },
-  description: SITE_DESCRIPTION,
-  keywords: ['ментальное здоровье', 'психологическая поддержка', 'онлайн-терапия', 'Daisy', 'эмоциональная поддержка', 'КПТ', '24/7'],
-  authors: [{ name: 'Daisy' }],
+  description: DEFAULT_SITE_DESCRIPTION,
+  applicationName: 'Daisy',
+  keywords: [
+    'ментальное здоровье',
+    'психологическая поддержка',
+    'онлайн-психолог',
+    'AI психолог',
+    'Daisy',
+    'эмоциональная поддержка',
+    'КПТ',
+    'когнитивно-поведенческая терапия',
+    'тревога',
+    'стресс',
+    '24/7',
+  ],
+  authors: [{ name: 'Daisy', url: SITE_URL }],
+  creator: 'Daisy',
+  publisher: 'Daisy',
+  category: 'health',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  ...(googleVerification
+    ? {
+        verification: {
+          google: googleVerification,
+        },
+      }
+    : {}),
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -34,14 +64,14 @@ export const metadata: Metadata = {
     locale: 'ru_RU',
     url: SITE_URL,
     siteName: 'Daisy',
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
+    title: DEFAULT_SITE_TITLE,
+    description: DEFAULT_SITE_DESCRIPTION,
     images: [
       {
-        url: '/images/daisy-icon.png',
+        url: '/images/daisy-icon.svg',
         width: 512,
         height: 512,
-        alt: 'Daisy',
+        alt: 'Daisy — поддержка ментального здоровья',
       },
       {
         url: '/images/logo.svg',
@@ -53,14 +83,21 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    images: [`${SITE_URL}/images/daisy-icon.png`],
+    title: DEFAULT_SITE_TITLE,
+    description: DEFAULT_SITE_DESCRIPTION,
+    images: [`${SITE_URL}/images/daisy-icon.svg`],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
+  manifest: '/manifest.webmanifest',
 }
 
 export const viewport = {
@@ -93,6 +130,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
+        <SiteJsonLd locale={locale} />
         <ContextualProviders>
           <NextIntlClientProvider messages={messages} locale={locale}>
             {children}

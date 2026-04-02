@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowLeft, Shield } from 'lucide-react'
 import type { Metadata } from 'next'
 import { PrivacyToc } from './PrivacyToc'
+import { canonicalUrl } from '@/shared/lib/seo'
 
 interface PageProps {
   params: Promise<{ locale: string }>
@@ -10,6 +11,10 @@ interface PageProps {
 export const metadata: Metadata = {
   title: 'Политика конфиденциальности',
   description: 'Политика конфиденциальности и обработки персональных данных сервиса Daisy. Дата вступления в силу: 10.02.2026.',
+  alternates: {
+    canonical: canonicalUrl('ru', '/privacy'),
+  },
+  robots: { index: true, follow: true },
 }
 
 const privacyText = {

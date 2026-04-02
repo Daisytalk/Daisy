@@ -25,6 +25,10 @@ model User {
   currentStressRating  Int?              @map("current_stress_rating") // 1-5, для weekly report
   locale              String?           @default("ru")
   timezone            String?
+  /** Нормализованный источник: instagram, vk, direct, utm-метка и т.д. */
+  acquisitionSource   String?           @map("acquisition_source")
+  /** UTM/referrer подробности */
+  acquisitionDetail     String?           @map("acquisition_detail")
   aiSessions             AiSession[]
   cbtConversations       CbtConversation[]
   onboarding             OnboardingData?
@@ -35,7 +39,9 @@ model User {
   premiumOfferLogs      PremiumOfferLog[]
   stressRatings         StressRating[]
   interventionFeedbacks InterventionFeedback[]
+  payments              Payment[]
 
+  @@index([acquisitionSource])
   @@map("users")
 }
 
@@ -79,6 +85,22 @@ model AiSession {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("ai_sessions")
+}
+
+/** Успешные списания (Freedom Pay, позже — Stripe и др.) */
+model Payment {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  amountMinor Int      @map("amount_minor")
+  currency    String   @default("USD")
+  provider    String   @default("freedompay")
+  externalId  String   @unique @map("external_id")
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("payments")
 }
 
 model Newsletter {

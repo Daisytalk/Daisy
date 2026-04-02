@@ -4,6 +4,7 @@ import prisma from '@/shared/lib/database'
 import { AuthService } from '@/shared/lib/auth'
 import type { User } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
+import { resolveAcquisitionFromRequest } from '@/shared/lib/attribution'
 
 /**
  * Альтернативный callback (/api/auth/google/callback).
@@ -66,10 +67,19 @@ export async function GET(req: NextRequest) {
     const name = profile.name || profile.email.split('@')[0]
 
     let user = await prisma.user.findUnique({ where: { email } })
+    const acquisition = resolveAcquisitionFromRequest(undefined, req.cookies.get('daisy_attr')?.value)
     if (!user) {
       // OAuth users get a random unguessable password — they authenticate via Google only
       user = await prisma.user.create({
-        data: { name, email, password: crypto.randomBytes(32).toString('hex') },
+        data: {
+          name,
+          email,
+          password: crypto.randomBytes(32).toString('hex'),
+          ...(acquisition && {
+            acquisitionSource: acquisition.source,
+            acquisitionDetail: acquisition.detail,
+          }),
+        },
       })
       await prisma.onboardingData.create({ data: { userId: user.id, responses: {}, completed: false } })
       await prisma.aiSession.create({ data: { userId: user.id, messages: [], context: { persona: 'intake_specialist' } } })
@@ -103,6 +113,7 @@ export async function GET(req: NextRequest) {
       path: '/',
     })
     redirectResponse.cookies.delete('oauth_state')
+    redirectResponse.cookies.delete('daisy_attr')
     return redirectResponse
   } catch (err) {
     console.error('OAuth callback error', err)

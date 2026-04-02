@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import type { OnboardingAnswer } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
 import { computePsychProfile } from '@/shared/lib/scoring'
@@ -22,26 +22,13 @@ const OnboardingSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Cookie first (Google OAuth), then Bearer (email/password)
-    let token = request.cookies.get('auth_token')?.value
-    if (!token) {
-      const authHeader = request.headers.get('authorization')
-      if (authHeader?.startsWith('Bearer ')) {
-        token = authHeader.substring(7)
-      }
-    }
-    if (!token) {
-      return NextResponse.json(
-        { message: apiMessages.authorizationRequired },
-        { status: 401 }
-      )
-    }
-
-    const decoded = AuthService.verifyToken(token)
-    
+    const decoded = getVerifiedAuthFromRequest(request)
     if (!decoded) {
+      const hasAttempt =
+        !!request.cookies.get('auth_token')?.value ||
+        !!request.headers.get('authorization')?.startsWith('Bearer ')
       return NextResponse.json(
-        { message: apiMessages.invalidToken },
+        { message: hasAttempt ? apiMessages.invalidToken : apiMessages.authorizationRequired },
         { status: 401 }
       )
     }

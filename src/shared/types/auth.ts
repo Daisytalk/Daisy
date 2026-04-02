@@ -1,3 +1,5 @@
+import type { AcquisitionPayload } from '@/shared/lib/attribution'
+
 export interface User {
   id: string
   email: string
@@ -68,4 +70,6 @@ export interface RegisterCredentials {
   name: string
   /** Ответы онбординга с лендинга (если были до регистрации) — чтобы не показывать онбординг повторно */
   onboardingAnswers?: Record<string, unknown>
+  /** UTM/referrer; если не передано — подставляется из localStorage в AuthApiService */
+  acquisition?: AcquisitionPayload
 }

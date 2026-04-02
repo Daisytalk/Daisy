@@ -1,0 +1,18 @@
+{
+  "name": "Daisy — ментальное здоровье",
+  "short_name": "Daisy",
+  "description": "Безопасное пространство без осуждения: поддержка и ясные шаги к внутреннему балансу.",
+  "start_url": "/ru",
+  "display": "standalone",
+  "background_color": "#faf8f5",
+  "theme_color": "#5ba3c6",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

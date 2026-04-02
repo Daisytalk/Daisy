@@ -1,4 +1,5 @@
 import type { User, LoginCredentials, RegisterCredentials } from '@/shared/types/auth'
+import { getStoredAttribution } from '@/shared/lib/attribution-storage'
 
 export interface IAuthService {
   login(credentials: LoginCredentials): Promise<{ user: User; token: string }>
@@ -32,12 +33,17 @@ export class AuthApiService implements IAuthService {
   }
 
   async register(credentials: RegisterCredentials): Promise<{ user: User; token: string }> {
+    const acquisition = credentials.acquisition ?? getStoredAttribution() ?? undefined
+    const body = {
+      ...credentials,
+      ...(acquisition ? { acquisition } : {}),
+    }
     const response = await fetch(`${this.baseUrl}/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(credentials),
+      body: JSON.stringify(body),
       credentials: 'include',
     })
 

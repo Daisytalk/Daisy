@@ -1,6 +1,21 @@
 import Link from 'next/link'
 import { ArrowLeft, Phone, MessageCircle } from 'lucide-react'
+import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
+import { canonicalUrl } from '@/shared/lib/seo'
+
+export const metadata: Metadata = {
+  title: 'Кризисная помощь и горячие линии',
+  description:
+    'Контакты экстренной психологической помощи и кризисных служб. Daisy не заменяет экстренную медицинскую помощь.',
+  alternates: {
+    canonical: canonicalUrl('ru', '/crisis-resources'),
+  },
+  openGraph: {
+    title: 'Кризисная помощь | Daisy',
+    url: canonicalUrl('ru', '/crisis-resources'),
+  },
+}
 
 interface PageProps {
   params: Promise<{ locale: string }>

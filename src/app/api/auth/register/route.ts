@@ -6,6 +6,8 @@ import { computePsychProfile } from '@/shared/lib/scoring'
 import { syncUserPreferences } from '@/shared/lib/memory'
 import { rateLimit } from '@/shared/lib/rate-limit'
 import { getClientIP } from '@/shared/lib/get-client-ip'
+import { resolveAcquisitionFromRequest } from '@/shared/lib/attribution'
+import type { AcquisitionPayload } from '@/shared/lib/attribution'
 
 export async function POST(request: NextRequest) {
   const ip = getClientIP(request)
@@ -26,7 +28,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { name, email, password, onboardingAnswers } = await request.json()
+    const body = await request.json()
+    const { name, email, password, onboardingAnswers } = body
+    const acquisitionRaw = body.acquisition as AcquisitionPayload | undefined
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -72,12 +76,21 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await AuthService.hashPassword(password)
     const isOnboarded = !!onboardingAnswers && Object.keys(onboardingAnswers).length > 0
 
+    const acquisition = resolveAcquisitionFromRequest(
+      acquisitionRaw,
+      request.cookies.get('daisy_attr')?.value
+    )
+
     const newUser = await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
           name: name.trim(),
           email: email.toLowerCase(),
           password: hashedPassword,
+          ...(acquisition && {
+            acquisitionSource: acquisition.source,
+            acquisitionDetail: acquisition.detail,
+          }),
         },
       })
 

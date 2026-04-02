@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
@@ -12,9 +13,20 @@ import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
 
-export default function LoginPage() {
+/** Защита от open redirect: только относительные пути с префиксом локали. */
+function safeRedirectAfterLogin(next: string | null, locale: string): string {
+  const fallback = `/${locale}/profile`
+  if (!next || !next.startsWith('/')) return fallback
+  if (next.startsWith('//') || next.includes('..') || next.includes('\\')) return fallback
+  if (!/^\/[a-z]{2}\//.test(next)) return fallback
+  return next
+}
+
+function LoginPageContent() {
   const t = useTranslations('auth')
   const locale = useLocale()
+  const searchParams = useSearchParams()
+  const nextAfterLogin = searchParams.get('next')
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -34,7 +46,11 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(data.user))
       document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
 
-      window.location.href = data.requiresRestore ? `/${locale || 'ru'}/restore-account` : `/${locale || 'ru'}/profile`
+      if (data.requiresRestore) {
+        window.location.href = `/${locale || 'ru'}/restore-account`
+        return
+      }
+      window.location.href = safeRedirectAfterLogin(nextAfterLogin, locale || 'ru')
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loginFailed'))
     } finally {
@@ -191,5 +207,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--app-bg))] text-muted-foreground text-sm">
+          Загрузка…
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   )
 }

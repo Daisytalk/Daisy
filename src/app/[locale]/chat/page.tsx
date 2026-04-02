@@ -38,6 +38,7 @@ function ChatPageContent() {
   const [streamingRevealedId, setStreamingRevealedId] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const paymentRecordedRef = useRef<string | null>(null)
 
   useEffect(() => {
     const storedSessionId = localStorage.getItem('active_chat_session')
@@ -59,6 +60,53 @@ function ChatPageContent() {
       setMessages([])
       localStorage.setItem('active_chat_session', tempId)
       window.history.replaceState(null, '', `/${locale}/chat`)
+    }
+  }, [searchParams, locale])
+
+  // Возврат с Freedom Pay: ?payment_id=…&amount_minor=…&currency=…
+  useEffect(() => {
+    const pid = searchParams.get('payment_id')
+    const am = searchParams.get('amount_minor')
+    if (!pid || !am) return
+    if (paymentRecordedRef.current === pid) return
+
+    const token = localStorage.getItem('auth_token')
+    if (!token) return
+
+    const amountMinor = parseInt(am, 10)
+    if (!Number.isFinite(amountMinor) || amountMinor <= 0) return
+
+    const cur = searchParams.get('currency') || 'USD'
+    paymentRecordedRef.current = pid
+
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await fetch('/api/payments/record-success', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            paymentId: pid,
+            amountMinor,
+            currency: cur,
+          }),
+        })
+        if (cancelled) return
+        if (!res.ok) {
+          paymentRecordedRef.current = null
+          return
+        }
+        window.history.replaceState(null, '', `/${locale}/chat`)
+      } catch {
+        paymentRecordedRef.current = null
+      }
+    })()
+
+    return () => {
+      cancelled = true
     }
   }, [searchParams, locale])
 

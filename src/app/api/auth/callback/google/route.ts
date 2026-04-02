@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { defaultLocale } from '@/shared/lib/i18n/config'
+import { resolveAcquisitionFromRequest } from '@/shared/lib/attribution'
 
 export const dynamic = 'force-dynamic'
 
@@ -133,6 +134,11 @@ export async function GET(request: NextRequest) {
 
     let isNewUser = false
 
+    const acquisition = resolveAcquisitionFromRequest(
+      undefined,
+      request.cookies.get('daisy_attr')?.value
+    )
+
     if (!user) {
       isNewUser = true
       user = await prisma.$transaction(async (tx) => {
@@ -142,6 +148,10 @@ export async function GET(request: NextRequest) {
             name: googleUser.name,
             password: '',
             googleId: googleUser.id,
+            ...(acquisition && {
+              acquisitionSource: acquisition.source,
+              acquisitionDetail: acquisition.detail,
+            }),
           },
         })
 
@@ -205,6 +215,7 @@ export async function GET(request: NextRequest) {
     })
 
     response.cookies.delete('oauth_state')
+    response.cookies.delete('daisy_attr')
 
     return response
   } catch (error) {

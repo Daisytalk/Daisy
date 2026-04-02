@@ -1,14 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { DaisySVG } from './DaisySVG'
-import { CheckInQuestions } from './CheckInQuestions'
+import { CheckInQuestions } from '@/shared/components/chat/CheckInQuestions'
 import { saveCheckIn } from '@/app/actions/saveCheckIn'
 
 const SHOWN_TODAY_KEY = 'daisy_shown_date'
-const EVENING_START_HOUR = 18 // 18:00
-const EVENING_END_HOUR = 22 // до 22:00
+const EVENING_START_HOUR = 18
+/** Последний час окна (включительно): 18:00–22:59 */
+const EVENING_LAST_HOUR = 22
+/** Опрос чаще в вечернем окне, чтобы не ждать до минуты после 18:00 */
+const TICK_MS = 15_000
 
 function getTodayKey() {
   const d = new Date()
@@ -17,7 +20,16 @@ function getTodayKey() {
 
 function isEvening() {
   const h = new Date().getHours()
-  return h >= EVENING_START_HOUR && h < EVENING_END_HOUR
+  return h >= EVENING_START_HOUR && h <= EVENING_LAST_HOUR
+}
+
+/** Мс до начала сегодняшнего вечернего окна (18:00). 0 если уже внутри или окно прошло сегодня. */
+function msUntilEveningWindow(): number {
+  const now = new Date()
+  const start = new Date(now)
+  start.setHours(EVENING_START_HOUR, 0, 0, 0)
+  if (now < start) return start.getTime() - now.getTime()
+  return 0
 }
 
 export function FloatingDaisy({ userName }: { userName: string }) {
@@ -26,52 +38,66 @@ export function FloatingDaisy({ userName }: { userName: string }) {
   const [expanded, setExpanded] = useState(false)
   const [done, setDone] = useState(false)
   const [hasCheckInToday, setHasCheckInToday] = useState(false)
+  const [checkinLoaded, setCheckinLoaded] = useState(false)
+
+  const hasCheckInRef = useRef(false)
+  const doneRef = useRef(false)
+  useEffect(() => {
+    hasCheckInRef.current = hasCheckInToday
+  }, [hasCheckInToday])
+  useEffect(() => {
+    doneRef.current = done
+  }, [done])
 
   useEffect(() => {
-    const check = async () => {
+    let cancelled = false
+    ;(async () => {
       try {
         const r = await fetch('/api/account/checkin-today', { credentials: 'include' })
         const d = await r.json()
-        if (d.hasCheckIn) setHasCheckInToday(true)
+        if (!cancelled && d.hasCheckIn) setHasCheckInToday(true)
       } catch {
         // ignore
+      } finally {
+        if (!cancelled) setCheckinLoaded(true)
       }
+    })()
+    return () => {
+      cancelled = true
     }
-    check()
+  }, [])
+
+  const tryShow = useCallback(() => {
+    if (typeof window === 'undefined') return
+    if (hasCheckInRef.current || doneRef.current) return
+    if (!isEvening()) return
+    const today = getTodayKey()
+    if (localStorage.getItem(SHOWN_TODAY_KEY) === today) return
+    setVisible(true)
+    localStorage.setItem(SHOWN_TODAY_KEY, today)
   }, [])
 
   useEffect(() => {
+    if (!checkinLoaded) return
     if (hasCheckInToday || done) return
-    if (!isEvening()) return
 
-    const today = getTodayKey()
-    const lastShown = typeof window !== 'undefined' ? localStorage.getItem(SHOWN_TODAY_KEY) : null
-    if (lastShown === today) return
+    tryShow()
 
-    const timer = setTimeout(() => {
-      setVisible(true)
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(SHOWN_TODAY_KEY, today)
-      }
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [hasCheckInToday, done])
+    const interval = setInterval(tryShow, TICK_MS)
 
-  useEffect(() => {
-    if (hasCheckInToday || done) return
-    const today = getTodayKey()
+    let eveningTimeout: ReturnType<typeof setTimeout> | undefined
+    const ms = msUntilEveningWindow()
+    if (ms > 0) {
+      eveningTimeout = setTimeout(() => {
+        tryShow()
+      }, ms)
+    }
 
-    const id = setInterval(() => {
-      if (!isEvening()) return
-      const last = typeof window !== 'undefined' ? localStorage.getItem(SHOWN_TODAY_KEY) : null
-      if (last === today) return
-      setVisible(true)
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(SHOWN_TODAY_KEY, today)
-      }
-    }, 60_000)
-    return () => clearInterval(id)
-  }, [hasCheckInToday, done])
+    return () => {
+      clearInterval(interval)
+      if (eveningTimeout !== undefined) clearTimeout(eveningTimeout)
+    }
+  }, [checkinLoaded, hasCheckInToday, done, tryShow])
 
   const handleDismiss = () => {
     setVisible(false)

@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink, Calendar, Clock } from 'lucide-react'
+import type { Metadata } from 'next'
 import { getResearchPaperBySlug } from '@/shared/data/research-papers'
 import { localizeDate, localizeReadTime } from '@/shared/lib/research-i18n'
 import Image from 'next/image'
+import { canonicalUrl, getSiteUrl } from '@/shared/lib/seo'
 
 const articleText = {
   ru: {
@@ -37,6 +39,35 @@ interface PageProps {
     slug: string
     locale: string
   }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug, locale } = await params
+  const paper = getResearchPaperBySlug(slug)
+  if (!paper) {
+    return { title: 'Публикация' }
+  }
+  const title = locale === 'ru' ? paper.titleRu : paper.title
+  const desc =
+    locale === 'ru'
+      ? paper.abstractRu.slice(0, 155).replace(/\s+\S*$/, '') + '…'
+      : paper.abstract.slice(0, 155).replace(/\s+\S*$/, '') + '…'
+  const url = canonicalUrl(locale, `/science/${slug}`)
+  const ogImage =
+    paper.imageUrl.startsWith('http') ? paper.imageUrl : `${getSiteUrl()}${paper.imageUrl}`
+  return {
+    title,
+    description: desc,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description: desc,
+      url,
+      type: 'article',
+      publishedTime: paper.date,
+      images: [{ url: ogImage, width: 768, height: 432, alt: title }],
+    },
+  }
 }
 
 export default async function ScienceArticlePage({ params }: PageProps) {
