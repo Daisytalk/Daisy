@@ -15,7 +15,7 @@ DECLARE
   i int;
   d date;
 BEGIN
-  SELECT id INTO u_id FROM users WHERE email = 'carainkara@gmail.com';
+  SELECT id INTO u_id FROM users WHERE email = 'test@gmail.com';
   IF u_id IS NULL THEN
     RAISE EXCEPTION 'User carainkara@gmail.com not found';
   END IF;

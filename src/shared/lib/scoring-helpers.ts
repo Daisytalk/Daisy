@@ -30,10 +30,12 @@ export function getResourceStatus(mri: number): MetricStatus {
 export type TrendDirection = 'up' | 'down' | 'stable'
 
 /** Daily check-in metrics: legacy 1–5 in DB, or 0–100 index. */
-export function normalizeScoreTo100(v: number | null): number {
-  if (v == null) return 50
-  if (v >= 1 && v <= 5) return v * 20
-  return Math.max(0, Math.min(100, v))
+export function normalizeScoreTo100(v: unknown): number {
+  if (v == null || v === '') return 50
+  const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(String(v).trim()) : NaN
+  if (!Number.isFinite(n)) return 50
+  if (n >= 1 && n <= 5) return n * 20
+  return Math.max(0, Math.min(100, n))
 }
 
 export function getTrend(values: number[]): TrendDirection {

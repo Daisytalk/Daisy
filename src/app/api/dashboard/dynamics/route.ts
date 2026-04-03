@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { startOfDay, subDays } from 'date-fns'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,17 +18,15 @@ export async function GET(request: NextRequest) {
     const decoded = AuthService.verifyToken(token)
     if (!decoded) return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
 
-    // Fetch the last 7 daily checkins
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    
+    const sevenDaysAgo = startOfDay(subDays(new Date(), 7))
+
     const ratings = await prisma.stressRating.findMany({
       where: {
         userId: decoded.userId,
         source: 'daily_checkin',
-        date: { gte: sevenDaysAgo }
+        date: { gte: sevenDaysAgo },
       },
-      orderBy: { date: 'asc' }
+      orderBy: { date: 'asc' },
     })
 
     return NextResponse.json({ ratings })

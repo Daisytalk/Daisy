@@ -1,9 +1,8 @@
-import { subDays } from 'date-fns'
+import { startOfDay, subDays } from 'date-fns'
 import { redirect } from 'next/navigation'
 import prisma from '@/shared/lib/database'
 import { getCurrentUserId } from '@/shared/lib/server-auth'
 import { ProfileDashboard } from '@/shared/components/profile/ProfileDashboard'
-import { startOfDay } from 'date-fns'
 
 interface PageProps {
   params: Promise<{ locale: string }>
@@ -28,7 +27,7 @@ export default async function ProfilePage({ params }: PageProps) {
       where: {
         userId,
         source: 'daily_checkin',
-        date: { gte: subDays(new Date(), 30) },
+        date: { gte: startOfDay(subDays(new Date(), 30)) },
       },
       orderBy: { date: 'asc' },
     }),

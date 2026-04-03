@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { format, subDays } from 'date-fns'
+import { format, subDays, startOfDay } from 'date-fns'
 import { ru, enUS } from 'date-fns/locale'
 import { getBestAndWorstDayForMetric, normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import { Heart, Flame, Zap, Users } from 'lucide-react'
@@ -51,7 +51,10 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
       return
     }
     setLoadingInsights(true)
-    fetch(`/api/account/dynamics-insights?period=${period}`, { credentials: 'include' })
+    fetch(`/api/account/dynamics-insights?period=${period}`, {
+      credentials: 'include',
+      cache: 'no-store',
+    })
       .then((r) => r.json())
       .then((d) => {
         if (!d.error) setInsights(d)
@@ -67,15 +70,16 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
 
   const filtered = useMemo(() => {
     const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
-    const cutoff = subDays(new Date(), days)
-    return history.filter((r) => new Date(r.date) >= cutoff)
+    const cutoff = startOfDay(subDays(new Date(), days))
+    return history.filter((r) => startOfDay(new Date(r.date)) >= cutoff)
   }, [history, period])
 
   const dateLocale = locale === 'ru' ? ru : enUS
 
   const toChartData = (records: HistoryRecord[], key: 'emotion' | 'stress' | 'energy' | 'support') => {
+    const dayFmt = period === '30d' ? 'd MMM' : 'EEE'
     return records.map((r) => ({
-      day: format(r.date, 'EEE', { locale: dateLocale }),
+      day: format(r.date, dayFmt, { locale: dateLocale }),
       value: normalizeScoreTo100(r[key]),
     }))
   }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { Users } from 'lucide-react'
 import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 
 type Variant = 'dark' | 'light'
@@ -15,7 +16,7 @@ export function DynamicsCard({ variant = 'dark' }: DynamicsCardProps) {
   const [data, setData] = useState<any[]>([])
 
   useEffect(() => {
-    fetch('/api/dashboard/dynamics', { credentials: 'include' })
+    fetch('/api/dashboard/dynamics', { credentials: 'include', cache: 'no-store' })
       .then((res) => res.json())
       .then((res) => {
         if (res.ratings) setData(res.ratings)
@@ -81,6 +82,17 @@ export function DynamicsCard({ variant = 'dark' }: DynamicsCardProps) {
             <div className="flex items-end justify-between h-12 gap-1.5">
               {data.map((r, i) => (
                 <div key={i} className="flex-1 bg-gradient-to-t from-emerald-400 to-emerald-300 rounded-t-lg min-h-[6px] transition-all" style={{ height: `${Math.max(normalizeScoreTo100(r.energy), 12)}%` }} />
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className={`text-[13px] font-medium flex items-center gap-1.5 ${isLight ? 'text-[#5a5a5a]' : 'text-daisy-300'}`}>
+              <Users className="w-3.5 h-3.5 opacity-80" aria-hidden />
+              4. {t('dynamics.metrics.support')}
+            </div>
+            <div className="flex items-end justify-between h-12 gap-1.5">
+              {data.map((r, i) => (
+                <div key={i} className="flex-1 bg-gradient-to-t from-sky-400 to-sky-300 rounded-t-lg min-h-[6px] transition-all" style={{ height: `${Math.max(normalizeScoreTo100(r.support), 12)}%` }} />
               ))}
             </div>
           </div>

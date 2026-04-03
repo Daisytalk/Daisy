@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
-import { subDays, format } from 'date-fns'
+import { subDays, format, startOfDay } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { defaultLocale } from '@/i18n'
 import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
+import {
+  CARAINKARA_DEMO_DYNAMICS_INSIGHTS,
+  CARAINKARA_DEMO_EMAIL,
+} from '@/shared/lib/demo-carainkara-dynamics'
 
 type Period = '7d' | '14d' | '30d'
+
+export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/account/dynamics-insights?period=7d|14d|30d
@@ -24,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     const period = (request.nextUrl.searchParams.get('period') || '7d') as Period
     const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
-    const cutoff = subDays(new Date(), days)
+    const cutoff = startOfDay(subDays(new Date(), days))
 
     const [history, userRow] = await Promise.all([
       prisma.stressRating.findMany({
@@ -37,9 +43,17 @@ export async function GET(request: NextRequest) {
       }),
       prisma.user.findUnique({
         where: { id: decoded.userId },
-        select: { locale: true },
+        select: { locale: true, email: true },
       }),
     ])
+
+    if (userRow?.email === CARAINKARA_DEMO_EMAIL) {
+      return NextResponse.json({
+        ...CARAINKARA_DEMO_DYNAMICS_INSIGHTS[period],
+        fromAI: false,
+        demo: true,
+      })
+    }
 
     const aiLocale =
       userRow?.locale === 'ru' || userRow?.locale === 'en' ? userRow.locale : defaultLocale

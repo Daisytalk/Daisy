@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, Legend, ResponsiveContainer, Tooltip } from 'recharts'
-import { format, subDays } from 'date-fns'
+import { format, subDays, startOfDay } from 'date-fns'
 import { enUS, ru } from 'date-fns/locale'
 import { Lock } from 'lucide-react'
 import Link from 'next/link'
@@ -43,7 +43,7 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
 
   useEffect(() => {
     if (!isPremium) return
-    fetch(`/api/account/weekly-report?period=${period}`, { credentials: 'include' })
+    fetch(`/api/account/weekly-report?period=${period}`, { credentials: 'include', cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d.summary) setAiReport({ summary: d.summary, recommendations: d.recommendations ?? [] })
@@ -76,8 +76,8 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
   const prevWeek = useMemo(() => {
     const prev = history.filter(
       (r) =>
-        new Date(r.date) >= subDays(new Date(), 14) &&
-        new Date(r.date) < subDays(new Date(), 7)
+        startOfDay(new Date(r.date)) >= startOfDay(subDays(new Date(), 14)) &&
+        startOfDay(new Date(r.date)) < startOfDay(subDays(new Date(), 7))
     )
     const avg = (key: 'emotion' | 'stress' | 'energy' | 'support') => {
       if (!prev.length) return 50
@@ -88,7 +88,9 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
   }, [history])
 
   const currWeek = useMemo(() => {
-    const curr = history.filter((r) => new Date(r.date) >= subDays(new Date(), 7))
+    const curr = history.filter(
+      (r) => startOfDay(new Date(r.date)) >= startOfDay(subDays(new Date(), 7))
+    )
     if (!curr.length) return { emotion: 50, stress: 50, energy: 50, support: 50 }
     const avg = (key: 'emotion' | 'stress' | 'energy' | 'support') => {
       const sum = curr.reduce((a, r) => a + normalizeScoreTo100(r[key]), 0)
