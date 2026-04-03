@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { PrismaClient } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
@@ -6,20 +8,35 @@ import { subDays, format, startOfDay } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { defaultLocale } from '@/i18n'
 import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
-import {
-  CARAINKARA_DEMO_DYNAMICS_INSIGHTS,
-  CARAINKARA_DEMO_EMAIL,
-} from '@/shared/lib/demo-carainkara-dynamics'
 
 type Period = '7d' | '14d' | '30d'
+
+type PrismaWithWeeklySnapshot = PrismaClient & {
+  weeklyReportSnapshot: Prisma.WeeklyReportSnapshotDelegate
+}
+
+function parseDynamicsMetricInsightsJson(
+  raw: unknown
+): { emotion: string; stress: string; energy: string; support: string } | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+  const o = raw as Record<string, unknown>
+  if (
+    typeof o.emotion === 'string' &&
+    typeof o.stress === 'string' &&
+    typeof o.energy === 'string' &&
+    typeof o.support === 'string'
+  ) {
+    return { emotion: o.emotion, stress: o.stress, energy: o.energy, support: o.support }
+  }
+  return null
+}
 
 export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/account/dynamics-insights?period=7d|14d|30d
- * Returns AI-generated insights per metric (emotion, stress, energy, support).
- * - With checkins: calls cbtApi.getDynamicsInsights() → Therapy-Multi-Agent
- * - Without checkins: returns static fallback prompts
+ * Если в weekly_report_snapshots.dynamics_metric_insights есть JSON — отдаём его (источник БД).
+ * Иначе при наличии чек-инов — AI; иначе статичные подсказки.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -32,7 +49,9 @@ export async function GET(request: NextRequest) {
     const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
     const cutoff = startOfDay(subDays(new Date(), days))
 
-    const [history, userRow] = await Promise.all([
+    const db = prisma as unknown as PrismaWithWeeklySnapshot
+
+    const [history, userRow, snapshotRow] = await Promise.all([
       prisma.stressRating.findMany({
         where: {
           userId: decoded.userId,
@@ -43,15 +62,22 @@ export async function GET(request: NextRequest) {
       }),
       prisma.user.findUnique({
         where: { id: decoded.userId },
-        select: { locale: true, email: true },
+        select: { locale: true },
+      }),
+      db.weeklyReportSnapshot.findUnique({
+        where: {
+          userId_period: { userId: decoded.userId, period },
+        },
+        select: { dynamicsMetricInsights: true },
       }),
     ])
 
-    if (userRow?.email === CARAINKARA_DEMO_EMAIL) {
+    const fromDb = parseDynamicsMetricInsightsJson(snapshotRow?.dynamicsMetricInsights)
+    if (fromDb) {
       return NextResponse.json({
-        ...CARAINKARA_DEMO_DYNAMICS_INSIGHTS[period],
+        ...fromDb,
         fromAI: false,
-        demo: true,
+        fromDb: true,
       })
     }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { DynamicsMetricAreaChart } from '@/shared/components/profile/DynamicsMetricAreaChart'
 import { format, subDays, startOfDay } from 'date-fns'
 import { ru, enUS } from 'date-fns/locale'
 import { getBestAndWorstDayForMetric, normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
@@ -124,38 +124,15 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
               </div>
             </div>
             <div className="px-6 py-5">
-              <div className="h-36 mb-5 rounded-xl bg-[#fafafa] border border-[#f0f0f0] overflow-hidden">
+              <div className="mb-5 rounded-2xl overflow-hidden bg-[#fafbfc] border border-[#ececf0] px-1 pt-1 pb-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
                 {hasData ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id={`grad-${m.key}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={theme.stroke} stopOpacity={0.35} />
-                          <stop offset="100%" stopColor={theme.stroke} stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <Area
-                        type="monotone"
-                        dataKey="value"
-                        stroke={theme.stroke}
-                        strokeWidth={2.5}
-                        fill={`url(#grad-${m.key})`}
-                        dot={{ fill: theme.stroke, strokeWidth: 0, r: 3 }}
-                        activeDot={{ r: 5, fill: theme.stroke, stroke: 'white', strokeWidth: 2 }}
-                      />
-                      <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} />
-                      <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#8e8e8e' }} axisLine={false} tickLine={false} width={28} />
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: '12px',
-                          fontSize: '13px',
-                          border: 'none',
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-                          padding: '10px 14px',
-                        }}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  <DynamicsMetricAreaChart
+                    data={data}
+                    stroke={theme.stroke}
+                    metricLabel={m.label}
+                    size={period === '30d' ? 'detailed' : 'comfortable'}
+                    compactTimeAxis={period === '30d'}
+                  />
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-[#b0b0b0] px-4 text-center">
                     <p className="text-[13px] font-medium mb-1">{t('dynamics.emptyChartTitle')}</p>

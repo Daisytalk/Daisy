@@ -48,17 +48,19 @@ model User {
 
 /// Последний сохранённый недельный отчёт (summary + рекомендации) по периоду 7d / 14d / 30d
 model WeeklyReportSnapshot {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  period          String
-  summary         String   @db.Text
-  insights        Json
-  recommendations Json
-  source          String   @default("ai")
-  locale          String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                      String   @id @default(cuid())
+  userId                  String
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  period                  String
+  summary                 String   @db.Text
+  insights                Json
+  recommendations       Json
+  /// Тексты «Daisy notices» по метрикам (emotion, stress, energy, support) для DetailedDynamics; optional.
+  dynamicsMetricInsights  Json?    @map("dynamics_metric_insights")
+  source                  String   @default("ai")
+  locale                  String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
   @@unique([userId, period])
   @@index([userId])

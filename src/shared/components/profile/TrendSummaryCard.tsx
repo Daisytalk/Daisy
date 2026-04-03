@@ -1,11 +1,11 @@
 'use client'
 
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
 import { getTrend, normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { enUS, ru } from 'date-fns/locale'
 import { useTranslations } from 'next-intl'
+import { DynamicsMetricAreaChart } from '@/shared/components/profile/DynamicsMetricAreaChart'
 
 interface HistoryRecord {
   id: string
@@ -20,6 +20,13 @@ interface TrendSummaryCardProps {
   history: HistoryRecord[]
   onDetailsClick: () => void
   locale: string
+}
+
+const TREND_STROKES: Record<'emotion' | 'stress' | 'energy' | 'support', string> = {
+  emotion: '#f43f5e',
+  stress: '#f59e0b',
+  energy: '#10b981',
+  support: '#0ea5e9',
 }
 
 export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSummaryCardProps) {
@@ -68,39 +75,33 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
       <h2 className="text-[11px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-3">
         {t('trend.title')}
       </h2>
-      <div className="rounded-2xl bg-white border border-[#eee] shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-shadow">
-        <div className="divide-y divide-[#f0f0f0]">
+      <div className="rounded-2xl bg-white border border-[#ececf0] shadow-[0_2px_20px_rgba(15,23,42,0.06)] overflow-hidden hover:shadow-[0_4px_28px_rgba(15,23,42,0.08)] transition-shadow">
+        <div className="divide-y divide-[#f0f0f3]">
           {METRICS.map((m) => {
             const data = toChartData(history7d, m.key)
             const values = data.map((d) => d.value)
             const trend = getTrend(values)
             const trendLabel = t(`trend.directions.${m.key}.${trend}`)
+            const stroke = TREND_STROKES[m.key]
             return (
               <div key={m.key} className="px-6 py-5">
                 <p className="text-[14px] font-medium text-[#6b6b6b] mb-3">{m.label}</p>
-                <div className="flex items-center gap-4">
-                  <div className="w-36 h-12 shrink-0 rounded-lg bg-[#f8f8f8] p-2">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={data}>
-                        <Line
-                          type="monotone"
-                          dataKey="value"
-                          stroke="#5ba3c6"
-                          strokeWidth={2.5}
-                          dot={false}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex-1 min-w-0 rounded-2xl bg-[#fafbfc] border border-[#ececf0] px-1 pt-1 pb-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                    <DynamicsMetricAreaChart
+                      data={data}
+                      stroke={stroke}
+                      metricLabel={m.label}
+                      size="comfortable"
+                    />
                   </div>
-                  <span className="text-[14px] font-medium text-[#4a4a4a]">{trendLabel}</span>
+                  <span className="text-[14px] font-medium text-[#4a4a4a] shrink-0 sm:max-w-[40%]">{trendLabel}</span>
                 </div>
               </div>
             )
           })}
         </div>
-        <div className="px-6 py-4 flex justify-center bg-gradient-to-r from-[#fafafa] to-[#f5f5f5] border-t border-[#f0f0f0]">
+        <div className="px-6 py-4 flex justify-center bg-gradient-to-r from-[#fafbfc] to-[#f4f6f8] border-t border-[#f0f0f3]">
           <button
             onClick={onDetailsClick}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#5ba3c6] to-[#4a8fb3] hover:from-[#4a8fb3] hover:to-[#3d7a9e] text-white font-medium text-[15px] transition-all shadow-[0_4px_14px_rgba(91,163,198,0.25)]"
