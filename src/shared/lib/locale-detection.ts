@@ -97,3 +97,18 @@ export function getLocaleFromPathname(pathname: string): Locale | null {
 export function hasLocalePrefix(pathname: string): boolean {
   return getLocaleFromPathname(pathname) !== null
 }
+
+/**
+ * Локаль для персональных текстов в API: cookie интерфейса (NEXT_LOCALE), иначе users.locale.
+ */
+export function pickLocaleFromCookieOrUser(
+  request: NextRequest,
+  userLocale: string | null | undefined
+): Locale {
+  const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value
+  if (cookieLocale && locales.includes(cookieLocale as Locale)) {
+    return cookieLocale as Locale
+  }
+  if (userLocale === 'ru' || userLocale === 'en') return userLocale
+  return defaultLocale
+}

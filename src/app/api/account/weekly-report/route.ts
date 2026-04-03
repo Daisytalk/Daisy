@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import type { PrismaClient } from '@prisma/client'
-import { Prisma } from '@prisma/client'
+import type { Prisma, PrismaClient } from '@prisma/client'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
 import { subDays, format, startOfDay } from 'date-fns'
-import { ru } from 'date-fns/locale'
-import { defaultLocale } from '@/i18n'
+import { ru as ruLocale } from 'date-fns/locale'
+import { pickLocalizedStringArray, pickWeeklySummary } from '@/shared/lib/i18n-content'
+import { pickLocaleFromCookieOrUser } from '@/shared/lib/locale-detection'
 import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 
 type Period = '7d' | '14d' | '30d'
@@ -54,17 +54,16 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
+    const uiLocale = pickLocaleFromCookieOrUser(request, userRow?.locale)
+
     if (seedSnapshot?.source === 'seed') {
       const memoryTopics = [...new Set<string>(memoryItems.map((m) => m.topic))].slice(0, 10)
-      const insights = Array.isArray(seedSnapshot.insights)
-        ? (seedSnapshot.insights as string[])
-        : []
-      const recommendations = Array.isArray(seedSnapshot.recommendations)
-        ? (seedSnapshot.recommendations as string[])
-        : []
+      const insights = pickLocalizedStringArray(seedSnapshot.insights, uiLocale)
+      const recommendations = pickLocalizedStringArray(seedSnapshot.recommendations, uiLocale)
+      const summary = pickWeeklySummary(seedSnapshot.summary, seedSnapshot.summaryI18n, uiLocale)
       return NextResponse.json({
         period,
-        summary: seedSnapshot.summary,
+        summary,
         insights,
         recommendations,
         topics: memoryTopics,
@@ -87,11 +86,8 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
-    const aiLocale =
-      userRow?.locale === 'ru' || userRow?.locale === 'en' ? userRow.locale : defaultLocale
-
     const checkins = history.map((r) => ({
-      date: format(r.date, 'd MMM', { locale: ru }),
+      date: format(r.date, 'd MMM', { locale: ruLocale }),
       emotion: r.emotion != null ? normalizeScoreTo100(r.emotion) : undefined,
       stress: r.stress != null ? normalizeScoreTo100(r.stress) : undefined,
       energy: r.energy != null ? normalizeScoreTo100(r.energy) : undefined,
@@ -108,32 +104,61 @@ export async function GET(request: NextRequest) {
         }
       : undefined
 
-    let result: { summary: string; insights: string[]; recommendations: string[] }
-    let fromAI = false
-    try {
-      result = await cbtApi.getWeeklyReport({
-        user_id: decoded.userId,
-        period_days: days,
-        checkins,
-        profile,
-        memory_topics: memoryTopics,
-        locale: aiLocale,
-      })
-      fromAI = true
-    } catch (err) {
-      console.error('Weekly report AI error:', err)
-      result = {
-        summary: history.length
-          ? 'За этот период есть данные чек-инов. Продолжай отслеживать своё состояние 🤍'
-          : 'Пройди чек-ин, чтобы получить персональный анализ.',
-        insights: [],
-        recommendations: [
-          'Попробуй технику STOP при стрессе',
-          'Добавь 15 минут прогулки',
-          'Поговори с Daisy если станет тяжело',
-        ],
-      }
+    const basePayload = {
+      user_id: decoded.userId,
+      period_days: days,
+      checkins,
+      profile,
+      memory_topics: memoryTopics,
     }
+
+    const [enSettled, ruSettled] = await Promise.allSettled([
+      cbtApi.getWeeklyReport({ ...basePayload, locale: 'en' }),
+      cbtApi.getWeeklyReport({ ...basePayload, locale: 'ru' }),
+    ])
+
+    let reportEn =
+      enSettled.status === 'fulfilled'
+        ? enSettled.value
+        : null
+    let reportRu =
+      ruSettled.status === 'fulfilled'
+        ? ruSettled.value
+        : null
+
+    if (enSettled.status === 'rejected') {
+      console.error('Weekly report AI (en):', enSettled.reason)
+    }
+    if (ruSettled.status === 'rejected') {
+      console.error('Weekly report AI (ru):', ruSettled.reason)
+    }
+
+    let fromAI = !!(reportEn && reportRu)
+    if (!reportEn && reportRu) reportEn = reportRu
+    if (!reportRu && reportEn) reportRu = reportEn
+
+    const fallback = {
+      summary: history.length
+        ? 'За этот период есть данные чек-инов. Продолжай отслеживать своё состояние 🤍'
+        : 'Пройди чек-ин, чтобы получить персональный анализ.',
+      insights: [] as string[],
+      recommendations: [
+        'Попробуй технику STOP при стрессе',
+        'Добавь 15 минут прогулки',
+        'Поговори с Daisy если станет тяжело',
+      ],
+    }
+
+    if (!reportEn || !reportRu) {
+      fromAI = false
+      reportEn = { ...fallback }
+      reportRu = { ...fallback }
+    }
+
+    const summaryI18n = { en: reportEn.summary, ru: reportRu.summary }
+    const insightsI18n = { en: reportEn.insights ?? [], ru: reportRu.insights ?? [] }
+    const recommendationsI18n = { en: reportEn.recommendations, ru: reportRu.recommendations }
+    const summaryColumn = uiLocale === 'ru' ? reportRu.summary : reportEn.summary
 
     try {
       await db.weeklyReportSnapshot.upsert({
@@ -146,29 +171,35 @@ export async function GET(request: NextRequest) {
         create: {
           userId: decoded.userId,
           period,
-          summary: result.summary,
-          insights: result.insights ?? [],
-          recommendations: result.recommendations,
+          summary: summaryColumn,
+          summaryI18n,
+          insights: insightsI18n,
+          recommendations: recommendationsI18n,
           source: fromAI ? 'ai' : 'fallback',
-          locale: aiLocale,
+          locale: uiLocale,
         },
         update: {
-          summary: result.summary,
-          insights: result.insights ?? [],
-          recommendations: result.recommendations,
+          summary: summaryColumn,
+          summaryI18n,
+          insights: insightsI18n,
+          recommendations: recommendationsI18n,
           source: fromAI ? 'ai' : 'fallback',
-          locale: aiLocale,
+          locale: uiLocale,
         },
       })
     } catch (persistErr) {
       console.error('Weekly report snapshot persist error:', persistErr)
     }
 
+    const summary = pickWeeklySummary(summaryColumn, summaryI18n, uiLocale)
+    const insightsOut = pickLocalizedStringArray(insightsI18n, uiLocale)
+    const recommendationsOut = pickLocalizedStringArray(recommendationsI18n, uiLocale)
+
     return NextResponse.json({
       period,
-      summary: result.summary,
-      insights: result.insights,
-      recommendations: result.recommendations,
+      summary,
+      insights: insightsOut,
+      recommendations: recommendationsOut,
       topics: memoryTopics,
       fromAI,
     })

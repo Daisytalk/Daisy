@@ -53,7 +53,11 @@ model WeeklyReportSnapshot {
   user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   period                  String
   summary                 String   @db.Text
+  /// { "en": "...", "ru": "..." } — параллельно с AI; summary — legacy/фолбэк
+  summaryI18n             Json?    @map("summary_i18n")
+  /// string[] | { "en": string[], "ru": string[] }
   insights                Json
+  /// string[] | { "en": string[], "ru": string[] }
   recommendations       Json
   /// Тексты «Daisy notices» по метрикам (emotion, stress, energy, support) для DetailedDynamics; optional.
   dynamicsMetricInsights  Json?    @map("dynamics_metric_insights")
