@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { DynamicsMetricAreaChart } from '@/shared/components/profile/DynamicsMetricAreaChart'
-import { format, subDays, startOfDay } from 'date-fns'
+import { format, subDays, startOfDay, parseISO, isValid } from 'date-fns'
 import { ru, enUS } from 'date-fns/locale'
 import { getBestAndWorstDayForMetric, normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import { Heart, Flame, Zap, Users } from 'lucide-react'
@@ -78,10 +78,20 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
 
   const toChartData = (records: HistoryRecord[], key: 'emotion' | 'stress' | 'energy' | 'support') => {
     const dayFmt = period === '30d' ? 'd MMM' : 'EEE'
-    return records.map((r) => ({
-      day: format(r.date, dayFmt, { locale: dateLocale }),
-      value: normalizeScoreTo100(r[key]),
-    }))
+    return records.map((r) => {
+      const raw = r.date as unknown
+      const d =
+        raw instanceof Date
+          ? raw
+          : typeof raw === 'string'
+            ? parseISO(raw)
+            : new Date(raw as string)
+      const dayDate = isValid(d) ? d : new Date()
+      return {
+        day: format(dayDate, dayFmt, { locale: dateLocale }),
+        value: normalizeScoreTo100(r[key]),
+      }
+    })
   }
 
   return (

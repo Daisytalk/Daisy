@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs'
 import { ProfileStatusCard } from './ProfileStatusCard'
 import { TrendSummaryCard } from './TrendSummaryCard'
@@ -70,8 +70,21 @@ export function ProfileDashboard({
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([])
 
   const isPremium = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial'
-  const history7d = history.slice(-7)
+  const history7d = useMemo(() => history.slice(-7), [history])
   const history30d = history
+
+  const dynamicsRatingsForCard = useMemo(
+    () =>
+      history7d.map((h) => ({
+        id: h.id,
+        date: h.date,
+        emotion: h.emotion,
+        stress: h.stress,
+        energy: h.energy,
+        support: h.support,
+      })),
+    [history7d]
+  )
 
   useEffect(() => {
     if (!isPremium) return
@@ -128,7 +141,7 @@ export function ProfileDashboard({
 
             <TabsContent value="overview" className="mt-8 space-y-6">
             <ProfileStatusCard snapshot={snapshot} locale={locale} />
-            <DynamicsCard variant="light" />
+            <DynamicsCard variant="light" ratingsFromServer={dynamicsRatingsForCard} />
             <TrendSummaryCard
               history={history}
               onDetailsClick={() => setActiveTab('detailed')}

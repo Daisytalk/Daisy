@@ -2,7 +2,7 @@
 
 import { getTrend, normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { format, parseISO, isValid } from 'date-fns'
 import { enUS, ru } from 'date-fns/locale'
 import { useTranslations } from 'next-intl'
 import { DynamicsMetricAreaChart } from '@/shared/components/profile/DynamicsMetricAreaChart'
@@ -66,7 +66,15 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
   const dfLocale = locale === 'ru' ? ru : enUS
   const toChartData = (records: HistoryRecord[], key: 'emotion' | 'stress' | 'energy' | 'support') => {
     return records.map((r) => {
-      return { day: format(r.date, 'EEE', { locale: dfLocale }), value: normalizeScoreTo100(r[key]) }
+      const raw = r.date as unknown
+      const d =
+        raw instanceof Date
+          ? raw
+          : typeof raw === 'string'
+            ? parseISO(raw)
+            : new Date(raw as string)
+      const dayDate = isValid(d) ? d : new Date()
+      return { day: format(dayDate, 'EEE', { locale: dfLocale }), value: normalizeScoreTo100(r[key]) }
     })
   }
 
@@ -75,7 +83,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
       <h2 className="text-[11px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-3">
         {t('trend.title')}
       </h2>
-      <div className="rounded-2xl bg-white border border-[#ececf0] shadow-[0_2px_20px_rgba(15,23,42,0.06)] overflow-hidden hover:shadow-[0_4px_28px_rgba(15,23,42,0.08)] transition-shadow">
+      <div className="rounded-2xl bg-white border border-[#e8eaef] shadow-[0_8px_40px_-12px_rgba(15,23,42,0.12)] ring-1 ring-black/[0.03] overflow-hidden hover:shadow-[0_12px_44px_-14px_rgba(15,23,42,0.14)] transition-shadow">
         <div className="divide-y divide-[#f0f0f3]">
           {METRICS.map((m) => {
             const data = toChartData(history7d, m.key)
@@ -85,9 +93,12 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
             const stroke = TREND_STROKES[m.key]
             return (
               <div key={m.key} className="px-6 py-5">
-                <p className="text-[14px] font-medium text-[#6b6b6b] mb-3">{m.label}</p>
+                <p className="text-[14px] font-semibold text-[#475569] mb-3">{m.label}</p>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex-1 min-w-0 rounded-2xl bg-[#fafbfc] border border-[#ececf0] px-1 pt-1 pb-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                  <div
+                    className="flex-1 min-w-0 rounded-2xl bg-white border border-[#ececf0] px-2 pt-2 pb-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] border-l-[3px]"
+                    style={{ borderLeftColor: stroke }}
+                  >
                     <DynamicsMetricAreaChart
                       data={data}
                       stroke={stroke}

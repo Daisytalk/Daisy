@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { format } from 'date-fns'
+import { format, parseISO, isValid } from 'date-fns'
 import { enUS, ru } from 'date-fns/locale'
 import { Users } from 'lucide-react'
 import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
@@ -12,6 +12,8 @@ type Variant = 'dark' | 'light'
 
 interface DynamicsCardProps {
   variant?: Variant
+  /** Profile: pass last-7d check-ins from the server so charts render immediately and match `/profile` history. */
+  ratingsFromServer?: RatingRow[]
 }
 
 type RatingRow = {
@@ -30,27 +32,37 @@ const ROW_METRICS = [
   { key: 'support' as const, labelKey: 'dynamics.metrics.support' as const, stroke: '#0ea5e9', icon: Users },
 ]
 
-export function DynamicsCard({ variant = 'dark' }: DynamicsCardProps) {
+export function DynamicsCard({ variant = 'dark', ratingsFromServer }: DynamicsCardProps) {
   const t = useTranslations('profile')
   const locale = useLocale()
   const dfLocale = locale === 'ru' ? ru : enUS
-  const [data, setData] = useState<RatingRow[]>([])
+  const [data, setData] = useState<RatingRow[]>(() => ratingsFromServer ?? [])
 
   useEffect(() => {
+    if (ratingsFromServer !== undefined) {
+      setData(ratingsFromServer)
+      return
+    }
     fetch('/api/dashboard/dynamics', { credentials: 'include', cache: 'no-store' })
       .then((res) => res.json())
       .then((res) => {
-        if (res.ratings) setData(res.ratings)
+        if (Array.isArray(res.ratings)) setData(res.ratings)
       })
-  }, [])
+      .catch(() => setData([]))
+  }, [ratingsFromServer])
 
   const isLight = variant === 'light'
 
   const chartRows = useMemo(() => {
+    const toDate = (d: string | Date) => {
+      if (d instanceof Date) return d
+      const parsed = parseISO(typeof d === 'string' ? d : String(d))
+      return isValid(parsed) ? parsed : new Date(d)
+    }
     return ROW_METRICS.map((m) => ({
       ...m,
       series: data.map((r) => ({
-        day: format(new Date(r.date), 'EEE', { locale: dfLocale }),
+        day: format(toDate(r.date), 'EEE', { locale: dfLocale }),
         value: normalizeScoreTo100(r[m.key]),
       })),
       tooltipLabel: t(`dynamics.metrics.${m.key}`),
@@ -86,12 +98,12 @@ export function DynamicsCard({ variant = 'dark' }: DynamicsCardProps) {
     <section>
       <h2 className="text-[11px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-3">{t('dynamics.title')}</h2>
       <div
-        className={`rounded-2xl overflow-hidden ${isLight ? 'bg-white shadow-[0_2px_20px_rgba(15,23,42,0.06)] border border-[#ececf0]' : 'bg-daisy-900/50 border border-daisy-800 shadow-xl'}`}
+        className={`rounded-2xl ${isLight ? 'bg-white shadow-[0_8px_40px_-12px_rgba(15,23,42,0.12)] border border-[#e8eaef] ring-1 ring-black/[0.03]' : 'bg-daisy-900/50 border border-daisy-800 shadow-xl'}`}
       >
         <div
-          className={`px-6 py-4 ${isLight ? 'bg-gradient-to-r from-[#fafbfc] to-[#f4f6f8] border-b border-[#ececf0]' : 'border-b border-daisy-800'}`}
+          className={`px-6 py-4 rounded-t-2xl ${isLight ? 'bg-gradient-to-br from-[#f8fafc] via-white to-[#f1f5f9] border-b border-[#e8eaef]' : 'border-b border-daisy-800'}`}
         >
-          <span className={`text-sm font-semibold tracking-tight ${isLight ? 'text-[#1e293b]' : 'text-daisy-100'}`}>
+          <span className={`text-sm font-semibold tracking-tight ${isLight ? 'text-[#0f172a]' : 'text-daisy-100'}`}>
             {t('dynamics.last7days')}
           </span>
         </div>
@@ -100,13 +112,14 @@ export function DynamicsCard({ variant = 'dark' }: DynamicsCardProps) {
             const Icon = row.icon
             return (
               <div key={row.key} className="flex flex-col gap-2.5">
-                <div className={`text-[13px] font-medium flex items-center gap-1.5 ${labelClass}`}>
-                  <span className="text-[#b0b0b0] w-4 tabular-nums">{idx + 1}.</span>
+                <div className={`text-[13px] font-semibold flex items-center gap-1.5 ${labelClass}`}>
+                  <span className="text-[#b0b0b0] w-4 tabular-nums font-medium">{idx + 1}.</span>
                   {Icon ? <Icon className="w-3.5 h-3.5 opacity-80 shrink-0" aria-hidden /> : null}
                   {t(row.labelKey)}
                 </div>
                 <div
-                  className={`w-full rounded-2xl overflow-hidden px-1 pt-1 pb-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] ${chartBg}`}
+                  className={`w-full rounded-2xl px-2 pt-2 pb-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] border-l-[3px] ${chartBg}`}
+                  style={{ borderLeftColor: row.stroke }}
                 >
                   <DynamicsMetricAreaChart
                     data={row.series}

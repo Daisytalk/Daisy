@@ -15,11 +15,13 @@ export type DynamicsChartDatum = { day: string; value: number }
 
 type Size = 'compact' | 'comfortable' | 'detailed'
 
-const SIZE_HEIGHT: Record<Size, number> = {
+export const DYNAMICS_CHART_HEIGHT: Record<Size, number> = {
   compact: 104,
   comfortable: 132,
   detailed: 176,
 }
+
+const SIZE_HEIGHT = DYNAMICS_CHART_HEIGHT
 
 const MARGINS: Record<Size, { top: number; right: number; left: number; bottom: number }> = {
   compact: { top: 8, right: 6, left: -4, bottom: 2 },
@@ -61,68 +63,75 @@ export function DynamicsMetricAreaChart({
   const xAngle = compactTimeAxis ? -32 : 0
   const xHeight = compactTimeAxis ? 36 : undefined
 
+  // Recharts ResponsiveContainer measures parent width; without explicit height on the
+  // wrapper, charts often render at 0×0 (empty white boxes) in flex / overflow layouts.
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={margin}>
-        <defs>
-          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={stroke} stopOpacity={0.32} />
-            <stop offset="45%" stopColor={stroke} stopOpacity={0.12} />
-            <stop offset="100%" stopColor={stroke} stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid
-          stroke={gridStroke}
-          strokeDasharray="4 4"
-          vertical={false}
-          horizontal
-        />
-        <YAxis
-          domain={[0, 100]}
-          ticks={yTicks}
-          tick={{ fontSize: xTickSize - 1, fill: tickFill, fontWeight: 500 }}
-          tickFormatter={(v) => `${v}`}
-          axisLine={false}
-          tickLine={false}
-          width={size === 'detailed' ? 34 : 30}
-        />
-        <XAxis
-          dataKey="day"
-          tick={{ fontSize: compactTimeAxis ? xTickSize - 1 : xTickSize, fill: tickFill }}
-          axisLine={false}
-          tickLine={false}
-          interval={xInterval as 0 | 'preserveStartEnd'}
-          tickMargin={6}
-          angle={xAngle}
-          textAnchor={compactTimeAxis ? 'end' : 'middle'}
-          height={xHeight}
-          minTickGap={compactTimeAxis ? 4 : 8}
-        />
-        <Tooltip
-          cursor={{ stroke: stroke, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.6 }}
-          contentStyle={{
-            borderRadius: '14px',
-            fontSize: '13px',
-            border: '1px solid #eef0f4',
-            boxShadow: '0 8px 30px rgba(15, 23, 42, 0.12)',
-            padding: '10px 14px',
-            background: 'rgba(255,255,255,0.96)',
-            backdropFilter: 'blur(8px)',
-          }}
-          labelStyle={{ color: '#64748b', fontWeight: 600, marginBottom: 4 }}
-          formatter={(value: number) => [`${Math.round(value)}`, metricLabel]}
-          labelFormatter={(label) => String(label)}
-        />
-        <Area
-          type="monotone"
-          dataKey="value"
-          stroke={stroke}
-          strokeWidth={size === 'detailed' ? 2.25 : 2}
-          fill={`url(#${gradId})`}
-          dot={{ fill: stroke, strokeWidth: 0, r: size === 'compact' ? 2.5 : 3 }}
-          activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: stroke }}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div
+      className="relative w-full min-w-0 overflow-visible"
+      style={{ height, minHeight: height }}
+    >
+      <ResponsiveContainer width="100%" height="100%" debounce={32}>
+        <AreaChart data={data} margin={margin}>
+          <defs>
+            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={stroke} stopOpacity={0.32} />
+              <stop offset="45%" stopColor={stroke} stopOpacity={0.12} />
+              <stop offset="100%" stopColor={stroke} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid
+            stroke={gridStroke}
+            strokeDasharray="4 4"
+            vertical={false}
+            horizontal
+          />
+          <YAxis
+            domain={[0, 100]}
+            ticks={yTicks}
+            tick={{ fontSize: xTickSize - 1, fill: tickFill, fontWeight: 500 }}
+            tickFormatter={(v) => `${v}`}
+            axisLine={false}
+            tickLine={false}
+            width={size === 'detailed' ? 34 : 30}
+          />
+          <XAxis
+            dataKey="day"
+            tick={{ fontSize: compactTimeAxis ? xTickSize - 1 : xTickSize, fill: tickFill }}
+            axisLine={false}
+            tickLine={false}
+            interval={xInterval as 0 | 'preserveStartEnd'}
+            tickMargin={6}
+            angle={xAngle}
+            textAnchor={compactTimeAxis ? 'end' : 'middle'}
+            height={xHeight}
+            minTickGap={compactTimeAxis ? 4 : 8}
+          />
+          <Tooltip
+            cursor={{ stroke: stroke, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.6 }}
+            contentStyle={{
+              borderRadius: '14px',
+              fontSize: '13px',
+              border: '1px solid #eef0f4',
+              boxShadow: '0 8px 30px rgba(15, 23, 42, 0.12)',
+              padding: '10px 14px',
+              background: 'rgba(255,255,255,0.96)',
+              backdropFilter: 'blur(8px)',
+            }}
+            labelStyle={{ color: '#64748b', fontWeight: 600, marginBottom: 4 }}
+            formatter={(value: number) => [`${Math.round(value)}`, metricLabel]}
+            labelFormatter={(label) => String(label)}
+          />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={stroke}
+            strokeWidth={size === 'detailed' ? 2.25 : 2}
+            fill={`url(#${gradId})`}
+            dot={{ fill: stroke, strokeWidth: 0, r: size === 'compact' ? 2.5 : 3 }}
+            activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: stroke }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
