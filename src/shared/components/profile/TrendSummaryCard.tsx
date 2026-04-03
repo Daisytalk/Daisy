@@ -70,7 +70,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
             ? parseISO(raw)
             : new Date(raw as string)
       const dayDate = isValid(d) ? d : new Date()
-      return { day: format(dayDate, 'EEE', { locale: dfLocale }), value: normalizeScoreTo100(r[key]) }
+      return { dateKey: format(dayDate, 'yyyy-MM-dd'), value: normalizeScoreTo100(r[key]) }
     })
   }
 
@@ -130,6 +130,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
                       size="comfortable"
                       tickFill="#64748b"
                       gridStroke="#e2e8f0"
+                      locale={locale}
                     />
                   </div>
                   <p className="mt-3 text-[12px] font-medium uppercase tracking-wide text-slate-500">{trendLabel}</p>

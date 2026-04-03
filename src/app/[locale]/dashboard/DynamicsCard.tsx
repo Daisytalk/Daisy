@@ -76,7 +76,7 @@ export function DynamicsCard({ variant = 'dark', ratingsFromServer }: DynamicsCa
     return ROW_METRICS.map((m) => ({
       ...m,
       series: data.map((r) => ({
-        day: format(toDate(r.date), 'EEE', { locale: dfLocale }),
+        dateKey: format(toDate(r.date), 'yyyy-MM-dd'),
         value: normalizeScoreTo100(r[m.key]),
       })),
       tooltipLabel: t(`dynamics.metrics.${m.key}`),
@@ -170,6 +170,7 @@ export function DynamicsCard({ variant = 'dark', ratingsFromServer }: DynamicsCa
                       size="comfortable"
                       tickFill={tickFill}
                       gridStroke={gridStroke}
+                      locale={locale}
                     />
                   </div>
                 </div>

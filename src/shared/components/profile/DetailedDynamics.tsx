@@ -88,6 +88,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
       const d = toHistoryDate(r.date)
       const dayDate = isValid(d) ? d : new Date()
       return {
+        dateKey: format(dayDate, 'yyyy-MM-dd'),
         day: format(dayDate, dayFmt, { locale: dateLocale }),
         value: normalizeScoreTo100(r[key]),
       }
@@ -145,6 +146,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
                     compactTimeAxis={period === '30d'}
                     tickFill="#64748b"
                     gridStroke="#e2e8f0"
+                    locale={locale}
                   />
                 ) : (
                   <div

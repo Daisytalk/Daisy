@@ -1,9 +1,20 @@
 'use client'
 
-import { useId, useLayoutEffect, useRef, useState } from 'react'
-import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
+import { useId, useLayoutEffect, useRef, useState, useMemo } from 'react'
+import {
+  Area,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { addDays, format, parse } from 'date-fns'
+import { enUS, ru } from 'date-fns/locale'
 
-export type DynamicsChartDatum = { day: string; value: number }
+/** `dateKey` is unique per day (yyyy-MM-dd). Optional `day` is a display label (e.g. for best/worst text). */
+export type DynamicsChartDatum = { dateKey: string; value: number; day?: string }
 
 type Size = 'compact' | 'comfortable' | 'detailed'
 
@@ -30,6 +41,12 @@ interface DynamicsMetricAreaChartProps {
   gridStroke?: string
   compactTimeAxis?: boolean
   className?: string
+  /** Used for axis / tooltip date formatting */
+  locale?: string
+}
+
+function parseDateKey(dateKey: string): Date {
+  return parse(dateKey, 'yyyy-MM-dd', new Date())
 }
 
 export function DynamicsMetricAreaChart({
@@ -41,12 +58,14 @@ export function DynamicsMetricAreaChart({
   gridStroke = '#e2e8f0',
   compactTimeAxis = false,
   className,
+  locale = 'en',
 }: DynamicsMetricAreaChartProps) {
   const uid = useId().replace(/:/g, '')
   const gradId = `dm-fill-${uid}`
   const containerRef = useRef<HTMLDivElement>(null)
   const [chartWidth, setChartWidth] = useState(0)
 
+  const dfLocale = locale === 'ru' ? ru : enUS
   const heightPx = SIZE_HEIGHT[size]
   const margin = {
     ...MARGINS[size],
@@ -58,6 +77,23 @@ export function DynamicsMetricAreaChart({
   const xAngle = compactTimeAxis ? -28 : 0
   const xHeight = compactTimeAxis ? 38 : undefined
 
+  const plotData = useMemo(() => {
+    const rows = data
+      .filter((d) => typeof d.value === 'number' && Number.isFinite(d.value))
+      .map((d) => ({ ...d, value: d.value }))
+    if (rows.length === 0) return []
+    if (rows.length === 1) {
+      const only = rows[0]
+      const d0 = parseDateKey(only.dateKey)
+      const d1 = addDays(d0, 1)
+      return [
+        { dateKey: only.dateKey, value: only.value },
+        { dateKey: format(d1, 'yyyy-MM-dd'), value: only.value },
+      ]
+    }
+    return rows
+  }, [data])
+
   useLayoutEffect(() => {
     const el = containerRef.current
     if (!el) return
@@ -68,88 +104,124 @@ export function DynamicsMetricAreaChart({
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(el)
-    return () => ro.disconnect()
+    window.addEventListener('resize', measure)
+    const t0 = window.setTimeout(measure, 0)
+    const t1 = window.setTimeout(measure, 100)
+    return () => {
+      clearTimeout(t0)
+      clearTimeout(t1)
+      ro.disconnect()
+      window.removeEventListener('resize', measure)
+    }
   }, [])
 
-  const chart = chartWidth > 0 && (
-    <AreaChart width={chartWidth} height={heightPx} data={data} margin={margin}>
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stroke} stopOpacity={0.45} />
-          <stop offset="35%" stopColor={stroke} stopOpacity={0.18} />
-          <stop offset="100%" stopColor={stroke} stopOpacity={0} />
-        </linearGradient>
-      </defs>
-      <CartesianGrid
-        stroke={gridStroke}
-        strokeDasharray="4 8"
-        strokeOpacity={0.65}
-        vertical={false}
-        horizontal
-      />
-      <YAxis
-        domain={[0, 100]}
-        ticks={yTicks}
-        tick={{ fontSize: xTickSize - 2, fill: tickFill, fontWeight: 500 }}
-        tickFormatter={(v) => `${v}`}
-        axisLine={false}
-        tickLine={false}
-        width={size === 'detailed' ? 38 : 34}
-      />
-      <XAxis
-        dataKey="day"
-        tick={{ fontSize: compactTimeAxis ? xTickSize - 2 : xTickSize - 1, fill: tickFill, fontWeight: 500 }}
-        axisLine={false}
-        tickLine={false}
-        interval={xInterval as 0 | 'preserveStartEnd'}
-        tickMargin={8}
-        angle={xAngle}
-        textAnchor={compactTimeAxis ? 'end' : 'middle'}
-        height={xHeight}
-        minTickGap={compactTimeAxis ? 4 : 10}
-      />
-      <Tooltip
-        cursor={{ stroke: stroke, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.4 }}
-        contentStyle={{
-          borderRadius: '10px',
-          fontSize: '12px',
-          border: 'none',
-          boxShadow: '0 12px 40px rgba(15, 23, 42, 0.18)',
-          padding: '10px 14px',
-          background: '#1e293b',
-          color: '#f8fafc',
-        }}
-        labelStyle={{ color: '#94a3b8', fontWeight: 600, fontSize: '11px', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}
-        itemStyle={{ color: '#f8fafc', fontWeight: 600 }}
-        formatter={(value: number) => [`${Math.round(value)}`, metricLabel]}
-        labelFormatter={(label) => String(label)}
-      />
-      <Area
-        type="monotone"
-        dataKey="value"
-        stroke={stroke}
-        strokeWidth={2.25}
-        fill={`url(#${gradId})`}
-        dot={false}
-        activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: stroke }}
-        isAnimationActive={false}
-      />
-    </AreaChart>
-  )
+  const widthPx = Math.max(chartWidth, 280)
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full min-w-[200px] block ${className ?? ''}`}
+      className={`relative w-full min-w-0 overflow-hidden block ${className ?? ''}`}
       style={{ height: `${heightPx}px`, minHeight: `${heightPx}px` }}
     >
-      {chartWidth > 0 ? (
-        chart
+      {plotData.length > 0 ? (
+        <ComposedChart width={widthPx} height={heightPx} data={plotData} margin={margin}>
+          <defs>
+            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={stroke} stopOpacity={0.42} />
+              <stop offset="40%" stopColor={stroke} stopOpacity={0.16} />
+              <stop offset="100%" stopColor={stroke} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid
+            stroke={gridStroke}
+            strokeDasharray="4 8"
+            strokeOpacity={0.65}
+            vertical={false}
+            horizontal
+          />
+          <YAxis
+            domain={[0, 100]}
+            ticks={yTicks}
+            tick={{ fontSize: xTickSize - 2, fill: tickFill, fontWeight: 500 }}
+            tickFormatter={(v) => `${v}`}
+            axisLine={false}
+            tickLine={false}
+            width={size === 'detailed' ? 38 : 34}
+          />
+          <XAxis
+            dataKey="dateKey"
+            tick={{ fontSize: compactTimeAxis ? xTickSize - 2 : xTickSize - 1, fill: tickFill, fontWeight: 500 }}
+            axisLine={false}
+            tickLine={false}
+            interval={xInterval as 0 | 'preserveStartEnd'}
+            tickMargin={8}
+            angle={xAngle}
+            textAnchor={compactTimeAxis ? 'end' : 'middle'}
+            height={xHeight}
+            minTickGap={compactTimeAxis ? 4 : 10}
+            tickFormatter={(v) => {
+              try {
+                const d = parseDateKey(String(v))
+                return format(d, compactTimeAxis ? 'd MMM' : 'EEE', { locale: dfLocale })
+              } catch {
+                return String(v)
+              }
+            }}
+          />
+          <Tooltip
+            cursor={{ stroke: stroke, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.35 }}
+            contentStyle={{
+              borderRadius: '10px',
+              fontSize: '12px',
+              border: 'none',
+              boxShadow: '0 12px 40px rgba(15, 23, 42, 0.18)',
+              padding: '10px 14px',
+              background: '#1e293b',
+              color: '#f8fafc',
+            }}
+            labelStyle={{
+              color: '#94a3b8',
+              fontWeight: 600,
+              fontSize: '11px',
+              marginBottom: 6,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+            }}
+            itemStyle={{ color: '#f8fafc', fontWeight: 600 }}
+            formatter={(value: number) => [`${Math.round(value)}`, metricLabel]}
+            labelFormatter={(v) => {
+              try {
+                const d = parseDateKey(String(v))
+                return format(d, 'EEE, d MMM', { locale: dfLocale })
+              } catch {
+                return String(v)
+              }
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="none"
+            fill={`url(#${gradId})`}
+            isAnimationActive={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke={stroke}
+            strokeWidth={2.5}
+            dot={{ r: 3, fill: stroke, strokeWidth: 0 }}
+            activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2, fill: stroke }}
+            isAnimationActive={false}
+          />
+        </ComposedChart>
       ) : (
         <div
-          className="absolute inset-0 rounded-lg bg-gradient-to-b from-slate-100/80 to-slate-50/50"
+          className="flex h-full items-center justify-center rounded-lg bg-slate-100/60 text-xs text-slate-500"
           aria-hidden
-        />
+        >
+          —
+        </div>
       )}
     </div>
   )
