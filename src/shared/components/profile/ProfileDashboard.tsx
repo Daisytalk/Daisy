@@ -13,7 +13,6 @@ import { ProfilePremiumBanner } from './ProfilePremiumBanner'
 import { DailyCheckInModal } from './DailyCheckInModal'
 import { AppLayout } from '@/shared/components/AppLayout'
 import Link from 'next/link'
-import { Settings } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { filterHistoryByRollingDays } from '@/shared/lib/dynamics-date-window'
 
@@ -65,7 +64,6 @@ export function ProfileDashboard({
   locale,
   hasCheckInToday,
 }: ProfileDashboardProps) {
-  const t = useTranslations('nav')
   const tp = useTranslations('profile')
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([])
@@ -102,22 +100,13 @@ export function ProfileDashboard({
   return (
     <AppLayout>
       <main className="min-h-screen bg-gradient-to-b from-[#faf8f5] via-[#f5f5f5] to-[#fafafa]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">
           {/* Header */}
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-semibold text-[#1a1a1a] tracking-tight">
-                {firstName ? tp('dashboard.greetingNamed', { name: firstName }) : tp('dashboard.greeting')}
-              </h1>
-              <p className="text-[15px] text-[#6b6b6b] mt-1">{tp('dashboard.subtitle')}</p>
-            </div>
-            <Link
-              href={`/${locale}/settings`}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/80 hover:bg-white border border-[#e8e8e8] text-[#5ba3c6] hover:text-[#4a8fb3] text-sm font-medium shadow-sm transition-all"
-            >
-              <Settings className="w-4 h-4" />
-              {t('settings')}
-            </Link>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-[#1a1a1a] tracking-tight">
+              {firstName ? tp('dashboard.greetingNamed', { name: firstName }) : tp('dashboard.greeting')}
+            </h1>
+            <p className="text-[15px] text-[#6b6b6b] mt-1">{tp('dashboard.subtitle')}</p>
           </div>
 
           {user?.name && (

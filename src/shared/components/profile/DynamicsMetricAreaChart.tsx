@@ -1,15 +1,7 @@
 'use client'
 
-import { useId } from 'react'
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { useId, useLayoutEffect, useRef, useState } from 'react'
+import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 
 export type DynamicsChartDatum = { day: string; value: number }
 
@@ -17,16 +9,16 @@ type Size = 'compact' | 'comfortable' | 'detailed'
 
 export const DYNAMICS_CHART_HEIGHT: Record<Size, number> = {
   compact: 104,
-  comfortable: 132,
-  detailed: 176,
+  comfortable: 148,
+  detailed: 192,
 }
 
 const SIZE_HEIGHT = DYNAMICS_CHART_HEIGHT
 
 const MARGINS: Record<Size, { top: number; right: number; left: number; bottom: number }> = {
-  compact: { top: 8, right: 6, left: -4, bottom: 2 },
-  comfortable: { top: 10, right: 8, left: -2, bottom: 4 },
-  detailed: { top: 12, right: 12, left: 0, bottom: 6 },
+  compact: { top: 10, right: 4, left: 0, bottom: 4 },
+  comfortable: { top: 12, right: 6, left: 2, bottom: 6 },
+  detailed: { top: 14, right: 10, left: 4, bottom: 8 },
 }
 
 interface DynamicsMetricAreaChartProps {
@@ -36,7 +28,6 @@ interface DynamicsMetricAreaChartProps {
   size?: Size
   tickFill?: string
   gridStroke?: string
-  /** Many daily points: fewer X labels so the axis stays readable (e.g. 30d view). */
   compactTimeAxis?: boolean
   className?: string
 }
@@ -46,97 +37,120 @@ export function DynamicsMetricAreaChart({
   stroke,
   metricLabel,
   size = 'comfortable',
-  tickFill = '#94a3b8',
-  gridStroke = '#e8e8ec',
+  tickFill = '#64748b',
+  gridStroke = '#e2e8f0',
   compactTimeAxis = false,
   className,
 }: DynamicsMetricAreaChartProps) {
   const uid = useId().replace(/:/g, '')
   const gradId = `dm-fill-${uid}`
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [chartWidth, setChartWidth] = useState(0)
 
-  const height = SIZE_HEIGHT[size]
+  const heightPx = SIZE_HEIGHT[size]
   const margin = {
     ...MARGINS[size],
-    bottom: compactTimeAxis ? Math.max(MARGINS[size].bottom, 14) : MARGINS[size].bottom,
+    bottom: compactTimeAxis ? Math.max(MARGINS[size].bottom, 16) : MARGINS[size].bottom,
   }
   const yTicks = size === 'compact' ? [0, 50, 100] : [0, 25, 50, 75, 100]
   const xTickSize = size === 'detailed' ? 11 : 10
   const xInterval = compactTimeAxis ? 'preserveStartEnd' : 0
-  const xAngle = compactTimeAxis ? -32 : 0
-  const xHeight = compactTimeAxis ? 36 : undefined
+  const xAngle = compactTimeAxis ? -28 : 0
+  const xHeight = compactTimeAxis ? 38 : undefined
 
-  // Use numeric height on ResponsiveContainer — height="100%" often resolves to 0 in
-  // flex/grid (min-height:auto + shrink), which produces empty chart areas.
+  useLayoutEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const measure = () => {
+      const w = Math.max(0, Math.floor(el.getBoundingClientRect().width))
+      if (w > 0) setChartWidth(w)
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  const chart = chartWidth > 0 && (
+    <AreaChart width={chartWidth} height={heightPx} data={data} margin={margin}>
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={stroke} stopOpacity={0.45} />
+          <stop offset="35%" stopColor={stroke} stopOpacity={0.18} />
+          <stop offset="100%" stopColor={stroke} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <CartesianGrid
+        stroke={gridStroke}
+        strokeDasharray="4 8"
+        strokeOpacity={0.65}
+        vertical={false}
+        horizontal
+      />
+      <YAxis
+        domain={[0, 100]}
+        ticks={yTicks}
+        tick={{ fontSize: xTickSize - 2, fill: tickFill, fontWeight: 500 }}
+        tickFormatter={(v) => `${v}`}
+        axisLine={false}
+        tickLine={false}
+        width={size === 'detailed' ? 38 : 34}
+      />
+      <XAxis
+        dataKey="day"
+        tick={{ fontSize: compactTimeAxis ? xTickSize - 2 : xTickSize - 1, fill: tickFill, fontWeight: 500 }}
+        axisLine={false}
+        tickLine={false}
+        interval={xInterval as 0 | 'preserveStartEnd'}
+        tickMargin={8}
+        angle={xAngle}
+        textAnchor={compactTimeAxis ? 'end' : 'middle'}
+        height={xHeight}
+        minTickGap={compactTimeAxis ? 4 : 10}
+      />
+      <Tooltip
+        cursor={{ stroke: stroke, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.4 }}
+        contentStyle={{
+          borderRadius: '10px',
+          fontSize: '12px',
+          border: 'none',
+          boxShadow: '0 12px 40px rgba(15, 23, 42, 0.18)',
+          padding: '10px 14px',
+          background: '#1e293b',
+          color: '#f8fafc',
+        }}
+        labelStyle={{ color: '#94a3b8', fontWeight: 600, fontSize: '11px', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}
+        itemStyle={{ color: '#f8fafc', fontWeight: 600 }}
+        formatter={(value: number) => [`${Math.round(value)}`, metricLabel]}
+        labelFormatter={(label) => String(label)}
+      />
+      <Area
+        type="monotone"
+        dataKey="value"
+        stroke={stroke}
+        strokeWidth={2.25}
+        fill={`url(#${gradId})`}
+        dot={false}
+        activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: stroke }}
+        isAnimationActive={false}
+      />
+    </AreaChart>
+  )
+
   return (
     <div
-      className={`relative w-full min-w-0 shrink-0 overflow-visible ${className ?? ''}`}
-      style={{ height: `${height}px`, minHeight: `${height}px` }}
+      ref={containerRef}
+      className={`relative w-full min-w-[200px] block ${className ?? ''}`}
+      style={{ height: `${heightPx}px`, minHeight: `${heightPx}px` }}
     >
-      <ResponsiveContainer width="100%" height={height} debounce={32}>
-        <AreaChart data={data} margin={margin}>
-          <defs>
-            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={stroke} stopOpacity={0.38} />
-              <stop offset="38%" stopColor={stroke} stopOpacity={0.14} />
-              <stop offset="100%" stopColor={stroke} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid
-            stroke={gridStroke}
-            strokeDasharray="3 6"
-            strokeOpacity={0.55}
-            vertical
-            horizontal
-          />
-          <YAxis
-            domain={[0, 100]}
-            ticks={yTicks}
-            tick={{ fontSize: xTickSize - 1, fill: tickFill, fontWeight: 600 }}
-            tickFormatter={(v) => `${v}`}
-            axisLine={false}
-            tickLine={false}
-            width={size === 'detailed' ? 36 : 32}
-          />
-          <XAxis
-            dataKey="day"
-            tick={{ fontSize: compactTimeAxis ? xTickSize - 1 : xTickSize, fill: tickFill, fontWeight: 500 }}
-            axisLine={{ stroke: gridStroke, strokeOpacity: 0.65 }}
-            tickLine={false}
-            interval={xInterval as 0 | 'preserveStartEnd'}
-            tickMargin={6}
-            angle={xAngle}
-            textAnchor={compactTimeAxis ? 'end' : 'middle'}
-            height={xHeight}
-            minTickGap={compactTimeAxis ? 4 : 8}
-          />
-          <Tooltip
-            cursor={{ stroke: stroke, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.55 }}
-            contentStyle={{
-              borderRadius: '12px',
-              fontSize: '13px',
-              border: `1px solid ${stroke}33`,
-              boxShadow: '0 10px 40px rgba(15, 23, 42, 0.14)',
-              padding: '10px 14px',
-              background: 'rgba(255,255,255,0.98)',
-              backdropFilter: 'blur(10px)',
-            }}
-            labelStyle={{ color: '#475569', fontWeight: 700, fontSize: '12px', marginBottom: 6, letterSpacing: '0.02em' }}
-            itemStyle={{ color: '#0f172a', fontWeight: 600 }}
-            formatter={(value: number) => [`${Math.round(value)} / 100`, metricLabel]}
-            labelFormatter={(label) => String(label)}
-          />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke={stroke}
-            strokeWidth={size === 'detailed' ? 2.35 : 2.1}
-            fill={`url(#${gradId})`}
-            dot={{ fill: stroke, strokeWidth: 0, r: size === 'compact' ? 2.5 : 3 }}
-            activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: stroke }}
-            isAnimationActive={false}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      {chartWidth > 0 ? (
+        chart
+      ) : (
+        <div
+          className="absolute inset-0 rounded-lg bg-gradient-to-b from-slate-100/80 to-slate-50/50"
+          aria-hidden
+        />
+      )}
     </div>
   )
 }

@@ -439,10 +439,11 @@
       }
     },
     "trend": {
-      "title": "📈 My dynamics — Last 7 days",
-      "noData": "Complete your first check-in to see your dynamics 🤍",
-      "startCheckin": "→ Start check-in",
-      "details": "→ More details",
+      "title": "My dynamics",
+      "periodLabel": "Last 7 days",
+      "noData": "Complete your first check-in to see your dynamics.",
+      "startCheckin": "Start check-in",
+      "details": "More details",
       "metrics": {
         "emotion": "Emotional state",
         "stress": "Stress level",

@@ -30,13 +30,11 @@ interface DetailedDynamicsProps {
 type Period = '7d' | '14d' | '30d'
 
 const METRIC_THEMES = {
-  emotion: { gradient: 'from-rose-400/30 to-pink-300/10', stroke: '#e11d48', iconBg: 'bg-rose-100', iconColor: 'text-rose-600' },
-  stress: { gradient: 'from-amber-400/30 to-orange-300/10', stroke: '#d97706', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
+  emotion: { gradient: 'from-rose-400/30 to-pink-300/10', stroke: '#db2777', iconBg: 'bg-rose-100', iconColor: 'text-rose-600' },
+  stress: { gradient: 'from-amber-400/30 to-orange-300/10', stroke: '#ea580c', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
   energy: { gradient: 'from-emerald-400/30 to-teal-300/10', stroke: '#059669', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
-  support: { gradient: 'from-sky-400/30 to-blue-300/10', stroke: '#0284c7', iconBg: 'bg-sky-100', iconColor: 'text-sky-600' },
+  support: { gradient: 'from-sky-400/30 to-blue-300/10', stroke: '#2563eb', iconBg: 'bg-sky-100', iconColor: 'text-sky-600' },
 } as const
-
-const METRIC_BENTO_COL = ['md:col-span-7', 'md:col-span-5', 'md:col-span-5', 'md:col-span-7'] as const
 
 export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
   const t = useTranslations('profile')
@@ -114,20 +112,19 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-5">
-      {METRICS_CONFIG.map((m, idx) => {
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-5">
+      {METRICS_CONFIG.map((m) => {
         const data = toChartData(filtered, m.key)
         const { best, worst } = getBestAndWorstDayForMetric(m.key, data)
         const Icon = m.icon
         const insightText = insights?.[m.key] || t('dynamics.analyzing')
         const theme = METRIC_THEMES[m.key]
         const hasData = data.length > 0
-        const mdCol = METRIC_BENTO_COL[idx]
-
         return (
           <div
             key={m.key}
-            className={`col-span-12 ${mdCol} rounded-2xl overflow-hidden bg-white shadow-[0_8px_28px_-12px_rgba(15,23,42,0.12)] border border-slate-200/70 hover:shadow-[0_12px_36px_-14px_rgba(15,23,42,0.14)] transition-shadow ring-1 ring-slate-200/30`}
+            className="overflow-hidden rounded-2xl border border-slate-200/90 border-t-[3px] bg-white shadow-[0_8px_28px_-12px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/40 transition-shadow hover:shadow-[0_12px_36px_-14px_rgba(15,23,42,0.14)]"
+            style={{ borderTopColor: theme.stroke }}
           >
             <div className={`bg-gradient-to-br ${theme.gradient} px-6 pt-6 pb-4`}>
               <div className="flex items-center gap-3">
