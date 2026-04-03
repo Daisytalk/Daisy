@@ -38,6 +38,7 @@ interface DynamicsMetricAreaChartProps {
   gridStroke?: string
   /** Many daily points: fewer X labels so the axis stays readable (e.g. 30d view). */
   compactTimeAxis?: boolean
+  className?: string
 }
 
 export function DynamicsMetricAreaChart({
@@ -48,6 +49,7 @@ export function DynamicsMetricAreaChart({
   tickFill = '#94a3b8',
   gridStroke = '#e8e8ec',
   compactTimeAxis = false,
+  className,
 }: DynamicsMetricAreaChartProps) {
   const uid = useId().replace(/:/g, '')
   const gradId = `dm-fill-${uid}`
@@ -67,15 +69,15 @@ export function DynamicsMetricAreaChart({
   // wrapper, charts often render at 0×0 (empty white boxes) in flex / overflow layouts.
   return (
     <div
-      className="relative w-full min-w-0 overflow-visible"
+      className={`relative w-full min-w-0 overflow-visible ${className ?? ''}`}
       style={{ height, minHeight: height }}
     >
       <ResponsiveContainer width="100%" height="100%" debounce={32}>
         <AreaChart data={data} margin={margin}>
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={stroke} stopOpacity={0.32} />
-              <stop offset="45%" stopColor={stroke} stopOpacity={0.12} />
+              <stop offset="0%" stopColor={stroke} stopOpacity={0.38} />
+              <stop offset="38%" stopColor={stroke} stopOpacity={0.14} />
               <stop offset="100%" stopColor={stroke} stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -127,7 +129,7 @@ export function DynamicsMetricAreaChart({
             type="monotone"
             dataKey="value"
             stroke={stroke}
-            strokeWidth={size === 'detailed' ? 2.25 : 2}
+            strokeWidth={size === 'detailed' ? 2.35 : 2.1}
             fill={`url(#${gradId})`}
             dot={{ fill: stroke, strokeWidth: 0, r: size === 'compact' ? 2.5 : 3 }}
             activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: stroke }}

@@ -7,6 +7,7 @@ import { enUS, ru } from 'date-fns/locale'
 import { useTranslations } from 'next-intl'
 import { DynamicsMetricAreaChart } from '@/shared/components/profile/DynamicsMetricAreaChart'
 import { filterHistoryByRollingDays } from '@/shared/lib/dynamics-date-window'
+import { Heart, Flame, Zap, Users } from 'lucide-react'
 
 interface HistoryRecord {
   id: string
@@ -23,21 +24,17 @@ interface TrendSummaryCardProps {
   locale: string
 }
 
-const TREND_STROKES: Record<'emotion' | 'stress' | 'energy' | 'support', string> = {
-  emotion: '#f43f5e',
-  stress: '#f59e0b',
-  energy: '#10b981',
-  support: '#0ea5e9',
-}
+const TREND_META = [
+  { key: 'emotion' as const, stroke: '#e11d48', icon: Heart },
+  { key: 'stress' as const, stroke: '#d97706', icon: Flame },
+  { key: 'energy' as const, stroke: '#059669', icon: Zap },
+  { key: 'support' as const, stroke: '#0284c7', icon: Users },
+] as const
+
+const BENTO_MD_COL = ['md:col-span-7', 'md:col-span-5', 'md:col-span-5', 'md:col-span-7'] as const
 
 export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSummaryCardProps) {
   const t = useTranslations('profile')
-  const METRICS = [
-    { key: 'emotion' as const, label: t('trend.metrics.emotion') },
-    { key: 'stress' as const, label: t('trend.metrics.stress') },
-    { key: 'energy' as const, label: t('trend.metrics.energy') },
-    { key: 'support' as const, label: t('trend.metrics.support') },
-  ]
   const history7d = filterHistoryByRollingDays(history, 7)
 
   if (history7d.length === 0) {
@@ -84,36 +81,62 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
       <h2 className="text-[11px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-3">
         {t('trend.title')}
       </h2>
-      <div className="rounded-2xl bg-white border border-[#e8eaef] shadow-[0_8px_40px_-12px_rgba(15,23,42,0.12)] ring-1 ring-black/[0.03] overflow-hidden hover:shadow-[0_12px_44px_-14px_rgba(15,23,42,0.14)] transition-shadow">
-        <div className="divide-y divide-[#f0f0f3]">
-          {METRICS.map((m) => {
-            const data = toChartData(history7d, m.key)
-            const values = data.map((d) => d.value)
-            const trend = getTrend(values)
-            const trendLabel = t(`trend.directions.${m.key}.${trend}`)
-            const stroke = TREND_STROKES[m.key]
-            return (
-              <div key={m.key} className="px-6 py-5">
-                <p className="text-[14px] font-semibold text-[#475569] mb-3">{m.label}</p>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div
-                    className="flex-1 min-w-0 rounded-2xl bg-white border border-[#ececf0] px-2 pt-2 pb-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] border-l-[3px]"
-                    style={{ borderLeftColor: stroke }}
-                  >
-                    <DynamicsMetricAreaChart
-                      data={data}
-                      stroke={stroke}
-                      metricLabel={m.label}
-                      size="comfortable"
-                      tickFill="#64748b"
-                      gridStroke="#e2e8f0"
-                    />
+      <div className="rounded-3xl border border-[#e2e8f0] bg-gradient-to-b from-slate-50/90 via-white to-white shadow-[0_12px_48px_-16px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/50 overflow-hidden">
+        <div className="p-4 sm:p-5 lg:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-5">
+            {TREND_META.map((meta, idx) => {
+              const mKey = meta.key
+              const label = t(`trend.metrics.${mKey}`)
+              const data = toChartData(history7d, mKey)
+              const values = data.map((d) => d.value)
+              const trend = getTrend(values)
+              const trendLabel = t(`trend.directions.${mKey}.${trend}`)
+              const stroke = meta.stroke
+              const Icon = meta.icon
+              const lastVal = data.length ? data[data.length - 1].value : null
+              const mdCol = BENTO_MD_COL[idx]
+              return (
+                <div key={mKey} className={`col-span-12 ${mdCol} flex min-h-0`}>
+                  <div className="flex h-full w-full flex-col rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white via-white to-slate-50/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-slate-200/40 transition hover:shadow-md">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm"
+                          style={{
+                            background: `${stroke}14`,
+                            color: stroke,
+                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6)',
+                          }}
+                        >
+                          <Icon className="h-[18px] w-[18px]" strokeWidth={2} aria-hidden />
+                        </div>
+                        <p className="text-[14px] font-semibold text-slate-800 leading-snug">{label}</p>
+                      </div>
+                      {lastVal != null && (
+                        <span
+                          className="text-[20px] font-bold tabular-nums leading-none shrink-0"
+                          style={{ color: stroke }}
+                        >
+                          {Math.round(lastVal)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50/80 px-1.5 pt-1 pb-0.5 mb-3">
+                      <DynamicsMetricAreaChart
+                        data={data}
+                        stroke={stroke}
+                        metricLabel={label}
+                        size="comfortable"
+                        tickFill="#64748b"
+                        gridStroke="#e2e8f0"
+                      />
+                    </div>
+                    <p className="text-[13px] font-medium text-slate-600 leading-snug mt-auto">{trendLabel}</p>
                   </div>
-                  <span className="text-[14px] font-medium text-[#4a4a4a] shrink-0 sm:max-w-[40%]">{trendLabel}</span>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
         <div className="px-6 py-4 flex justify-center bg-gradient-to-r from-[#fafbfc] to-[#f4f6f8] border-t border-[#f0f0f3]">
           <button

@@ -1,4 +1,5 @@
 import { startOfDay, subDays } from 'date-fns'
+import { getRollingWindowStartUtc } from '@/shared/lib/dynamics-date-window'
 import { redirect } from 'next/navigation'
 import prisma from '@/shared/lib/database'
 import { getCurrentUserId } from '@/shared/lib/server-auth'
@@ -27,7 +28,7 @@ export default async function ProfilePage({ params }: PageProps) {
       where: {
         userId,
         source: 'daily_checkin',
-        date: { gte: startOfDay(subDays(new Date(), 30)) },
+        date: { gte: getRollingWindowStartUtc(30) },
       },
       orderBy: { date: 'asc' },
     }),
