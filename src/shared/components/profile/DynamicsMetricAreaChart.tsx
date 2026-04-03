@@ -82,22 +82,23 @@ export function DynamicsMetricAreaChart({
           <CartesianGrid
             stroke={gridStroke}
             strokeDasharray="4 4"
-            vertical={false}
+            strokeOpacity={0.85}
+            vertical
             horizontal
           />
           <YAxis
             domain={[0, 100]}
             ticks={yTicks}
-            tick={{ fontSize: xTickSize - 1, fill: tickFill, fontWeight: 500 }}
+            tick={{ fontSize: xTickSize - 1, fill: tickFill, fontWeight: 600 }}
             tickFormatter={(v) => `${v}`}
             axisLine={false}
             tickLine={false}
-            width={size === 'detailed' ? 34 : 30}
+            width={size === 'detailed' ? 36 : 32}
           />
           <XAxis
             dataKey="day"
-            tick={{ fontSize: compactTimeAxis ? xTickSize - 1 : xTickSize, fill: tickFill }}
-            axisLine={false}
+            tick={{ fontSize: compactTimeAxis ? xTickSize - 1 : xTickSize, fill: tickFill, fontWeight: 500 }}
+            axisLine={{ stroke: gridStroke, strokeOpacity: 0.65 }}
             tickLine={false}
             interval={xInterval as 0 | 'preserveStartEnd'}
             tickMargin={6}
@@ -107,18 +108,19 @@ export function DynamicsMetricAreaChart({
             minTickGap={compactTimeAxis ? 4 : 8}
           />
           <Tooltip
-            cursor={{ stroke: stroke, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.6 }}
+            cursor={{ stroke: stroke, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.55 }}
             contentStyle={{
-              borderRadius: '14px',
+              borderRadius: '12px',
               fontSize: '13px',
-              border: '1px solid #eef0f4',
-              boxShadow: '0 8px 30px rgba(15, 23, 42, 0.12)',
+              border: `1px solid ${stroke}33`,
+              boxShadow: '0 10px 40px rgba(15, 23, 42, 0.14)',
               padding: '10px 14px',
-              background: 'rgba(255,255,255,0.96)',
-              backdropFilter: 'blur(8px)',
+              background: 'rgba(255,255,255,0.98)',
+              backdropFilter: 'blur(10px)',
             }}
-            labelStyle={{ color: '#64748b', fontWeight: 600, marginBottom: 4 }}
-            formatter={(value: number) => [`${Math.round(value)}`, metricLabel]}
+            labelStyle={{ color: '#475569', fontWeight: 700, fontSize: '12px', marginBottom: 6, letterSpacing: '0.02em' }}
+            itemStyle={{ color: '#0f172a', fontWeight: 600 }}
+            formatter={(value: number) => [`${Math.round(value)} / 100`, metricLabel]}
             labelFormatter={(label) => String(label)}
           />
           <Area

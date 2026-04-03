@@ -91,8 +91,8 @@ export function DynamicsCard({ variant = 'dark', ratingsFromServer }: DynamicsCa
 
   const labelClass = isLight ? 'text-[#5a5a5a]' : 'text-daisy-300'
   const chartBg = isLight ? 'bg-white border border-[#ececf0]' : 'bg-daisy-900/30 border border-daisy-700/50'
-  const tickFill = isLight ? '#94a3b8' : '#94a3b8'
-  const gridStroke = isLight ? '#e8e8ec' : 'rgba(148,163,184,0.25)'
+  const tickFill = isLight ? '#64748b' : '#94a3b8'
+  const gridStroke = isLight ? '#e2e8f0' : 'rgba(148,163,184,0.28)'
 
   return (
     <section>

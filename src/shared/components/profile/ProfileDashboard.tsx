@@ -15,6 +15,7 @@ import { AppLayout } from '@/shared/components/AppLayout'
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { filterHistoryByRollingDays } from '@/shared/lib/dynamics-date-window'
 
 type Tab = 'overview' | 'detailed'
 
@@ -70,7 +71,7 @@ export function ProfileDashboard({
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([])
 
   const isPremium = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial'
-  const history7d = useMemo(() => history.slice(-7), [history])
+  const history7d = useMemo(() => filterHistoryByRollingDays(history, 7), [history])
   const history30d = history
 
   const dynamicsRatingsForCard = useMemo(

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
-import { startOfDay, subDays } from 'date-fns'
+import { getRollingWindowStart } from '@/shared/lib/dynamics-date-window'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const decoded = AuthService.verifyToken(token)
     if (!decoded) return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
 
-    const sevenDaysAgo = startOfDay(subDays(new Date(), 7))
+    const sevenDaysAgo = getRollingWindowStart(7)
 
     const ratings = await prisma.stressRating.findMany({
       where: {

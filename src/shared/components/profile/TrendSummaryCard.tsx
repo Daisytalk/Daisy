@@ -6,6 +6,7 @@ import { format, parseISO, isValid } from 'date-fns'
 import { enUS, ru } from 'date-fns/locale'
 import { useTranslations } from 'next-intl'
 import { DynamicsMetricAreaChart } from '@/shared/components/profile/DynamicsMetricAreaChart'
+import { filterHistoryByRollingDays } from '@/shared/lib/dynamics-date-window'
 
 interface HistoryRecord {
   id: string
@@ -37,7 +38,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
     { key: 'energy' as const, label: t('trend.metrics.energy') },
     { key: 'support' as const, label: t('trend.metrics.support') },
   ]
-  const history7d = history.slice(-7)
+  const history7d = filterHistoryByRollingDays(history, 7)
 
   if (history7d.length === 0) {
     return (
@@ -104,6 +105,8 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
                       stroke={stroke}
                       metricLabel={m.label}
                       size="comfortable"
+                      tickFill="#64748b"
+                      gridStroke="#e2e8f0"
                     />
                   </div>
                   <span className="text-[14px] font-medium text-[#4a4a4a] shrink-0 sm:max-w-[40%]">{trendLabel}</span>

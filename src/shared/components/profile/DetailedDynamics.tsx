@@ -1,10 +1,14 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { DynamicsMetricAreaChart } from '@/shared/components/profile/DynamicsMetricAreaChart'
-import { format, subDays, startOfDay, parseISO, isValid } from 'date-fns'
+import {
+  DynamicsMetricAreaChart,
+  DYNAMICS_CHART_HEIGHT,
+} from '@/shared/components/profile/DynamicsMetricAreaChart'
+import { format, isValid } from 'date-fns'
 import { ru, enUS } from 'date-fns/locale'
 import { getBestAndWorstDayForMetric, normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
+import { filterHistoryByRollingDays, toHistoryDate } from '@/shared/lib/dynamics-date-window'
 import { Heart, Flame, Zap, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
@@ -70,22 +74,18 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
 
   const filtered = useMemo(() => {
     const days = period === '7d' ? 7 : period === '14d' ? 14 : 30
-    const cutoff = startOfDay(subDays(new Date(), days))
-    return history.filter((r) => startOfDay(new Date(r.date)) >= cutoff)
+    return filterHistoryByRollingDays(history, days)
   }, [history, period])
+
+  const chartSize = period === '30d' ? 'detailed' : 'comfortable'
+  const emptyChartMinH = DYNAMICS_CHART_HEIGHT[chartSize]
 
   const dateLocale = locale === 'ru' ? ru : enUS
 
   const toChartData = (records: HistoryRecord[], key: 'emotion' | 'stress' | 'energy' | 'support') => {
     const dayFmt = period === '30d' ? 'd MMM' : 'EEE'
     return records.map((r) => {
-      const raw = r.date as unknown
-      const d =
-        raw instanceof Date
-          ? raw
-          : typeof raw === 'string'
-            ? parseISO(raw)
-            : new Date(raw as string)
+      const d = toHistoryDate(r.date)
       const dayDate = isValid(d) ? d : new Date()
       return {
         day: format(dayDate, dayFmt, { locale: dateLocale }),
@@ -140,13 +140,18 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
                     data={data}
                     stroke={theme.stroke}
                     metricLabel={m.label}
-                    size={period === '30d' ? 'detailed' : 'comfortable'}
+                    size={chartSize}
                     compactTimeAxis={period === '30d'}
+                    tickFill="#64748b"
+                    gridStroke="#e2e8f0"
                   />
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-[#b0b0b0] px-4 text-center">
-                    <p className="text-[13px] font-medium mb-1">{t('dynamics.emptyChartTitle')}</p>
-                    <p className="text-[12px]">{t('dynamics.emptyChartHint')}</p>
+                  <div
+                    className="flex flex-col items-center justify-center gap-1 px-4 py-6 text-center text-[#64748b] border border-dashed border-[#e2e8f0] rounded-xl bg-[#f8fafc]/90"
+                    style={{ minHeight: emptyChartMinH }}
+                  >
+                    <p className="text-[13px] font-semibold text-[#475569]">{t('dynamics.emptyChartTitle')}</p>
+                    <p className="text-[12px] leading-snug max-w-[240px]">{t('dynamics.emptyChartHint')}</p>
                   </div>
                 )}
               </div>
