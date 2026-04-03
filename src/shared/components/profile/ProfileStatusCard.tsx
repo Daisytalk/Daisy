@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { ChevronDown, Flame, Heart, Users, Leaf } from 'lucide-react'
+import { ChevronDown, Flame, Heart, Users, Leaf, ClipboardList } from 'lucide-react'
 import {
   getStressStatus,
   getEmotionStatus,
@@ -44,8 +44,8 @@ export function ProfileStatusCard({ snapshot, locale }: ProfileStatusCardProps) 
           {t('status.title')}
         </h2>
         <div className="rounded-2xl bg-white border border-[#eee] shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-[#f8f8f8] mx-auto mb-4 flex items-center justify-center">
-            <span className="text-2xl">📋</span>
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-500 mx-auto mb-4 flex items-center justify-center">
+            <ClipboardList className="w-7 h-7" strokeWidth={1.5} aria-hidden />
           </div>
           <p className="text-[15px] text-[#6b6b6b] mb-6">
             {t('status.noData')}

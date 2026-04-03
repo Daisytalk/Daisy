@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { format, parseISO, isValid } from 'date-fns'
 import { enUS, ru } from 'date-fns/locale'
-import { Heart, Flame, Zap, Users } from 'lucide-react'
+import { Heart, Flame, Zap, Users, BarChart3 } from 'lucide-react'
 import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import { DynamicsMetricAreaChart } from '@/shared/components/profile/DynamicsMetricAreaChart'
 
@@ -97,9 +97,9 @@ export function DynamicsCard({ variant = 'dark', ratingsFromServer }: DynamicsCa
           className={`rounded-2xl p-8 text-center ${isLight ? 'bg-white shadow-[0_2px_16px_rgba(0,0,0,0.06)] border border-[#eee]' : 'bg-daisy-900/40 border border-daisy-800'}`}
         >
           <div
-            className={`w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center ${isLight ? 'bg-[#f5f5f5]' : 'bg-daisy-800/50'}`}
+            className={`w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center ${isLight ? 'bg-slate-100 text-slate-500' : 'bg-daisy-800/50 text-daisy-300'}`}
           >
-            <span className="text-2xl">📊</span>
+            <BarChart3 className="w-7 h-7" strokeWidth={1.5} aria-hidden />
           </div>
           <p className={`text-[15px] ${isLight ? 'text-[#6b6b6b]' : 'text-daisy-400'}`}>{t('dynamics.noData')}</p>
         </div>
@@ -115,7 +115,7 @@ export function DynamicsCard({ variant = 'dark', ratingsFromServer }: DynamicsCa
     <section>
       <h2 className="text-[11px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-3">{t('dynamics.title')}</h2>
       <div
-        className={`rounded-3xl overflow-hidden ${
+        className={`rounded-3xl ${
           isLight
             ? 'border border-[#e2e8f0] bg-gradient-to-b from-slate-50/90 via-white to-white shadow-[0_12px_48px_-16px_rgba(15,23,42,0.14)] ring-1 ring-slate-200/50'
             : 'bg-daisy-900/50 border border-daisy-800 shadow-xl'
@@ -175,8 +175,8 @@ export function DynamicsCard({ variant = 'dark', ratingsFromServer }: DynamicsCa
                       )}
                     </div>
                     <div
-                      className={`min-w-0 rounded-xl px-1.5 pt-1 pb-0.5 ${
-                        isLight ? 'bg-slate-50/80 border border-slate-100' : 'bg-daisy-950/20 border border-daisy-800/40'
+                      className={`min-w-0 shrink-0 rounded-xl px-1.5 pt-1 pb-0.5 ${
+                        isLight ? 'bg-white border border-slate-200/90 shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)]' : 'bg-daisy-950/20 border border-daisy-800/40'
                       }`}
                     >
                       <DynamicsMetricAreaChart

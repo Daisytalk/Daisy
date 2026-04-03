@@ -138,7 +138,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
               </div>
             </div>
             <div className="px-6 py-5">
-              <div className="mb-5 rounded-2xl overflow-hidden bg-[#fafbfc] border border-[#ececf0] px-1 pt-1 pb-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+              <div className="mb-5 rounded-2xl bg-white border border-slate-200/90 px-1 pt-1 pb-0.5 shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)] shrink-0">
                 {hasData ? (
                   <DynamicsMetricAreaChart
                     data={data}
@@ -161,9 +161,11 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
               </div>
               <div className="rounded-xl bg-gradient-to-br from-[#f8f8f8] to-[#f5f5f5] p-4 border border-[#eee]">
                 <p className="text-[14px] text-[#4a4a4a] mb-2">
-                  <span className="font-medium text-[#2d2d2d]">{t('dynamics.bestDay')}</span> {best} 🌤
-                  <span className="mx-2 text-[#ddd]">|</span>
-                  <span className="font-medium text-[#2d2d2d]">{t('dynamics.worstDay')}</span> {worst} 🌧
+                  <span className="font-medium text-[#2d2d2d]">{t('dynamics.bestDay')}</span>{' '}
+                  <span className="text-slate-600">{best}</span>
+                  <span className="mx-2 text-slate-300">·</span>
+                  <span className="font-medium text-[#2d2d2d]">{t('dynamics.worstDay')}</span>{' '}
+                  <span className="text-slate-600">{worst}</span>
                 </p>
                 <p className="text-[14px] text-[#5a5a5a] leading-relaxed">
                   <span className="font-semibold text-[#2d2d2d]">{t('dynamics.daisyNotices')}</span>{' '}

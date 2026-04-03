@@ -7,7 +7,7 @@ import { enUS, ru } from 'date-fns/locale'
 import { useTranslations } from 'next-intl'
 import { DynamicsMetricAreaChart } from '@/shared/components/profile/DynamicsMetricAreaChart'
 import { filterHistoryByRollingDays } from '@/shared/lib/dynamics-date-window'
-import { Heart, Flame, Zap, Users } from 'lucide-react'
+import { Heart, Flame, Zap, Users, Activity } from 'lucide-react'
 
 interface HistoryRecord {
   id: string
@@ -44,8 +44,8 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
           {t('trend.title')}
         </h2>
         <div className="rounded-2xl bg-white border border-[#eee] shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-[#f8f8f8] mx-auto mb-4 flex items-center justify-center">
-            <span className="text-2xl">📈</span>
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-500 mx-auto mb-4 flex items-center justify-center">
+            <Activity className="w-7 h-7" strokeWidth={1.5} aria-hidden />
           </div>
           <p className="text-[15px] text-[#6b6b6b] mb-6">
             {t('trend.noData')}
@@ -81,7 +81,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
       <h2 className="text-[11px] font-semibold text-[#8e8e8e] uppercase tracking-widest mb-3">
         {t('trend.title')}
       </h2>
-      <div className="rounded-3xl border border-[#e2e8f0] bg-gradient-to-b from-slate-50/90 via-white to-white shadow-[0_12px_48px_-16px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/50 overflow-hidden">
+      <div className="rounded-3xl border border-slate-200/80 bg-gradient-to-b from-slate-50/95 via-white to-white shadow-[0_12px_48px_-16px_rgba(15,23,42,0.1)] ring-1 ring-slate-200/40">
         <div className="p-4 sm:p-5 lg:p-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-5">
             {TREND_META.map((meta, idx) => {
@@ -121,7 +121,7 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
                         </span>
                       )}
                     </div>
-                    <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50/80 px-1.5 pt-1 pb-0.5 mb-3">
+                    <div className="min-w-0 shrink-0 rounded-xl border border-slate-200/90 bg-white px-1.5 pt-1 pb-0.5 mb-3 shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)]">
                       <DynamicsMetricAreaChart
                         data={data}
                         stroke={stroke}

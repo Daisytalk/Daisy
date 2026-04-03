@@ -65,14 +65,14 @@ export function DynamicsMetricAreaChart({
   const xAngle = compactTimeAxis ? -32 : 0
   const xHeight = compactTimeAxis ? 36 : undefined
 
-  // Recharts ResponsiveContainer measures parent width; without explicit height on the
-  // wrapper, charts often render at 0×0 (empty white boxes) in flex / overflow layouts.
+  // Use numeric height on ResponsiveContainer — height="100%" often resolves to 0 in
+  // flex/grid (min-height:auto + shrink), which produces empty chart areas.
   return (
     <div
-      className={`relative w-full min-w-0 overflow-visible ${className ?? ''}`}
-      style={{ height, minHeight: height }}
+      className={`relative w-full min-w-0 shrink-0 overflow-visible ${className ?? ''}`}
+      style={{ height: `${height}px`, minHeight: `${height}px` }}
     >
-      <ResponsiveContainer width="100%" height="100%" debounce={32}>
+      <ResponsiveContainer width="100%" height={height} debounce={32}>
         <AreaChart data={data} margin={margin}>
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
@@ -83,8 +83,8 @@ export function DynamicsMetricAreaChart({
           </defs>
           <CartesianGrid
             stroke={gridStroke}
-            strokeDasharray="4 4"
-            strokeOpacity={0.85}
+            strokeDasharray="3 6"
+            strokeOpacity={0.55}
             vertical
             horizontal
           />
@@ -133,6 +133,7 @@ export function DynamicsMetricAreaChart({
             fill={`url(#${gradId})`}
             dot={{ fill: stroke, strokeWidth: 0, r: size === 'compact' ? 2.5 : 3 }}
             activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: stroke }}
+            isAnimationActive={false}
           />
         </AreaChart>
       </ResponsiveContainer>
