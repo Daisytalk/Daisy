@@ -64,9 +64,9 @@ export default async function CrisisResourcesPage({ params }: PageProps) {
                 <MessageCircle className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-medium text-foreground">Кризисная линия по СМС</p>
+                <p className="font-medium text-foreground">{t('textLineTitle')}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">{t('textLineDesc')}</p>
-                <p className="mt-2 text-primary font-medium">HOME → 741741 (англ.)</p>
+                <p className="mt-2 text-primary font-medium">{t('textLineHint')}</p>
               </div>
             </li>
             <li className="flex gap-4 p-4 rounded-2xl bg-white border border-[hsl(var(--app-border))]">
@@ -74,9 +74,9 @@ export default async function CrisisResourcesPage({ params }: PageProps) {
                 <Phone className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-medium text-foreground">Экстренные службы</p>
+                <p className="font-medium text-foreground">{t('emergencyTitle')}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">{t('emergencyDesc')}</p>
-                <p className="mt-2 text-primary font-medium">103 (скорая) / 112 / 911 (США)</p>
+                <p className="mt-2 text-primary font-medium">{t('emergencyNumbers')}</p>
               </div>
             </li>
           </ul>

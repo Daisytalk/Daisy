@@ -1,58 +1,39 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 import { canonicalUrl } from '@/shared/lib/seo'
 
 interface PageProps {
   params: Promise<{ locale: string }>
 }
 
+type ComplianceItem = { icon: string; title: string; desc: string }
+type RegionalLaw = { flag: string; text: string }
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'resourcesPage' })
   return {
-    title: 'Безопасность и соответствие',
-    description:
-      'Как Daisy защищает данные: шифрование, GDPR, приватность диалогов и этика ИИ в ментальной поддержке.',
+    title: t('meta.title'),
+    description: t('meta.description'),
     alternates: {
       canonical: canonicalUrl(locale, '/resources'),
     },
     openGraph: {
-      title: 'Безопасность и соответствие | Daisy',
+      title: t('meta.ogTitle'),
       url: canonicalUrl(locale, '/resources'),
     },
   }
 }
 
-const complianceItems = [
-  { icon: '🔐', title: 'Сквозное шифрование', desc: 'Шифрование данных в передаче и хранении' },
-  { icon: '📁', title: 'Минимизация данных', desc: 'Храним только необходимое' },
-  { icon: '🧠', title: 'Ограничители безопасности ИИ', desc: 'Защита от токсичных и опасных ответов' },
-  { icon: '👤', title: 'Архитектура Privacy-by-Design', desc: 'Конфиденциальность встроена в архитектуру' },
-  { icon: '🧾', title: 'Соответствие GDPR', desc: 'Право на удаление и экспорт данных' },
-  { icon: '🚫', title: 'Нет доступа людей к диалогам', desc: 'Диалоги не читаются сотрудниками' },
-  { icon: '📊', title: 'Обезличенная аналитика', desc: 'Анализ только в обезличенном виде' },
-  { icon: '⏳', title: 'Управление памятью и авто-удаление', desc: 'Пользователь управляет сроком хранения' },
-  { icon: '🧩', title: 'Безопасный конвейер дообучения', desc: 'Без утечки пользовательских данных' },
-  { icon: '🧑‍⚕️', title: 'Не медицинское устройство', desc: 'Не заменяет клиническую терапию' },
-]
-
-const regionalLaws = [
-  { flag: '🇰🇿', text: 'Закон РК «О персональных данных» - защита и хранение данных пользователей Казахстана' },
-  { flag: '🇷🇺', text: '152-ФЗ о персональных данных - локализация и обработка персональной информации' },
-  { flag: '🇺🇿', text: 'Закон «О персональных данных» (Узбекистан) - согласие и право удаления данных' },
-  { flag: '🇰🇬', text: 'Закон КР «Об информации персонального характера» - безопасность пользовательских данных' },
-  { flag: '🌍', text: 'Региональная локализация хранения - возможность размещения данных в стране пользователя' },
-]
-
-const standards = [
-  '🇪🇺 Соответствие GDPR',
-  '🛡 SOC 2 Type II Принципы',
-  '🧠 Правила безопасности ИИ (OECD/EU AI Act)',
-  '🚫 Без передачи третьим лицам',
-]
-
 export default async function ResourcesPage({ params }: PageProps) {
   const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'resourcesPage' })
+
+  const complianceItems = t.raw('complianceItems') as ComplianceItem[]
+  const regionalLaws = t.raw('regionalLaws') as RegionalLaw[]
+  const standards = t.raw('standards') as string[]
 
   return (
     <div className="min-h-screen bg-[hsl(var(--app-bg))]">
@@ -63,20 +44,16 @@ export default async function ResourcesPage({ params }: PageProps) {
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            На главную
+            {t('backToHome')}
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Доверие, безопасность и соответствие стандартам
-          </h1>
-          <p className="mt-2 text-muted-foreground max-w-2xl">
-            Daisy обеспечивает защиту ваших данных и соответствует международным стандартам безопасности.
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('heroTitle')}</h1>
+          <p className="mt-2 text-muted-foreground max-w-2xl">{t('heroSubtitle')}</p>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <section className="mb-12">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Безопасность и конфиденциальность</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t('sectionPrivacy')}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {complianceItems.map((item, i) => (
               <div
@@ -94,7 +71,7 @@ export default async function ResourcesPage({ params }: PageProps) {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Региональное законодательство</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t('sectionRegional')}</h2>
           <ul className="space-y-3">
             {regionalLaws.map((item, i) => (
               <li
@@ -109,7 +86,7 @@ export default async function ResourcesPage({ params }: PageProps) {
         </section>
 
         <section className="mb-10">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Стандарты соответствия</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t('sectionStandards')}</h2>
           <div className="flex flex-wrap gap-3">
             {standards.map((s, i) => (
               <span
@@ -121,7 +98,6 @@ export default async function ResourcesPage({ params }: PageProps) {
             ))}
           </div>
         </section>
-
       </div>
     </div>
   )
