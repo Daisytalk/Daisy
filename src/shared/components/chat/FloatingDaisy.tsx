@@ -110,8 +110,17 @@ export function FloatingDaisy({ userName }: { userName: string }) {
 
   if (!visible || done || hasCheckInToday) return null
 
+  /** Пока панель открыта — ромашка стоит внизу справа, чтобы не «убегала» с текстом */
+  const flyAcross = !expanded
+
   return (
-    <div className="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-3">
+    <div
+      className={
+        flyAcross
+          ? 'fixed inset-0 z-50 pointer-events-none'
+          : 'fixed bottom-24 right-6 z-50 flex flex-col items-end gap-3'
+      }
+    >
       {expanded && (
         <div
           className="animate-daisy-enter bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/60 p-5 w-72 flex flex-col gap-4"
@@ -135,22 +144,32 @@ export function FloatingDaisy({ userName }: { userName: string }) {
         </div>
       )}
 
-      <div className="relative">
-        <button
-          onClick={() => setExpanded((prev) => !prev)}
-          className="animate-daisy-float hover:scale-110 active:scale-95 transition-transform duration-200 cursor-pointer drop-shadow-xl"
-          aria-label={t('ariaLabel')}
-        >
-          <DaisySVG size={expanded ? 56 : 72} />
-        </button>
-        {!expanded && (
+      <div
+        className={
+          flyAcross
+            ? 'daisy-fly-screen-wrap absolute left-0 top-0 flex flex-col items-end gap-3 pointer-events-auto animate-daisy-fly-screen'
+            : 'relative'
+        }
+      >
+        <div className="relative">
           <button
-            onClick={handleDismiss}
-            className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center hover:bg-gray-300"
+            type="button"
+            onClick={() => setExpanded((prev) => !prev)}
+            className="animate-daisy-float hover:scale-110 active:scale-95 transition-transform duration-200 cursor-pointer drop-shadow-xl"
+            aria-label={t('ariaLabel')}
           >
-            ×
+            <DaisySVG size={expanded ? 56 : 72} />
           </button>
-        )}
+          {!expanded && (
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center hover:bg-gray-300"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

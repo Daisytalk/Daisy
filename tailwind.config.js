@@ -116,6 +116,18 @@ module.exports = {
   			'petal-sway': {
   				'0%, 100%': { transform: 'rotate(0deg)' },
   				'50%': { transform: 'rotate(8deg)' }
+  			},
+  			'daisy-fly-screen': {
+  				'0%': { transform: 'translate(1rem, calc(100vh - 10rem)) rotate(-8deg)' },
+  				'11%': { transform: 'translate(calc(100vw - 7rem), calc(100vh - 11rem)) rotate(5deg)' },
+  				'22%': { transform: 'translate(calc(100vw - 8rem), 18vh) rotate(10deg)' },
+  				'33%': { transform: 'translate(55vw, 8vh) rotate(-4deg)' },
+  				'44%': { transform: 'translate(12vw, 22vh) rotate(-10deg)' },
+  				'55%': { transform: 'translate(8vw, 55vh) rotate(6deg)' },
+  				'66%': { transform: 'translate(42vw, calc(100vh - 9rem)) rotate(-6deg)' },
+  				'77%': { transform: 'translate(78vw, 62vh) rotate(8deg)' },
+  				'88%': { transform: 'translate(calc(100vw - 9rem), 38vh) rotate(-5deg)' },
+  				'100%': { transform: 'translate(1rem, calc(100vh - 10rem)) rotate(-8deg)' }
   			}
   		},
   		animation: {
@@ -123,7 +135,8 @@ module.exports = {
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'daisy-float': 'daisy-float 6s ease-in-out infinite',
   			'daisy-enter': 'daisy-enter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-  			'petal-sway': 'petal-sway 3s ease-in-out infinite'
+  			'petal-sway': 'petal-sway 3s ease-in-out infinite',
+  			'daisy-fly-screen': 'daisy-fly-screen 88s ease-in-out infinite'
   		}
   	}
   },

@@ -169,3 +169,11 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Flying check-in daisy: respect reduced motion (see FloatingDaisy) */
+@media (prefers-reduced-motion: reduce) {
+  .daisy-fly-screen-wrap {
+    animation: none !important;
+    transform: translate(calc(100vw - 7rem), calc(100vh - 11rem)) !important;
+  }
+}
