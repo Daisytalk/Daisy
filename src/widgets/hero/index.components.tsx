@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/shared/ui'
+import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 import { Menu, X, Brain, Bot, Heart } from 'lucide-react'
 interface HeroSectionProps {
   onGetStarted?: () => void
@@ -60,17 +61,20 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
       <header className="absolute inset-x-0 top-0 z-50">
         <nav className="mx-auto flex max-w-8xl items-center justify-between p-4 sm:p-6 lg:px-8" aria-label="Global">
           <div className="flex lg:flex-1">
-          <Link href="/" className="-m-1.5 p-1.5">
+          <Link href={`/${locale}`} className="-m-1.5 p-1.5">
             <Image src="/images/logo.svg" className="h-8 sm:h-10 lg:h-12 w-auto" alt="Daisy logo" width={48} height={48} priority />
           </Link>
           </div>
           <div className="flex flex-1 justify-end items-center">
-            <div className="hidden lg:flex lg:gap-x-6 xl:gap-x-8 mr-6 xl:mr-8">
+            <div className="hidden lg:flex lg:gap-x-6 xl:gap-x-8 mr-4 xl:mr-6">
               {navigation.map((item) => (
                 <Link key={item.name} href={`/${locale}${item.href}`} className="text-sm xl:text-base font-medium leading-6 text-white hover:text-gray-300 transition-colors whitespace-nowrap">
                   {item.name}
                 </Link>
               ))}
+            </div>
+            <div className="hidden lg:flex lg:items-center lg:mr-4 xl:mr-5">
+              <LanguageSwitcher variant="dark" />
             </div>
             <div className="hidden lg:flex lg:justify-end lg:gap-x-2 xl:gap-x-3 lg:items-center">
               <Button
@@ -87,7 +91,8 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                 {t('talkToDaisy')}
               </Button>
             </div>
-            <div className="flex lg:hidden">
+            <div className="flex lg:hidden items-center gap-2 sm:gap-3">
+              <LanguageSwitcher variant="dark" />
               <button
                 type="button"
                 className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-300 hover:text-white transition-colors"
@@ -106,10 +111,10 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
             <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-gray-900/95 backdrop-blur-md px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-white/10">
               <div className="flex items-center justify-between">
-                <a href="#" className="-m-1.5 p-1.5">
+                <Link href={`/${locale}`} className="-m-1.5 p-1.5" onClick={() => setMobileMenuOpen(false)}>
                   <span className="sr-only">Daisy</span>
                   <span className="text-xl sm:text-2xl font-bold text-white">Daisy</span>
-                </a>
+                </Link>
                 <button
                   type="button"
                   className="-m-2.5 rounded-md p-2.5 text-gray-400 hover:text-white transition-colors"

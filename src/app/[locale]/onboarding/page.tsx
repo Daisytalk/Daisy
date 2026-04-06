@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, useEffect, FormEvent, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -16,42 +16,12 @@ import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
 import {
   ONBOARDING_STEPS,
-  SECTION_LABELS,
-  SCALE_LABELS,
-  SCALE_LABELS_WORK,
-  SCALE_LABELS_REL,
-  SCALE_LABELS_FAMILY,
-  SCALE_LABELS_SOLO,
-  SCALE_LABELS_PHYSICAL,
-  SCALE_LABELS_EMO,
+  SECTION_LABEL_KEYS,
+  QUESTION_SCALE_GROUP,
   SCALE_ICONS,
+  COMMUNICATION_STYLE_IDS,
   type OnboardingStep,
 } from './steps'
-
-// ─── Communication styles ─────────────────────────────────────────────────────
-
-const COMMUNICATION_STYLES = [
-  { id: 'warm_friend', name: 'Тёплая подруга', keywords: 'душевная · понимающая · мягкая', tooltip: '«Я вижу, как тебе сейчас непросто. Давай вместе разберёмся. Ты не одна в этом.»' },
-  { id: 'practical_helper', name: 'Практичный помощник', keywords: 'конкретный · честный · мотивирующий', tooltip: '«Хорошо, давай посмотрим на факты. Что можно сделать уже сегодня?»' },
-  { id: 'gentle_explorer', name: 'Мягкий исследователь', keywords: 'любопытный · глубокий · рефлексивный', tooltip: '«Интересно… А откуда, как думаешь, это чувство? Что оно пытается сказать?»' },
-  { id: 'calm_mentor', name: 'Спокойный наставник', keywords: 'уравновешенный · принимающий · терпеливый', tooltip: '«Всё, что ты чувствуешь - имеет право быть. Просто понаблюдаем вместе, без спешки.»' },
-  { id: 'wise_teacher', name: 'Мудрый учитель', keywords: 'информативный · научный · объясняющий', tooltip: '«То, что ты описываешь - это когнитивное искажение "катастрофизация". Вот как это работает…»' },
-  { id: 'flexible_companion', name: 'Гибкая собеседница', keywords: 'чуткая · ситуативная · настраиваемая', tooltip: '«Подстроюсь под то, что тебе нужно прямо сейчас — иногда поддержу, иногда направлю, иногда просто побуду рядом.»' },
-]
-
-const SCALE_MAP: Record<string, string[]> = {
-  mood_today: SCALE_LABELS,
-  work_state: SCALE_LABELS_WORK,
-  rel_quality: SCALE_LABELS_REL,
-  family_support: SCALE_LABELS_FAMILY,
-  social_support: SCALE_LABELS_FAMILY,
-  solo_comfort: SCALE_LABELS_SOLO,
-  physical_state: SCALE_LABELS_PHYSICAL,
-  emo_state: SCALE_LABELS_EMO,
-  leisure: SCALE_LABELS,
-  housing: SCALE_LABELS,
-  finance: SCALE_LABELS,
-}
 
 // ─── Step renderer ───────────────────────────────────────────────────────────
 
@@ -61,21 +31,31 @@ function StepContent({
   onChange,
   onNext,
   autoAdvance,
+  t,
+  tSettings,
 }: {
   step: OnboardingStep
   answers: Record<string, OnboardingAnswerValue>
   onChange: (id: string, value: OnboardingAnswerValue) => void
   onNext: (force?: boolean) => void
   autoAdvance: boolean
+  t: ReturnType<typeof useTranslations>
+  tSettings: ReturnType<typeof useTranslations>
 }) {
+  const scaleLabelsFor = (questionId: string): string[] => {
+    const group = QUESTION_SCALE_GROUP[questionId] ?? 'default'
+    const raw = t.raw(`flow.scale.${group}`)
+    return Array.isArray(raw) ? (raw as string[]) : []
+  }
+
   const handleScale = (value: number) => {
     onChange(step.questionId!, value)
     if (autoAdvance) setTimeout(() => onNext(true), 300)
   }
 
-  const handleMultiselect = (opt: string) => {
+  const handleMultiselect = (optKey: string) => {
     const current = (answers[step.questionId!] as string[] | null) ?? []
-    const next = current.includes(opt) ? current.filter((s) => s !== opt) : current.length < (step.maxSelect ?? 2) ? [...current, opt] : current
+    const next = current.includes(optKey) ? current.filter((s) => s !== optKey) : current.length < (step.maxSelect ?? 2) ? [...current, optKey] : current
     onChange(step.questionId!, next)
   }
 
@@ -87,7 +67,6 @@ function StepContent({
 
   const handleRelationship = (value: 'yes' | 'no' | 'unsure') => {
     onChange(step.questionId!, { value, rel_quality: value === 'yes' ? undefined : undefined, other: value === 'unsure' ? '' : undefined })
-    // Автопереход только для "нет". "Да" → выбор rel_quality (авто при выборе). "Затрудняюсь" → открытый текст, кнопка Далее
     if (autoAdvance && value === 'no') setTimeout(() => onNext(true), 300)
   }
 
@@ -106,7 +85,7 @@ function StepContent({
   if (step.type === 'welcome' || step.type === 'transition') {
     return (
       <div className="space-y-8">
-        <p className="text-lg sm:text-xl text-foreground whitespace-pre-line leading-relaxed">{step.content}</p>
+        <p className="text-lg sm:text-xl text-foreground whitespace-pre-line leading-relaxed">{step.contentKey ? t(step.contentKey) : ''}</p>
       </div>
     )
   }
@@ -117,7 +96,7 @@ function StepContent({
 
   if (step.type === 'question') {
     if (step.questionType === 'scale') {
-      const labels = SCALE_MAP[step.questionId!] ?? SCALE_LABELS
+      const labels = scaleLabelsFor(step.questionId!)
       const rating = (answers[step.questionId!] as number) ?? 0
       return (
         <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
@@ -141,33 +120,35 @@ function StepContent({
     if (step.questionType === 'multiselect') {
       const selected = (answers[step.questionId!] as string[] | null) ?? []
       const otherText = (answers[`${step.questionId!}_other`] as string) ?? ''
+      const keys = step.optionKeys ?? []
       return (
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            {(step.options ?? []).map((opt) => {
-              const isSelected = selected.includes(opt)
+            {keys.map((optKey) => {
+              const isSelected = selected.includes(optKey)
               const isDisabled = !isSelected && selected.length >= (step.maxSelect ?? 2)
+              const label = t(`flow.supportNeeds.options.${optKey}`)
               return (
                 <button
-                  key={opt}
+                  key={optKey}
                   type="button"
                   disabled={isDisabled}
-                  onClick={() => handleMultiselect(opt)}
+                  onClick={() => handleMultiselect(optKey)}
                   className={`px-4 py-2.5 rounded-2xl border-2 text-sm font-medium transition-all ${
                     isSelected ? 'border-primary bg-primary/10' : isDisabled ? 'opacity-40 cursor-not-allowed border-[hsl(var(--app-border))]' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
                   }`}
                 >
-                  {opt}
+                  {label}
                 </button>
               )
             })}
           </div>
           <div className="pt-2">
-            <label className="block text-sm text-muted-foreground mb-1">Другое:</label>
+            <label className="block text-sm text-muted-foreground mb-1">{t('flow.supportNeeds.otherLabel')}</label>
             <Input
               value={otherText}
               onChange={(e) => onChange(`${step.questionId!}_other`, e.target.value)}
-              placeholder="Добавить свой ответ"
+              placeholder={t('flow.supportNeeds.otherPlaceholder')}
               className="rounded-2xl border-2"
             />
           </div>
@@ -179,25 +160,26 @@ function StepContent({
       const selected = (answers[step.questionId!] as string[] | null) ?? []
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {COMMUNICATION_STYLES.map((style) => {
-            const isSelected = selected.includes(style.id)
+          {COMMUNICATION_STYLE_IDS.map((styleId) => {
+            const isSelected = selected.includes(styleId)
             const isDisabled = !isSelected && selected.length >= (step.maxSelect ?? 2)
+            const tooltip = tSettings(`communicationStyles.${styleId}.tooltip`)
             return (
               <button
-                key={style.id}
+                key={styleId}
                 type="button"
                 disabled={isDisabled}
-                onClick={() => handleStyleSelect(style.id)}
-                title={style.tooltip}
+                onClick={() => handleStyleSelect(styleId)}
+                title={tooltip}
                 className={`text-left p-4 rounded-2xl border-2 transition-all group ${
                   isSelected ? 'border-primary bg-primary/10' : isDisabled ? 'opacity-40 cursor-not-allowed border-[hsl(var(--app-border))]' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
                 }`}
               >
-                <p className="font-semibold text-foreground mb-1">{style.name}</p>
-                <p className="text-xs text-muted-foreground">{style.keywords}</p>
-                {style.tooltip && (
-                  <p className="text-xs text-muted-foreground/70 mt-2 italic opacity-0 group-hover:opacity-100 transition-opacity line-clamp-2" title={style.tooltip}>
-                    {style.tooltip}
+                <p className="font-semibold text-foreground mb-1">{tSettings(`communicationStyles.${styleId}.name`)}</p>
+                <p className="text-xs text-muted-foreground">{tSettings(`communicationStyles.${styleId}.keywords`)}</p>
+                {tooltip && (
+                  <p className="text-xs text-muted-foreground/70 mt-2 italic opacity-0 group-hover:opacity-100 transition-opacity line-clamp-2" title={tooltip}>
+                    {tooltip}
                   </p>
                 )}
               </button>
@@ -212,7 +194,7 @@ function StepContent({
       const relVal = val?.value
       const relQuality = val?.rel_quality ?? 0
       const otherText = val?.other ?? ''
-      const labels = SCALE_LABELS_REL
+      const labels = scaleLabelsFor('rel_quality')
       return (
         <div className="space-y-6">
           <div className="flex flex-wrap gap-3">
@@ -225,13 +207,13 @@ function StepContent({
                   relVal === v ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
                 }`}
               >
-                {v === 'yes' ? 'Да' : v === 'no' ? 'Нет' : 'Затрудняюсь ответить'}
+                {t(`flow.relationship.${v}`)}
               </button>
             ))}
           </div>
           {relVal === 'yes' && (
             <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground">Как ощущаются ваши отношения прямо сейчас?</p>
+              <p className="text-sm font-medium text-foreground">{t('flow.relationship.qualityPrompt')}</p>
               <div className="flex flex-wrap gap-3">
                 {[1, 2, 3, 4, 5].map((v) => (
                   <button
@@ -251,11 +233,11 @@ function StepContent({
           )}
           {relVal === 'unsure' && (
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Расскажи своими словами: как это для тебя сейчас? 🤍</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{t('flow.relationship.unsureLabel')}</label>
               <Textarea
                 value={otherText}
                 onChange={(e) => onChange(step.questionId!, { ...val, value: 'unsure', other: e.target.value })}
-                placeholder="Опишите..."
+                placeholder={t('flow.relationship.unsurePlaceholder')}
                 rows={3}
                 className="rounded-2xl border-2"
               />
@@ -281,17 +263,17 @@ function StepContent({
                   ynVal === v ? 'border-primary bg-primary/10' : 'border-[hsl(var(--app-border))] hover:border-primary/40'
                 }`}
               >
-                {v === 'yes' ? 'Да' : 'Нет'}
+                {t(`flow.yesNo.${v}`)}
               </button>
             ))}
           </div>
           {ynVal === 'yes' && (
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Можешь рассказать подробнее (по желанию):</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{t('flow.yesNo.optionalDetail')}</label>
               <Textarea
                 value={textVal}
                 onChange={(e) => onChange(step.questionId!, { ...val, value: 'yes', text: e.target.value })}
-                placeholder="Опишите..."
+                placeholder={t('flow.yesNo.placeholder')}
                 rows={3}
                 className="rounded-2xl border-2"
               />
@@ -311,7 +293,7 @@ function OnboardingPageContent() {
   const router = useRouter()
   const locale = useLocale()
   const t = useTranslations('onboarding')
-  const tAuth = useTranslations('auth')
+  const tSettings = useTranslations('settings')
   const { user, isLoading: isAuthLoading } = useAuth()
   const [stepIndex, setStepIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, OnboardingAnswerValue>>({})
@@ -322,14 +304,15 @@ function OnboardingPageContent() {
 
   const steps = ONBOARDING_STEPS
   const currentStep = steps[stepIndex]
-  // Автопереход при одиночном выборе. Мультивыбор и открытые — через кнопку Далее
-  const q = currentStep?.type === 'question' ? answers[currentStep.questionId!] as { value?: string } | null : null
+  const q = currentStep?.type === 'question' ? (answers[currentStep.questionId!] as { value?: string } | null) : null
   const isSingleChoiceStep =
     currentStep?.type === 'question' &&
     (currentStep?.questionType === 'scale' ||
       (currentStep?.questionType === 'relationship' && q?.value !== 'unsure') ||
       (currentStep?.questionType === 'yes-no-text' && q?.value !== 'yes'))
   const autoAdvance = !!isSingleChoiceStep
+
+  const progressLabels = useMemo(() => (t.raw('flow.progress') as string[]) ?? [], [t])
 
   useEffect(() => {
     if (!isAuthLoading && user?.isOnboarded) {
@@ -409,7 +392,7 @@ function OnboardingPageContent() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       console.error('Onboarding submission error:', { error: err, message: msg })
-      setError(`Не удалось отправить. Попробуйте снова.${msg ? ` (${msg})` : ''}`)
+      setError(t('flow.errors.submitFailed', { details: msg ? ` (${msg})` : '' }))
     } finally {
       setIsSubmitting(false)
     }
@@ -461,24 +444,25 @@ function OnboardingPageContent() {
     )
   }
 
-  const sectionLabel = currentStep ? SECTION_LABELS[currentStep.section] : ''
+  const sectionLabelKey = currentStep ? SECTION_LABEL_KEYS[currentStep.section] : ''
+  const sectionLabel = sectionLabelKey ? t(sectionLabelKey) : ''
   const isWelcome = currentStep?.type === 'welcome'
   const isTransition = currentStep?.type === 'transition'
   const isFinal = currentStep?.type === 'final'
   const questionCount = steps.filter((s) => s.type === 'question').length
   const currentQuestionNum = steps.slice(0, stepIndex + 1).filter((s) => s.type === 'question').length
-  const progress = ((stepIndex + 1) / steps.length) * 100
-
-  const PROGRESS_LABELS = ['Эмоциональное состояние', 'Состояние жизненных сфер', 'Завершение опроса']
   const progressSectionIndex = currentStep?.section === 'emotional-start' ? 0 : currentStep?.section === 'life-areas' ? 1 : 2
+
+  const welcomeTitle = currentStep?.contentKey ? t(currentStep.contentKey) : ''
+  const transitionTitle = currentStep?.contentKey ? t(currentStep.contentKey) : ''
+  const finalTitle = currentStep?.contentKey ? t(currentStep.contentKey) : ''
 
   return (
     <div className="min-h-screen flex flex-col bg-[hsl(var(--app-bg))]">
-      {/* Progress bar с подписями */}
       <div className="shrink-0 px-4 sm:px-6 pt-4 pb-2">
         <div className="max-w-2xl mx-auto">
           <div className="flex justify-between gap-2 text-[10px] sm:text-xs text-muted-foreground mb-1.5">
-            {PROGRESS_LABELS.map((label, i) => (
+            {progressLabels.map((label, i) => (
               <span key={i} className={i === progressSectionIndex ? 'font-semibold text-foreground' : ''}>
                 {label}
               </span>
@@ -496,7 +480,6 @@ function OnboardingPageContent() {
       </div>
 
       <div className="flex-1 flex flex-col px-4 sm:px-6 py-6 max-w-2xl mx-auto w-full">
-        {/* Лого DAISY сверху слева */}
         <div className="flex items-center gap-4 mb-6">
           <Link href={`/${locale}`} className="flex items-center gap-2 shrink-0">
             <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-[hsl(var(--app-border))] shadow-sm p-1.5">
@@ -522,32 +505,32 @@ function OnboardingPageContent() {
               >
                 {isWelcome && (
                   <>
-                    <h1 className="text-2xl sm:text-3xl font-semibold text-foreground leading-tight whitespace-pre-line">{currentStep?.content}</h1>
+                    <h1 className="text-2xl sm:text-3xl font-semibold text-foreground leading-tight whitespace-pre-line">{welcomeTitle}</h1>
                     <div className="pt-4">
                       <p className="text-xs text-muted-foreground">
-                        Продолжая, вы соглашаетесь с нашими{' '}
+                        {t('flow.legal.prefix')}{' '}
                         <Link href={`/${locale}/terms`} className="underline hover:text-foreground">
-                          Условиями использования
+                          {t('flow.legal.termsLink')}
                         </Link>{' '}
-                        и{' '}
+                        {t('flow.legal.and')}{' '}
                         <Link href={`/${locale}/privacy`} className="underline hover:text-foreground">
-                          Политикой конфиденциальности
+                          {t('flow.legal.privacyLink')}
                         </Link>
-                        . Пожалуйста, ознакомьтесь, прежде чем продолжить.
+                        {t('flow.legal.suffix')}
                       </p>
                     </div>
                   </>
                 )}
 
-                {isTransition && <h2 className="text-xl sm:text-2xl font-semibold text-foreground whitespace-pre-line leading-relaxed">{currentStep?.content}</h2>}
+                {isTransition && <h2 className="text-xl sm:text-2xl font-semibold text-foreground whitespace-pre-line leading-relaxed">{transitionTitle}</h2>}
 
                 {currentStep?.type === 'question' && (
                   <>
                     <p className="text-sm text-muted-foreground">
-                      Вопрос {currentQuestionNum} из {questionCount}
+                      {t('flow.questionCounter', { current: currentQuestionNum, total: questionCount })}
                     </p>
                     <h2 className="text-2xl sm:text-3xl font-semibold text-foreground leading-tight">
-                      {currentStep.question}
+                      {currentStep.questionKey ? t(currentStep.questionKey) : ''}
                       {currentStep.required && <span className="text-destructive ml-1">*</span>}
                     </h2>
                     <StepContent
@@ -556,13 +539,13 @@ function OnboardingPageContent() {
                       onChange={handleAnswerChange}
                       onNext={nextStep}
                       autoAdvance={autoAdvance}
+                      t={t}
+                      tSettings={tSettings}
                     />
                   </>
                 )}
 
-                {isFinal && (
-                  <h2 className="text-2xl sm:text-3xl font-semibold text-foreground whitespace-pre-line leading-relaxed">{currentStep?.content}</h2>
-                )}
+                {isFinal && <h2 className="text-2xl sm:text-3xl font-semibold text-foreground whitespace-pre-line leading-relaxed">{finalTitle}</h2>}
 
                 {error && (
                   <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-sm text-destructive">{error}</div>
@@ -571,7 +554,6 @@ function OnboardingPageContent() {
             </AnimatePresence>
           </form>
 
-          {/* Navigation */}
           <div className="flex items-center justify-between gap-4 pt-8 mt-8 border-t border-[hsl(var(--app-border))]">
             <Button
               type="button"
@@ -588,12 +570,12 @@ function OnboardingPageContent() {
             </span>
             {isWelcome || isTransition ? (
               <Button type="button" className="rounded-2xl" onClick={() => nextStep()}>
-                {currentStep?.buttonLabel ?? 'Далее'}
+                {currentStep?.buttonKey ? t(currentStep.buttonKey) : t('next')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : isFinal ? (
               <Button type="submit" form="onboarding-form" className="rounded-2xl" disabled={isSubmitting}>
-                {isSubmitting ? t('submitting') : (currentStep?.buttonLabel ?? t('complete'))}
+                {isSubmitting ? t('submitting') : currentStep?.buttonKey ? t(currentStep.buttonKey) : t('complete')}
                 <CheckCircle className="w-4 h-4 ml-2" />
               </Button>
             ) : isSingleChoiceStep ? (

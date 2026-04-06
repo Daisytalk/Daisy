@@ -269,24 +269,235 @@
     "scaleGood": "Good",
     "scaleExcellent": "Great",
     "sections": {
-      "basic-info": { "title": "I. Basic information" },
-      "life-areas": { "title": "II. Life areas (scale 1–5)" }
+      "basic-info": {
+        "title": "I. Basic information"
+      },
+      "life-areas": {
+        "title": "II. Life areas (scale 1–5)"
+      }
     },
     "questions": {
-      "gender": { "question": "Sex / Gender:" },
-      "family-history": { "question": "Family medical history / genetic conditions: e.g. schizophrenia, diabetes, cardiovascular diseases, etc." },
-      "physical-health": { "question": "Current physical health: e.g. asthma, migraines, digestive issues, hormonal imbalances, etc." },
-      "addictions": { "question": "Any addictions or dependencies? e.g. alcohol, smoking, drugs, gambling, internet/gaming, etc." },
-      "professional-life": { "question": "Work or studies: how do you feel in this area?", "commentLabel": "What would you like to improve? (interest, stress, productivity, relationships with colleagues/classmates)" },
-      "romantic-relationships": { "question": "Intimate / romantic relationships: how satisfied are you (if any)? (quality, stability, support, conflicts)", "commentLabel": "Comment" },
-      "family-relationships": { "question": "Family (parents, children, relatives): how are relationships? (support, conflicts, responsibilities)", "commentLabel": "Comment" },
-      "social-relationships": { "question": "Friends and social circle: do you have supportive people around?", "commentLabel": "Comment" },
-      "autonomy": { "question": "Being alone / autonomy: how comfortable are you spending time with yourself?", "commentLabel": "Comment" },
-      "physical-health-rating": { "question": "Physical health: how would you rate it? (sleep, nutrition, chronic conditions, energy)", "commentLabel": "Comment" },
-      "emotional-wellbeing": { "question": "Emotional well-being: how often do you feel discomfort? (anxiety, low mood, mood swings)", "commentLabel": "Comment" },
-      "leisure-hobbies": { "question": "Leisure and hobbies: do you have regular activities that bring joy and relaxation?", "commentLabel": "Comment" },
-      "living-conditions": { "question": "Living conditions and safety: do you feel safe and comfortable?", "commentLabel": "Comment" },
-      "financial-status": { "question": "Financial situation: how financially secure do you feel?", "commentLabel": "Comment" }
+      "gender": {
+        "question": "Sex / Gender:"
+      },
+      "family-history": {
+        "question": "Family medical history / genetic conditions: e.g. schizophrenia, diabetes, cardiovascular diseases, etc."
+      },
+      "physical-health": {
+        "question": "Current physical health: e.g. asthma, migraines, digestive issues, hormonal imbalances, etc."
+      },
+      "addictions": {
+        "question": "Any addictions or dependencies? e.g. alcohol, smoking, drugs, gambling, internet/gaming, etc."
+      },
+      "professional-life": {
+        "question": "Work or studies: how do you feel in this area?",
+        "commentLabel": "What would you like to improve? (interest, stress, productivity, relationships with colleagues/classmates)"
+      },
+      "romantic-relationships": {
+        "question": "Intimate / romantic relationships: how satisfied are you (if any)? (quality, stability, support, conflicts)",
+        "commentLabel": "Comment"
+      },
+      "family-relationships": {
+        "question": "Family (parents, children, relatives): how are relationships? (support, conflicts, responsibilities)",
+        "commentLabel": "Comment"
+      },
+      "social-relationships": {
+        "question": "Friends and social circle: do you have supportive people around?",
+        "commentLabel": "Comment"
+      },
+      "autonomy": {
+        "question": "Being alone / autonomy: how comfortable are you spending time with yourself?",
+        "commentLabel": "Comment"
+      },
+      "physical-health-rating": {
+        "question": "Physical health: how would you rate it? (sleep, nutrition, chronic conditions, energy)",
+        "commentLabel": "Comment"
+      },
+      "emotional-wellbeing": {
+        "question": "Emotional well-being: how often do you feel discomfort? (anxiety, low mood, mood swings)",
+        "commentLabel": "Comment"
+      },
+      "leisure-hobbies": {
+        "question": "Leisure and hobbies: do you have regular activities that bring joy and relaxation?",
+        "commentLabel": "Comment"
+      },
+      "living-conditions": {
+        "question": "Living conditions and safety: do you feel safe and comfortable?",
+        "commentLabel": "Comment"
+      },
+      "financial-status": {
+        "question": "Financial situation: how financially secure do you feel?",
+        "commentLabel": "Comment"
+      }
+    },
+    "flow": {
+      "progress": [
+        "Emotional state",
+        "Life areas",
+        "Wrapping up"
+      ],
+      "sections": {
+        "emotional-start": "Emotional state",
+        "life-areas": "Life areas",
+        "final": "Wrapping up"
+      },
+      "legal": {
+        "prefix": "By continuing, you agree to our",
+        "termsLink": "Terms of Use",
+        "and": "and",
+        "privacyLink": "Privacy Policy",
+        "suffix": ". Please read them before you continue."
+      },
+      "questionCounter": "Question {current} of {total}",
+      "errors": {
+        "submitFailed": "Could not submit. Please try again.{details}"
+      },
+      "supportNeeds": {
+        "otherLabel": "Other:",
+        "otherPlaceholder": "Add your own answer",
+        "options": {
+          "reduce_anxiety": "Reduce anxiety",
+          "fatigue_burnout": "Cope with fatigue / burnout",
+          "sort_feelings": "Make sense of my feelings",
+          "get_support": "Get support",
+          "relationships": "Improve relationships",
+          "relationship_with_self": "Improve my relationship with myself",
+          "regain_energy": "Get my energy back",
+          "vent": "Just vent",
+          "other": "Other"
+        }
+      },
+      "relationship": {
+        "yes": "Yes",
+        "no": "No",
+        "unsure": "Hard to say",
+        "qualityPrompt": "How do your relationships feel right now?",
+        "unsureLabel": "In your own words—what is this like for you right now? 🤍",
+        "unsurePlaceholder": "Describe…"
+      },
+      "yesNo": {
+        "yes": "Yes",
+        "no": "No",
+        "optionalDetail": "You can share more (optional):",
+        "placeholder": "Describe…"
+      },
+      "scale": {
+        "default": [
+          "Very hard",
+          "Rather difficult",
+          "Okay",
+          "Rather good",
+          "Resourced"
+        ],
+        "work": [
+          "1 — really hard, almost no energy",
+          "2 — not easy, lots of tension",
+          "3 — coping, but little joy",
+          "4 — mostly good, some stability",
+          "5 — great: meaning and energy"
+        ],
+        "rel": [
+          "1 — very hard: a lot of pain and tension",
+          "2 — unstable, sometimes difficult",
+          "3 — calm, but something feels missing",
+          "4 — good: I feel support and warmth",
+          "5 — stable, warm, truly close"
+        ],
+        "family": [
+          "1 — I feel alone, no one to lean on",
+          "2 — often hard, relationships are tricky",
+          "3 — flat, but real closeness is missing",
+          "4 — there are people I can turn to",
+          "5 — warm and reliable: someone is always there"
+        ],
+        "solo": [
+          "1 — solitude feels scary; anxiety or discomfort",
+          "2 — uneasy, I try to stay around people",
+          "3 — neutral—I tolerate it, I do not really enjoy it",
+          "4 — fairly comfortable—I can spend time alone",
+          "5 — I love alone time—it is my reset"
+        ],
+        "physical": [
+          "1 — poor sleep, low energy, often unwell",
+          "2 — often tired, sleep is uneven",
+          "3 — tolerable, but my body sometimes reminds me",
+          "4 — most days I feel decent",
+          "5 — all good—sleep, strength, energy"
+        ],
+        "emo": [
+          "1 — very hard—anxiety or emptiness will not let go",
+          "2 — unstable: mood swings, sometimes I snap",
+          "3 — mixed—sometimes better, sometimes worse, little stability",
+          "4 — mostly coping—I have some inner footing",
+          "5 — I feel stable—strength and inner balance"
+        ]
+      },
+      "steps": {
+        "welcome": {
+          "content": "Hello. I'm Daisy 🌼\n\nI'm glad you're here 🤍 This is a place to breathe, understand yourself, and feel supported. To be there for you in the way you need, I'd like to ask a few questions. It takes about 2–3 minutes.",
+          "button": "Start"
+        },
+        "mood_today": {
+          "question": "How are you feeling? You can be yourself here 🤍"
+        },
+        "transition_thanks": {
+          "content": "Thank you for trusting me with this 🤍\n\nI am gathering what you share with care so this space can truly feel yours.",
+          "button": "Next"
+        },
+        "support_needs": {
+          "question": "What matters most for you right now? Pick up to two so I know where to start:"
+        },
+        "communication_style": {
+          "question": "What communication style feels best for you? Pick 1–2:"
+        },
+        "transition_portrait": {
+          "content": "Thank you for answering so honestly 🤍\n\nI am starting to see what matters to you. Your space will be ready soon—just for you.",
+          "button": "Next"
+        },
+        "work_state": {
+          "question": "How are work or studies for you right now? 🤍"
+        },
+        "relationships": {
+          "question": "Is there someone close by: a partner or someone you are with?"
+        },
+        "family_support": {
+          "question": "Are there people you can lean on? 🤍 (family, friends)"
+        },
+        "social_support": {
+          "question": "How is your social circle—friends, colleagues, acquaintances? 🤍"
+        },
+        "solo_comfort": {
+          "question": "How is it for you to be alone with yourself—without company, in quiet? 🤍"
+        },
+        "physical_state": {
+          "question": "How have you been feeling physically lately? 🤍"
+        },
+        "emo_state": {
+          "question": "What has been going on inside lately—how is your emotional state? 🤍"
+        },
+        "leisure": {
+          "question": "How well can you rest and enjoy your free time? 🤍"
+        },
+        "housing": {
+          "question": "How do you feel in your home? 🤍"
+        },
+        "finance": {
+          "question": "How are things with money lately? 🤍"
+        },
+        "family_history": {
+          "question": "Is there any family history of mental or emotional conditions? (You may skip)"
+        },
+        "chronic": {
+          "question": "Do you have chronic conditions that affect how you feel? (You may skip)"
+        },
+        "addiction": {
+          "question": "Are there dependencies (alcohol, smoking, other) that worry you? (You may skip)"
+        },
+        "final": {
+          "content": "Thank you for being so honest with me 🤍\n\nAnswering questions like these already takes courage. I see what matters for you now, and I am here for exactly that. We will work on it together—step by step, at your pace.",
+          "button": "Start chat"
+        }
+      }
     }
   },
   "helpTopics": {
@@ -694,12 +905,69 @@
       }
     },
     "communicationStyles": {
-      "warm_friend": { "name": "Warm friend", "keywords": "Supportive, understanding, gentle" },
-      "practical_helper": { "name": "Practical helper", "keywords": "Concrete, structured, honest" },
-      "gentle_explorer": { "name": "Gentle explorer", "keywords": "Curious, reflective, deep" },
-      "calm_mentor": { "name": "Calm mentor", "keywords": "Balanced, accepting, patient" },
-      "wise_teacher": { "name": "Wise teacher", "keywords": "Informative, scientific, educational" },
-      "flexible_companion": { "name": "Flexible companion", "keywords": "Sensitive, situational, adaptable" }
+      "warm_friend": {
+        "name": "Warm friend",
+        "keywords": "Supportive, understanding, gentle",
+        "tooltip": "I see this is hard for you right now. Let's figure it out together. You're not alone in this."
+      },
+      "practical_helper": {
+        "name": "Practical helper",
+        "keywords": "Concrete, structured, honest",
+        "tooltip": "Alright, let us look at the facts. What could you do today?"
+      },
+      "gentle_explorer": {
+        "name": "Gentle explorer",
+        "keywords": "Curious, reflective, deep",
+        "tooltip": "Interesting… Where do you think this feeling comes from? What might it be trying to tell you?"
+      },
+      "calm_mentor": {
+        "name": "Calm mentor",
+        "keywords": "Balanced, accepting, patient",
+        "tooltip": "Everything you feel is allowed. Let us just notice together, without rushing."
+      },
+      "wise_teacher": {
+        "name": "Wise teacher",
+        "keywords": "Informative, scientific, educational",
+        "tooltip": "What you are describing sounds like the cognitive distortion called catastrophizing. Here is how it works…"
+      },
+      "flexible_companion": {
+        "name": "Flexible companion",
+        "keywords": "Sensitive, situational, adaptable",
+        "tooltip": "I will adapt to what you need right now—sometimes support, sometimes direction, sometimes just being there."
+      }
     }
+  },
+  "privacy": {
+    "hero": {
+      "backToHome": "Back to Home",
+      "title": "Privacy and Personal Data Processing Policy",
+      "effectiveDate": "Effective date: 10.02.2026",
+      "lastUpdated": "Last updated: 18.02.2026"
+    },
+    "meta": {
+      "title": "Privacy Policy",
+      "description": "Privacy and personal data processing policy for the Daisy service. Effective date: 10.02.2026."
+    },
+    "toc": {
+      "title": "Contents",
+      "s1": "1. Terms and definitions",
+      "s2": "2. Important notice on the nature of the Service",
+      "s3": "3. Consent to sensitive data processing and AI analysis",
+      "s4": "4. General provisions and processing principles",
+      "s5": "5. Scope of the Policy and categories of data",
+      "s6": "6. Purposes of processing",
+      "s7": "7. How the AI assistant works",
+      "s8": "8. Legal bases and retention periods",
+      "s9": "9. Sharing of personal data",
+      "s10": "10. Use of data for AI training",
+      "s11": "11. Security measures and ISO/IEC 27001",
+      "s12": "12. Data subject rights",
+      "s13": "13. Age restrictions",
+      "s14": "14. Obligations of the parties",
+      "s15": "15. Liability",
+      "s16": "16. Dispute resolution",
+      "s17": "17. Final provisions"
+    },
+    "articleHtml": "<p>\r\n        This Privacy and Personal Data Processing Policy (the “Policy”) sets out how information about users of the Daisy service, available through the web application (the “Service”), is processed and protected. It has been prepared in accordance with the Law of the Republic of Kazakhstan “On Personal Data and Their Protection” No. 94-V of 21 May 2013 and follows the principles of the international standard ISO/IEC 27001.\r\n      </p>\r\n      <p>\r\n        Personal data are processed in accordance with applicable personal data law in the relevant jurisdictions, to the extent that it does not conflict with the law of the Republic of Kazakhstan as the jurisdiction where the Operator is registered.\r\n      </p>\r\n\r\n      <h2 id=\"s1\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">1. TERMS AND DEFINITIONS</h2>\r\n      <p><strong>1.1.</strong> Operator (Service administration, “we”) — LLP “Daisy Mental Health”, registered under the laws of the Republic of Kazakhstan, BIN: 250240028245, registered address: Kostanay, 6-1-81, whose authorized employees organize and/or carry out processing of personal data and determine the purposes and content of such processing.</p>\r\n      <p><strong>1.2.</strong> User (data subject) — a natural person aged 18 (eighteen) or older who uses the Service through the web application.</p>\r\n      <p><strong>1.3.</strong> Personal data — any information relating to an identified or identifiable natural person, directly or indirectly.</p>\r\n      <p><strong>1.4.</strong> Sensitive (special) personal data — data revealing a person’s psychological and emotional state, personal experiences, family and interpersonal situations. For the purposes of this Policy, sensitive data includes, in particular, text messages the User sends in dialogue with the Service’s AI assistant.</p>\r\n      <p><strong>1.5.</strong> Processing of personal data — any operation or set of operations performed on personal data, including collection, recording, organization, accumulation, storage, updating, retrieval, use, transfer, anonymization, blocking, erasure, and destruction.</p>\r\n      <p><strong>1.6.</strong> Confidentiality of personal data — the requirement not to disclose personal data without the data subject’s consent or another lawful basis.</p>\r\n      <p><strong>1.7.</strong> AI assistant — a software module of the Service based on a language model and behavioral analysis algorithms that converses with the User, generates responses, and provides behavioral recommendations.</p>\r\n      <p><strong>1.8.</strong> Anonymization — actions after which personal data can no longer be attributed to a specific data subject without additional information.</p>\r\n      <p><strong>1.9.</strong> Information security management system (ISMS) — a risk-based management system for establishing, implementing, operating, and improving information security in line with ISO/IEC 27001.</p>\r\n      <p><strong>1.10.</strong> Cookies — a small piece of data sent by the web server and stored on the User’s device, which is sent back to the server on each request to the Service’s web application.</p>\r\n      <p><strong>1.11.</strong> IP address — a unique network address of a node in a computer network using the IP protocol.</p>\r\n\r\n      <h2 id=\"s2\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">2. IMPORTANT NOTICE ON THE NATURE OF THE SERVICE</h2>\r\n      <p><strong>2.1.</strong> Daisy is a digital wellness service and a tool for emotional support and self-reflection. It is not a medical organization, psychotherapy or psychiatry service, telemedicine service, or crisis mental health service.</p>\r\n      <p><strong>2.2.</strong> The Service’s AI assistant does not make medical or psychiatric diagnoses, does not perform clinical assessment of the User’s condition, and does not replace consultation with a qualified professional such as a psychologist, psychotherapist, or physician.</p>\r\n      <p><strong>2.3.</strong> The Service is not intended for crisis intervention, suicide prevention, or emergency psychological care. If you are in an urgent psychological crisis, you must immediately contact qualified professionals or emergency services in your country.</p>\r\n      <p><strong>2.4.</strong> Limitations in vulnerable states. The Service is not intended for, and is not recommended for, people who are in: an acute psychological crisis or emotional breakdown; suicidal thoughts or intent; severe mental health conditions requiring clinical care; or other states in which self-guided work without professional support could cause harm. In such cases you should contact a qualified specialist — a psychologist, psychiatrist, or the appropriate emergency service. The Operator is not liable for consequences of using the Service while in such states.</p>\r\n      <p><strong>2.5.</strong> This notice is an integral part of the terms of use. By continuing to use the Service, the User confirms understanding and acceptance of its non-medical nature and limitations.</p>\r\n\r\n      <h2 id=\"s3\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">3. CONSENT TO SENSITIVE DATA PROCESSING AND AI ANALYSIS</h2>\r\n      <p>This section constitutes informed consent to processing of sensitive personal data under Article 8 of the Law of the Republic of Kazakhstan “On Personal Data and Their Protection” No. 94-V, which requires explicit consent for processing data concerning psychological and emotional state.</p>\r\n      <p><strong>3.1.</strong> The User acknowledges that by using the Service they voluntarily provide information relating to their emotional, psychological, and personal state, which constitutes sensitive personal data under the law of the Republic of Kazakhstan.</p>\r\n      <p><strong>3.2.</strong> By registering and accepting this Policy, the User gives separate informed consent to: automated processing and analysis of text messages by artificial intelligence algorithms; detection and storage of emotional and behavioral patterns; storage of chat history to provide personalized recommendations; cross-border transfer and processing of data in cloud infrastructure, including in countries that may not provide a level of data protection equivalent to the law of the User’s country of residence.</p>\r\n      <p><strong>3.3.</strong> The User understands that the Service cannot function without processing such data.</p>\r\n      <p><strong>3.4.</strong> Consent given at registration may be withdrawn at any time by sending a request to hello@talktodaisy.com. Withdrawal of consent will result in loss of access to the Service, because processing of such data is a condition of providing it.</p>\r\n\r\n      <h2 id=\"s4\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">4. GENERAL PROVISIONS AND PROCESSING PRINCIPLES</h2>\r\n      <p><strong>4.1.</strong> Use of the Service by the User constitutes acceptance of this Policy. Consent to processing sensitive personal data is given separately as described in Section 3.</p>\r\n      <p><strong>4.2.</strong> If you do not agree with this Policy, you must stop using the Service immediately.</p>\r\n      <p><strong>4.3.</strong> The Operator processes personal data on the principles of: lawfulness, fairness, and transparency; purpose limitation — processing only for predefined lawful purposes; data minimization — collecting only what is necessary for those purposes; accuracy and currency; storage limitation — personal data identifying the subject are not kept longer than required for the purposes; and appropriate security, including protection against unauthorized or unlawful processing and against accidental loss, destruction, or damage.</p>\r\n      <p><strong>4.4.</strong> This Policy applies to the Daisy Service in full. The Operator does not control and is not responsible for third-party websites or services that the User may access via links in the Service.</p>\r\n      <p><strong>4.5.</strong> The Service administration does not verify the accuracy of personal data provided by the User and assumes that the User provides accurate information.</p>\r\n      <p><strong>4.6.</strong> Data used to improve algorithms are anonymized and do not contain direct identifiers. Such data may be retained longer, including indefinitely, because they do not identify the User.</p>\r\n\r\n      <h2 id=\"s5\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">5. SCOPE OF THE POLICY AND CATEGORIES OF DATA</h2>\r\n      <p><strong>5.1.</strong> This Policy sets out the Operator’s obligations of non-disclosure and of maintaining protection and confidentiality of personal data that the User provides when using the Service.</p>\r\n      <p><strong>5.2.</strong> Data provided directly by the User include: name or nickname; email address; interface language; country of residence (optional).</p>\r\n      <p><strong>5.3.</strong> Sensitive data — chat content: the main type of data processed consists of text messages in dialogue with the AI assistant. Messages may describe emotional states, personal experiences, family and interpersonal situations, anxious thoughts, and psycho-emotional condition. The Operator treats chat content as sensitive personal data and applies heightened protection in accordance with Article 8 of Law No. 94-V of the Republic of Kazakhstan.</p>\r\n      <p><strong>5.4.</strong> Behavioral and analytics data: the Service analyzes dynamics of emotional state, recurring themes, and reaction patterns solely to personalize dialogue and improve support quality. This analysis is auxiliary and non-medical and is not a clinical assessment.</p>\r\n      <p><strong>5.5.</strong> Technical data: technical information — IP address, device and browser type, cookies, session data, and error logs — is collected and processed in a pseudonymized or aggregated form to ensure operation and security of the Service and to prevent unauthorized access.</p>\r\n\r\n      <h2 id=\"s6\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">6. PURPOSES OF PROCESSING PERSONAL DATA</h2>\r\n      <p>The Operator processes the User’s personal data for the following purposes:</p>\r\n      <ul>\r\n        <li><strong>6.1.</strong> Identifying the User and providing access to Service functionality.</li>\r\n        <li><strong>6.2.</strong> Enabling dialogue with the AI assistant, personalizing responses, and generating behavioral recommendations.</li>\r\n        <li><strong>6.3.</strong> Storing chat history to maintain context for future conversations and track the User’s progress.</li>\r\n        <li><strong>6.4.</strong> Improving AI assistant algorithms using only anonymized data — where the User has consented in accordance with Section 10 of this Policy.</li>\r\n        <li><strong>6.5.</strong> Communicating with the User and handling requests and applications.</li>\r\n        <li><strong>6.6.</strong> Providing effective customer and technical support.</li>\r\n        <li><strong>6.7.</strong> Informing the User, with consent, about Service updates and new features.</li>\r\n        <li><strong>6.8.</strong> Processing payments for subscriptions to the Service.</li>\r\n        <li><strong>6.9.</strong> Ensuring security of the Service and preventing fraud.</li>\r\n        <li><strong>6.10.</strong> Complying with applicable law.</li>\r\n      </ul>\r\n      <p>The Operator does not use the User’s data for third-party advertising targeting and does not sell personal data to third parties.</p>\r\n\r\n      <h2 id=\"s7\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">7. HOW THE AI ASSISTANT WORKS: DATA PROCESSING AND TECHNOLOGY LIMITATIONS</h2>\r\n      <p><strong>7.1.</strong> Text messages are processed by the Service’s AI assistant to generate responses and recommendations based on cognitive behavioral therapy (CBT), dialectical behavior therapy (DBT), and self-reflection techniques.</p>\r\n      <p><strong>7.2.</strong> Chat history is stored to maintain dialogue context and personalization. The Service uses selective contextual retrieval rather than full linear analysis of the entire history.</p>\r\n      <p><strong>7.3.</strong> The AI assistant does not make legally significant decisions, medical decisions, or automated decisions affecting the User’s rights.</p>\r\n      <p><strong>7.4.</strong> Limitations of AI technology. The AI assistant uses a probabilistic language model. Responses are generated automatically from statistical algorithms and may be: incomplete — not covering all aspects of the User’s situation; inaccurate or wrong — including factually incorrect information (“hallucinations”); or unsuitable for the User’s specific life context. The Service does not guarantee psychological, emotional, or practical applicability of the AI assistant’s recommendations. The User accepts and uses recommendations at their own discretion and risk.</p>\r\n      <p><strong>7.5.</strong> The Operator is not liable for the accuracy, applicability, or consequences of AI recommendations in specific life situations.</p>\r\n\r\n      <h2 id=\"s8\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">8. LEGAL BASES AND RETENTION PERIODS</h2>\r\n      <p><strong>8.1.</strong> Processing is based on: the User’s consent as described in Section 3; performance of the contract for Service provision to which the User is a party; and the Operator’s legitimate interests in security and improvement of the Service — to the extent they do not override the User’s rights and freedoms.</p>\r\n      <p><strong>8.2.</strong> Retention periods:</p>\r\n      <ul>\r\n        <li><strong>Account data:</strong> For the life of the account plus 30 calendar days after deletion.</li>\r\n        <li><strong>Chat history:</strong> For the life of the account plus 30 calendar days after deletion.</li>\r\n        <li><strong>Technical logs:</strong> Up to 6 months, unless longer retention is needed to investigate a security incident.</li>\r\n        <li><strong>Anonymized data for AI training:</strong> Indefinitely.</li>\r\n      </ul>\r\n      <p><strong>8.3.</strong> After the retention period, personal data are destroyed or anonymized in accordance with internal procedures of the Operator that meet ISO/IEC 27001 and the law of the Republic of Kazakhstan.</p>\r\n\r\n      <h2 id=\"s9\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">9. SHARING OF PERSONAL DATA</h2>\r\n      <p><strong>9.1.</strong> The Operator may share personal data with third parties where: the User has consented; sharing is necessary to operate the Service (cloud providers, AI processing providers, payment systems); or sharing is required by law of the Republic of Kazakhstan to authorized public bodies.</p>\r\n      <p><strong>9.2.</strong> All processors acting on behalf of the Operator are bound by confidentiality and data protection obligations under appropriate agreements.</p>\r\n      <p><strong>9.3.</strong> The Operator does not share personal data with third parties for advertising targeting and does not sell it in any form.</p>\r\n      <p><strong>9.4.</strong> Cross-border transfers. Because cloud infrastructure is used, personal data may be processed on servers located outside the Republic of Kazakhstan and outside the User’s country of residence, including in states that may not ensure a level of protection equivalent to the User’s local law. By accepting this Policy and consenting under Section 3, the User expressly agrees to such transfers. The Operator applies appropriate contractual and organizational measures to protect transferred data in line with the law of the Republic of Kazakhstan.</p>\r\n      <p><strong>9.5.</strong> Localization and restrictions. If the law of the User’s country of residence imposes localization or other processing requirements, the Operator takes reasonable steps to comply. If compliance is impossible for technical or legal reasons, the Operator may restrict certain Service features in the relevant territory.</p>\r\n\r\n      <h2 id=\"s10\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">10. USE OF DATA FOR AI TRAINING</h2>\r\n      <p><strong>10.1.</strong> Anonymized dialogue data may be used to improve AI assistant algorithms only if all of the following hold: data have been fully anonymized and stripped of direct and indirect identifiers; the User has not exercised the opt-out in Section 10.2; and use does not reveal the User’s identity.</p>\r\n      <p><strong>10.2.</strong> The User may at any time prohibit use of their dialogues for training algorithms before or during use of the Service by: changing the relevant setting in the Service interface (if available); or emailing hello@talktodaisy.com. The opt-out takes effect when received by the Operator and does not affect availability of Service functionality.</p>\r\n      <p><strong>10.3.</strong> Anonymized data are not sold or transferred to third parties for their independent use as a sale.</p>\r\n\r\n      <h2 id=\"s11\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">11. SECURITY MEASURES AND ISO/IEC 27001</h2>\r\n      <p><strong>11.1.</strong> The Operator implements appropriate organizational and technical measures to protect personal data against unlawful or accidental access, destruction, alteration, blocking, copying, distribution, and other unlawful acts.</p>\r\n      <p><strong>11.2.</strong> Measures include, without limitation: access control and least-privilege policies; encryption — TLS/SSL in transit and encryption at rest where appropriate; regular risk monitoring under the ISMS; incident management procedures for security incidents involving personal data; staff training for those with access to personal data; periodic internal audits and review of safeguards.</p>\r\n      <p><strong>11.3.</strong> If a security incident poses a risk of unauthorized access to personal data, the Operator notifies the User within a reasonable time after discovery and initial assessment.</p>\r\n\r\n      <h2 id=\"s12\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">12. DATA SUBJECT RIGHTS</h2>\r\n      <p>Under the law of the Republic of Kazakhstan, the User has the right to:</p>\r\n      <ul>\r\n        <li><strong>12.1.</strong> Obtain information about the purposes, means, and content of processing of their personal data.</li>\r\n        <li><strong>12.2.</strong> Access their personal data and request correction or updating.</li>\r\n        <li><strong>12.3.</strong> Withdraw consent to processing. Withdrawal of consent to processing sensitive data will end access to the Service as described in Section 3.4.</li>\r\n        <li><strong>12.4.</strong> Request erasure of their personal data and/or cessation of processing where data are incomplete, outdated, inaccurate, or no longer necessary for the stated purposes.</li>\r\n        <li><strong>12.5.</strong> Opt out of use of dialogues for AI training as described in Section 10.</li>\r\n      </ul>\r\n      <p>To exercise these rights, the User may email hello@talktodaisy.com. The Operator responds within 30 calendar days of receipt.</p>\r\n\r\n      <h2 id=\"s13\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">13. AGE RESTRICTIONS</h2>\r\n      <p><strong>13.1.</strong> The Service is intended only for persons aged 18 (eighteen) or older. The Operator does not knowingly collect data from minors.</p>\r\n      <p><strong>13.2.</strong> If you become aware that a minor is using the Service, notify us immediately at hello@talktodaisy.com.</p>\r\n\r\n      <h2 id=\"s14\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">14. OBLIGATIONS OF THE PARTIES</h2>\r\n      <p><strong>14.1.</strong> The User shall: provide accurate personal data and update them as needed; not use the Service for purposes contrary to its purpose or applicable law; and seek professional help in a mental health crisis rather than relying on the Service alone.</p>\r\n      <p><strong>14.2.</strong> The Operator shall: use data only for the purposes in Section 6; maintain confidentiality and not disclose data to third parties without consent except as required by law; not sell, exchange, publish, or disclose personal data for other purposes; take all measures required by this Policy and law to protect data; notify the User promptly of security incidents affecting their personal data; and block processing upon a substantiated request pending review where data are inaccurate or processing is unlawful.</p>\r\n\r\n      <h2 id=\"s15\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">15. LIABILITY</h2>\r\n      <p><strong>15.1.</strong> The Operator is liable for damages suffered by the User due to unlawful processing of personal data, to the extent required by the law of the Republic of Kazakhstan, where the Operator has failed to meet its obligations.</p>\r\n      <p><strong>15.2.</strong> The Operator is not liable if data: became public before loss or disclosure through the Operator’s fault; were obtained from a third party before receipt by the Operator; or were disclosed with the User’s consent.</p>\r\n      <p><strong>15.3.</strong> The Operator is not liable for harm arising from using AI assistant recommendations instead of professional psychological, psychiatric, or medical care. The User understands that the Service is a self-help and emotional support tool, not professional treatment.</p>\r\n      <p><strong>15.4.</strong> The Operator is not liable for consequences of use by persons in the states described in Section 2.4.</p>\r\n\r\n      <h2 id=\"s16\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">16. DISPUTE RESOLUTION</h2>\r\n      <p><strong>16.1.</strong> A mandatory pre-action complaint procedure applies before court proceedings.</p>\r\n      <p><strong>16.2.</strong> The recipient of a complaint responds in writing within 30 calendar days of receipt.</p>\r\n      <p><strong>16.3.</strong> If no agreement is reached, disputes are resolved in court under the applicable law of the Republic of Kazakhstan.</p>\r\n      <p><strong>16.4.</strong> This Policy and the relationship between the User and the Operator are governed by the applicable law of the Republic of Kazakhstan.</p>\r\n\r\n      <h2 id=\"s17\" class=\"text-lg font-semibold text-foreground mt-12 mb-4 first:mt-0 flex items-center gap-2 before:content-[\\\"\\\"] before:w-1 before:h-6 before:rounded-full before:bg-primary/60 scroll-mt-28\">17. FINAL PROVISIONS</h2>\r\n      <p><strong>17.1.</strong> The Operator may amend this Policy unilaterally. Material changes will be communicated by email (if available) or in the Service interface at least 14 calendar days before they take effect.</p>\r\n      <p><strong>17.2.</strong> The new version takes effect when published on the Service website unless the new version provides otherwise.</p>\r\n      <p><strong>17.3.</strong> Continued use after changes take effect constitutes acceptance of the updated Policy.</p>\r\n      <p><strong>17.4.</strong> This Policy is originally drafted in Russian. If translations are provided, the Russian version prevails in case of discrepancy.</p>\r\n      <p><strong>17.5.</strong> Questions about this Policy may be sent to hello@talktodaisy.com</p>\n"
   }
 }
