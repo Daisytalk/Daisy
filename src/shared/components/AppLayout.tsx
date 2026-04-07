@@ -30,6 +30,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const t = useTranslations('nav')
   const tChat = useTranslations('chat')
+  const tProfile = useTranslations('profile')
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
@@ -112,9 +113,15 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
 
           <div className="px-3 pb-3 pt-1 border-b border-[hsl(var(--app-border))]">
-            <div
-              className="flex items-center gap-2 p-2 rounded-[20px] bg-[#f7f7f7] cursor-default select-none"
-              aria-label={user?.email ? `${user?.name || 'User'}, ${user.email}` : undefined}
+            <Link
+              href={`/${locale}/profile/dynamics`}
+              className="flex items-center gap-2 p-2 rounded-[20px] bg-[#f7f7f7] cursor-pointer select-none hover:bg-[#ededed] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2"
+              aria-label={
+                user?.email
+                  ? `${user?.name || 'User'}, ${user.email}. ${tProfile('dynamicsPage.profileCardAria')}`
+                  : tProfile('dynamicsPage.profileCardAria')
+              }
+              onClick={() => setSidebarOpen(false)}
             >
               <Avatar className="h-10 w-10 rounded-full overflow-hidden shrink-0 bg-white shadow-sm flex items-center justify-center pointer-events-none">
                 <AvatarImage src="/images/user-icon.png" alt="" className="object-cover" />
@@ -126,7 +133,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <p className="text-[15px] font-medium text-[#2d2d2d] truncate">{user?.name || 'User'}</p>
                 <p className="text-[13px] text-[#6b6b6b] truncate">{user?.email}</p>
               </div>
-            </div>
+            </Link>
           </div>
 
           <nav className="flex-1 p-3 space-y-1">

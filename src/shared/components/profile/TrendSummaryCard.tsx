@@ -20,7 +20,6 @@ interface HistoryRecord {
 
 interface TrendSummaryCardProps {
   history: HistoryRecord[]
-  onDetailsClick: () => void
   locale: string
 }
 
@@ -31,7 +30,7 @@ const TREND_META = [
   { key: 'support' as const, stroke: '#2563eb', icon: Users },
 ] as const
 
-export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSummaryCardProps) {
+export function TrendSummaryCard({ history, locale }: TrendSummaryCardProps) {
   const t = useTranslations('profile')
   const history7d = filterHistoryByRollingDays(history, 7)
 
@@ -142,13 +141,12 @@ export function TrendSummaryCard({ history, onDetailsClick, locale }: TrendSumma
       </div>
 
       <div className="flex justify-center pt-1">
-        <button
-          onClick={onDetailsClick}
-          type="button"
+        <Link
+          href={`/${locale}/profile/dynamics`}
           className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-8 py-3 text-[15px] font-medium text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800"
         >
           {t('trend.details')}
-        </button>
+        </Link>
       </div>
     </section>
   )

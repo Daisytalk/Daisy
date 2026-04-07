@@ -613,6 +613,13 @@
       "detailed": "Detailed",
       "weekly": "Report"
     },
+    "dynamicsPage": {
+      "metaTitle": "Detailed dynamics",
+      "metaDescription": "Detailed charts for emotions, stress, energy, and support from your check-ins.",
+      "subtitle": "Charts and trends from your check-ins.",
+      "backToProfile": "Back to profile",
+      "profileCardAria": "Open detailed charts"
+    },
     "status": {
       "title": "My profile now",
       "noData": "Complete onboarding to see your emotional profile 🤍",

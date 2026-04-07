@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs'
 import { ProfileStatusCard } from './ProfileStatusCard'
 import { TrendSummaryCard } from './TrendSummaryCard'
-import { DetailedDynamics } from './DetailedDynamics'
 import { DynamicsCard } from '@/app/[locale]/dashboard/DynamicsCard'
 import { MessageCircle } from 'lucide-react'
 import { RecommendedPrograms } from './RecommendedPrograms'
@@ -15,8 +13,6 @@ import { AppLayout } from '@/shared/components/AppLayout'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { filterHistoryByRollingDays } from '@/shared/lib/dynamics-date-window'
-
-type Tab = 'overview' | 'detailed'
 
 interface User {
   id: string
@@ -65,12 +61,10 @@ export function ProfileDashboard({
   hasCheckInToday,
 }: ProfileDashboardProps) {
   const tp = useTranslations('profile')
-  const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([])
 
   const isPremium = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial'
   const history7d = useMemo(() => filterHistoryByRollingDays(history, 7), [history])
-  const history30d = history
 
   const dynamicsRatingsForCard = useMemo(
     () =>
@@ -113,30 +107,10 @@ export function ProfileDashboard({
             <DailyCheckInModal userName={user.name} hasCheckInToday={hasCheckInToday} />
           )}
 
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)}>
-            <TabsList className="w-full grid grid-cols-2 bg-white/80 backdrop-blur-sm p-1.5 rounded-2xl h-14 border border-[#e8e8e8] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-              <TabsTrigger
-                value="overview"
-                className="rounded-xl data-[state=active]:bg-[#e0f7fa] data-[state=active]:text-[#2d2d2d] data-[state=active]:shadow-sm text-[15px] font-medium transition-all"
-              >
-                {tp('tabs.overview')}
-              </TabsTrigger>
-              <TabsTrigger
-                value="detailed"
-                className="rounded-xl data-[state=active]:bg-[#e0f7fa] data-[state=active]:text-[#2d2d2d] data-[state=active]:shadow-sm text-[15px] font-medium transition-all"
-              >
-                {tp('tabs.detailed')}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="overview" className="mt-8 space-y-6">
+          <div className="mt-2 space-y-6">
             <ProfileStatusCard snapshot={snapshot} locale={locale} />
             <DynamicsCard variant="light" ratingsFromServer={dynamicsRatingsForCard} />
-            <TrendSummaryCard
-              history={history}
-              onDetailsClick={() => setActiveTab('detailed')}
-              locale={locale}
-            />
+            <TrendSummaryCard history={history} locale={locale} />
             <RecommendedPrograms snapshot={snapshot} isPremium={isPremium} locale={locale} />
             <NextWeekRecommendations
               snapshot={snapshot}
@@ -162,12 +136,7 @@ export function ProfileDashboard({
               </Link>
             </section>
             {!isPremium && <ProfilePremiumBanner locale={locale} />}
-          </TabsContent>
-
-          <TabsContent value="detailed" className="mt-8">
-            <DetailedDynamics history={history30d} locale={locale} />
-          </TabsContent>
-        </Tabs>
+          </div>
         </div>
       </main>
     </AppLayout>
