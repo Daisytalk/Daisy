@@ -20,7 +20,7 @@ describe('redactPII', () => {
   ]
 
   cases.forEach(({ input, expectPII, expectContains }) => {
-    it(`"${input.slice(0, 45)}..." → PII=${expectPII}`, () => {
+    it(`"${input.slice(0, 45)}..." maps to PII=${expectPII}`, () => {
       const r = redactPII(input)
       expect(r.hadPII).toBe(expectPII)
       expectContains.forEach((token) => {

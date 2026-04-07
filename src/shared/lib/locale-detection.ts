@@ -61,7 +61,7 @@ function detectFromCountry(request: NextRequest): Locale | null {
 
 /**
  * Предпочтительная локаль для первого визита.
- * Приоритет: явный выбор в cookie → гео (страна) → язык браузера → ru.
+ * Приоритет: явный выбор в cookie, гео (страна), язык браузера, ru.
  */
 export function detectLocale(request: NextRequest): Locale {
   const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value
@@ -83,7 +83,7 @@ export function detectLocale(request: NextRequest): Locale {
 }
 
 /**
- * Локаль из pathname (например /en/about → en).
+ * Локаль из pathname (например /en/about даёт en).
  */
 export function getLocaleFromPathname(pathname: string): Locale | null {
   const segments = pathname.split('/')
@@ -111,4 +111,17 @@ export function pickLocaleFromCookieOrUser(
   }
   if (userLocale === 'ru' || userLocale === 'en') return userLocale
   return defaultLocale
+}
+
+/**
+ * Локаль для API-текстов: сначала `?locale=en|ru` (как в интерфейсе), затем cookie, затем профиль.
+ * Иначе при EN в URL и cookie RU отдавались русские рекомендации.
+ */
+export function pickLocaleFromRequest(
+  request: NextRequest,
+  userLocale: string | null | undefined
+): Locale {
+  const q = request.nextUrl.searchParams.get('locale')
+  if (q === 'en' || q === 'ru') return q
+  return pickLocaleFromCookieOrUser(request, userLocale)
 }

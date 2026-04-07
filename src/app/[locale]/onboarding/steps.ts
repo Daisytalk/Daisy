@@ -217,7 +217,7 @@ export const SECTION_LABEL_KEYS: Record<string, string> = {
   final: 'flow.sections.final',
 }
 
-/** Maps questionId → scale group key under onboarding.flow.scale.<group> */
+/** Maps questionId to scale group key under onboarding.flow.scale.<group> */
 export const QUESTION_SCALE_GROUP: Record<string, string> = {
   mood_today: 'default',
   work_state: 'work',
@@ -232,7 +232,7 @@ export const QUESTION_SCALE_GROUP: Record<string, string> = {
   finance: 'default',
 }
 
-/** SVG иконки для шкалы 1-5 (sad → disappointed → normal → peaceful → happy) */
+/** SVG иконки для шкалы 1-5 (sad, disappointed, normal, peaceful, happy) */
 export const SCALE_ICONS = [
   '/images/sad.svg',
   '/images/disappointed.svg',

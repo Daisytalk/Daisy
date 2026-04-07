@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
 import { getAllResearchPapers } from '@/shared/data/research-papers'
 import { localizeDate, localizeReadTime } from '@/shared/lib/research-i18n'
@@ -109,9 +109,9 @@ export default async function SciencePage({ params }: PageProps) {
                 <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
                   {(locale === 'ru' ? paper.abstractRu : paper.abstract).split('\n\n')[0]}
                 </p>
-                <div className="mt-4 inline-flex items-center text-gray-900 text-sm font-semibold group-hover:gap-2 transition-all">
+                <div className="mt-4 inline-flex items-center gap-1 text-gray-900 text-sm font-semibold group-hover:gap-2 transition-all">
                   <span>{t.readMore}</span>
-                  <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
+                  <ChevronRight className="w-4 h-4 inline-block group-hover:translate-x-1 transition-transform" aria-hidden />
                 </div>
               </div>
             </Link>

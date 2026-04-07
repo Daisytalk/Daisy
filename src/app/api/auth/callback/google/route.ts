@@ -26,7 +26,7 @@ interface GoogleUserInfo {
 
 /**
  * Определяем публичный origin.
- * Azure App Service проксирует трафик → request.nextUrl.origin = https://localhost:3000.
+ * Azure App Service проксирует трафик; request.nextUrl.origin может быть https://localhost:3000.
  * Используем NEXT_PUBLIC_APP_URL или заголовки x-forwarded-host / host.
  */
 function getPublicOrigin(request: NextRequest): string {

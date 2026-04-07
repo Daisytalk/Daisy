@@ -47,7 +47,7 @@ interface BuildDaisyRequestInput {
 
 /**
  * Собирает payload для запроса к Daisy API из БД.
- * Поле запроса → откуда:
+ * Поле запроса и источник:
  * - onboarding_summary: OnboardingData.responses + User.aiProfile (кто пользователь, цели, проблемы)
  * - user_context: User.conversationMemory (накопленные факты)
  * - history: CbtMessage последние 30
@@ -257,7 +257,7 @@ export async function handleDaisyResponse(
     aiResponse.memory_update?.length
       ? aiResponse.memory_update.join('. ')
       : userMessage && aiResponse.response
-        ? `${userMessage.slice(0, 150)}${userMessage.length > 150 ? '…' : ''} → ${aiResponse.response.slice(0, 150)}${aiResponse.response.length > 150 ? '…' : ''}`
+        ? `${userMessage.slice(0, 150)}${userMessage.length > 150 ? '…' : ''} · ${aiResponse.response.slice(0, 150)}${aiResponse.response.length > 150 ? '…' : ''}`
         : 'Сессия завершена'
   await updateConversationState(userId, lastSessionSummary.slice(0, 500))
 }

@@ -43,14 +43,15 @@ export function WeeklyReportCard({ history, memoryTopics, isPremium, locale = de
 
   useEffect(() => {
     if (!isPremium) return
-    fetch(`/api/account/weekly-report?period=${period}`, { credentials: 'include', cache: 'no-store' })
+    const ui = locale === 'ru' || locale === 'en' ? locale : 'en'
+    fetch(`/api/account/weekly-report?period=${period}&locale=${ui}`, { credentials: 'include', cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d.summary) setAiReport({ summary: d.summary, recommendations: d.recommendations ?? [] })
       })
       .catch(() => setAiReport(null))
       .finally(() => setFetchLoading(false))
-  }, [period, isPremium])
+  }, [period, isPremium, locale])
   const daysForPeriod = period === '7d' ? 7 : period === '14d' ? 14 : 30
   const weekData = useMemo(() => {
     const week = history.filter((r) => new Date(r.date) >= subDays(new Date(), daysForPeriod))

@@ -55,7 +55,8 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
       return
     }
     setLoadingInsights(true)
-    fetch(`/api/account/dynamics-insights?period=${period}`, {
+    const ui = locale === 'ru' || locale === 'en' ? locale : 'en'
+    fetch(`/api/account/dynamics-insights?period=${period}&locale=${ui}`, {
       credentials: 'include',
       cache: 'no-store',
     })
@@ -65,7 +66,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
       })
       .catch(() => setInsights(null))
       .finally(() => setLoadingInsights(false))
-  }, [period, history.length])
+  }, [period, history.length, locale])
 
   const handlePeriodChange = (p: Period) => {
     setPeriod(p)
@@ -83,7 +84,7 @@ export function DetailedDynamics({ history, locale }: DetailedDynamicsProps) {
   const dateLocale = locale === 'ru' ? ru : enUS
 
   const toChartData = (records: HistoryRecord[], key: 'emotion' | 'stress' | 'energy' | 'support') => {
-    const dayFmt = period === '30d' ? 'd MMM' : 'EEE'
+    const dayFmt = period === '30d' || period === '14d' ? 'd MMM yyyy' : 'EEE d MMM yyyy'
     return records.map((r) => {
       const d = toHistoryDate(r.date)
       const dayDate = isValid(d) ? d : new Date()

@@ -2,7 +2,8 @@
 
 import { ReactNode, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import { usePathname } from '@/shared/lib/i18n/config'
 import { useLocale, useTranslations } from 'next-intl'
 import { useAuth } from '@/shared/hooks/useAuth'
 import {
@@ -45,6 +46,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     { name: t('settings'), href: `/${locale}/settings`, icon: Settings },
     { name: t('upgradePlan'), href: `/${locale}/pricing`, icon: CreditCard },
   ]
+
+  /** pathname без префикса локали: /profile, /profile/dynamics — иначе «Профиль» подсвечивался на /profile/dynamics */
+  const pathNoLocale = pathname || '/'
+  const isNavItemActive = (href: string) => {
+    const base = href.slice(`/${locale}`.length) || '/'
+    if (base === '/profile') {
+      return pathNoLocale === '/profile' || pathNoLocale === '/profile/'
+    }
+    return pathNoLocale === base || pathNoLocale.startsWith(`${base}/`)
+  }
 
   const handleLogout = async () => {
     await logout()
@@ -151,7 +162,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 variant="ghost"
                 className={cn(
                   'w-full justify-start gap-3 h-12 rounded-2xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors',
-                  (pathname === item.href || pathname.startsWith(item.href + '/')) && 'bg-primary/10 text-primary hover:bg-primary/15'
+                  isNavItemActive(item.href) && 'bg-primary/10 text-primary hover:bg-primary/15'
                 )}
                 onClick={() => { router.push(item.href); setSidebarOpen(false) }}
               >

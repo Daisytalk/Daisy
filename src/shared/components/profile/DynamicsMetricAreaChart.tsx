@@ -205,7 +205,7 @@ export function DynamicsMetricAreaChart({
                 {(() => {
                   try {
                     const dt = parseDateKey(p.d.dateKey)
-                    return `${format(dt, 'EEE, d MMM', { locale: dfLocale })} — ${Math.round(p.d.value)} / 100 (${metricLabel})`
+                    return `${format(dt, 'EEE, d MMM yyyy', { locale: dfLocale })} — ${Math.round(p.d.value)} / 100 (${metricLabel})`
                   } catch {
                     return `${Math.round(p.d.value)}`
                   }
@@ -220,7 +220,7 @@ export function DynamicsMetricAreaChart({
           let label = ''
           try {
             const dt = parseDateKey(d.dateKey)
-            label = format(dt, compactTimeAxis ? 'd MMM' : 'EEE', { locale: dfLocale })
+            label = format(dt, compactTimeAxis ? 'd MMM yyyy' : 'EEE d MMM yyyy', { locale: dfLocale })
           } catch {
             label = d.dateKey
           }

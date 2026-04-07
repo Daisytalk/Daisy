@@ -632,7 +632,7 @@
       },
       "explainProfile": "Explain my profile",
       "daisyNotices": "Daisy notices:",
-      "talkToDaisy": "→ Talk to Daisy about this",
+      "talkToDaisy": "Talk to Daisy about this",
       "levels": {
         "stress": {
           "normal": "OK",
@@ -678,22 +678,22 @@
         "emotion": {
           "up": "↑ Feeling better toward the end of the week",
           "down": "↓ A bit harder lately",
-          "stable": "→ Fairly stable"
+          "stable": "Fairly stable"
         },
         "stress": {
           "up": "↑ Stress increased",
           "down": "↓ Stress eased",
-          "stable": "→ Fairly stable"
+          "stable": "Fairly stable"
         },
         "energy": {
           "up": "↑ Energy is up",
           "down": "↓ Energy dipped a bit",
-          "stable": "→ Fairly stable"
+          "stable": "Fairly stable"
         },
         "support": {
           "up": "↑ Support feels a bit stronger",
           "down": "↓ Support feels lower",
-          "stable": "→ Fairly stable"
+          "stable": "Fairly stable"
         }
       }
     },
@@ -711,7 +711,7 @@
       "bestDay": "Best day:",
       "worstDay": "Hardest day:",
       "daisyNotices": "Daisy notices:",
-      "talkToDaisy": "→ Talk to Daisy about this",
+      "talkToDaisy": "Talk to Daisy about this",
       "metrics": {
         "emotion": "Emotions",
         "stress": "Stress",
@@ -780,7 +780,7 @@
     "programs": {
       "title": "Personal programs",
       "badge": "Just for you",
-      "startProgram": "→ Start program",
+      "startProgram": "Start program",
       "premiumLock": "Available in Premium",
       "cards": {
         "resource": {
@@ -817,7 +817,7 @@
         "history": "History up to 30 days",
         "recs": "3 recommendations for next week"
       },
-      "cta": "→ Try Premium"
+      "cta": "Try Premium"
     },
     "checkin": {
       "question": "{name}, how are you right now? 🤍",
@@ -825,7 +825,7 @@
       "notNow": "Not now",
       "saved": "✓ Recorded 🌸",
       "saving": "Saving...",
-      "done": "→ Done 🤍",
+      "done": "Done 🤍",
       "ariaLabel": "Daily check-in",
       "questions": {
         "emotion": "Emotional state",

@@ -81,13 +81,14 @@ export function ProfileDashboard({
 
   useEffect(() => {
     if (!isPremium) return
-    fetch('/api/account/weekly-report?period=7d', { credentials: 'include' })
+    const ui = locale === 'ru' || locale === 'en' ? locale : 'en'
+    fetch(`/api/account/weekly-report?period=7d&locale=${ui}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
         if (d.recommendations?.length) setAiRecommendations(d.recommendations)
       })
       .catch(() => {})
-  }, [isPremium])
+  }, [isPremium, locale])
 
   const firstName = user?.name?.split(' ')[0] || ''
 

@@ -26,7 +26,7 @@ function getAnswer(responses: OnboardingResponses, questionId: string): unknown 
   return (responses as Record<string, unknown>)[questionId]
 }
 
-/** Нормализация 1–5 → 0–1 (чем выше, тем лучше) */
+/** Нормализация 1–5 в 0–1 (чем выше, тем лучше) */
 function norm(value: number): number {
   if (typeof value !== 'number' || value < 1 || value > 5) return 0.5
   return Math.max(0, Math.min(1, (value - 1) / 4))

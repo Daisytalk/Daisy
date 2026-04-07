@@ -104,7 +104,7 @@ export function useAuth(): AuthContextType {
 
   if (context === null) {
     if (typeof window !== 'undefined') {
-      // Client but outside provider → return safe defaults instead of throwing
+      // Client but outside provider: return safe defaults instead of throwing
       return {
         user: null,
         isLoading: false,
@@ -116,7 +116,7 @@ export function useAuth(): AuthContextType {
       }
     }
 
-    // On the server → safe defaults for prerendering
+    // On the server: safe defaults for prerendering
     return {
       user: null,
       isLoading: true,

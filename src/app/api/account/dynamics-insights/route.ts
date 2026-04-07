@@ -7,7 +7,7 @@ import { subDays, format, startOfDay } from 'date-fns'
 import { ru as ruLocale } from 'date-fns/locale'
 import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 import { pickMetricInsightsFromDb } from '@/shared/lib/i18n-content'
-import { pickLocaleFromCookieOrUser } from '@/shared/lib/locale-detection'
+import { pickLocaleFromRequest } from '@/shared/lib/locale-detection'
 
 type Period = '7d' | '14d' | '30d'
 
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
-    const uiLocale = pickLocaleFromCookieOrUser(request, userRow?.locale)
+    const uiLocale = pickLocaleFromRequest(request, userRow?.locale)
 
     const fromDb = pickMetricInsightsFromDb(snapshotRow?.dynamicsMetricInsights, uiLocale)
     if (fromDb) {
@@ -68,13 +68,23 @@ export async function GET(request: NextRequest) {
     }
 
     if (!history.length) {
-      return NextResponse.json({
-        emotion: 'Пройди чек-ин, чтобы получить инсайт об эмоциях 🤍',
-        stress: 'Пройди чек-ин, чтобы получить инсайт о стрессе 🤍',
-        energy: 'Пройди чек-ин, чтобы получить инсайт об энергии 🤍',
-        support: 'Пройди чек-ин, чтобы получить инсайт о поддержке 🤍',
-        fromAI: false,
-      })
+      return NextResponse.json(
+        uiLocale === 'ru'
+          ? {
+              emotion: 'Пройди чек-ин, чтобы получить инсайт об эмоциях 🤍',
+              stress: 'Пройди чек-ин, чтобы получить инсайт о стрессе 🤍',
+              energy: 'Пройди чек-ин, чтобы получить инсайт об энергии 🤍',
+              support: 'Пройди чек-ин, чтобы получить инсайт о поддержке 🤍',
+              fromAI: false,
+            }
+          : {
+              emotion: 'Do a check-in to get an emotion insight 🤍',
+              stress: 'Do a check-in to get a stress insight 🤍',
+              energy: 'Do a check-in to get an energy insight 🤍',
+              support: 'Do a check-in to get a support insight 🤍',
+              fromAI: false,
+            }
+      )
     }
 
     const checkins = history.map((r) => ({
@@ -116,7 +126,13 @@ export async function GET(request: NextRequest) {
     if (!insightsEn && insightsRu) insightsEn = insightsRu
     if (!insightsRu && insightsEn) insightsRu = insightsEn
 
-    const fallback = {
+    const fallbackEn = {
+      emotion: 'Your emotional baseline is shifting, keep noticing 🤍',
+      stress: 'Notice when stress spikes and what helps you breathe easier.',
+      energy: 'Give yourself rest when energy dips.',
+      support: 'Feeling supported matters—keep reaching out to people you trust.',
+    }
+    const fallbackRu = {
       emotion: 'Эмоциональный фон меняется, продолжай наблюдать 🤍',
       stress: 'Обрати внимание на моменты, когда стресс повышается.',
       energy: 'Старайся давать себе отдых, когда энергия падает.',
@@ -125,8 +141,8 @@ export async function GET(request: NextRequest) {
 
     if (!insightsEn || !insightsRu) {
       fromAI = false
-      insightsEn = { ...fallback }
-      insightsRu = { ...fallback }
+      if (!insightsEn) insightsEn = { ...fallbackEn }
+      if (!insightsRu) insightsRu = { ...fallbackRu }
     }
 
     const dynamicsMetricInsights = { en: insightsEn, ru: insightsRu }

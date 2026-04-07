@@ -6,7 +6,7 @@ import { cbtApi } from '@/shared/lib/cbt-api'
 import { subDays, format, startOfDay } from 'date-fns'
 import { ru as ruLocale } from 'date-fns/locale'
 import { pickLocalizedStringArray, pickWeeklySummary } from '@/shared/lib/i18n-content'
-import { pickLocaleFromCookieOrUser } from '@/shared/lib/locale-detection'
+import { pickLocaleFromRequest } from '@/shared/lib/locale-detection'
 import { normalizeScoreTo100 } from '@/shared/lib/scoring-helpers'
 
 type Period = '7d' | '14d' | '30d'
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
-    const uiLocale = pickLocaleFromCookieOrUser(request, userRow?.locale)
+    const uiLocale = pickLocaleFromRequest(request, userRow?.locale)
 
     if (seedSnapshot?.source === 'seed') {
       const memoryTopics = [...new Set<string>(memoryItems.map((m) => m.topic))].slice(0, 10)
@@ -137,7 +137,18 @@ export async function GET(request: NextRequest) {
     if (!reportEn && reportRu) reportEn = reportRu
     if (!reportRu && reportEn) reportRu = reportEn
 
-    const fallback = {
+    const fallbackEn = {
+      summary: history.length
+        ? 'You have check-in data for this period. Keep tracking how you feel 🤍'
+        : 'Do a check-in to get a personal analysis.',
+      insights: [] as string[],
+      recommendations: [
+        'Try the STOP technique when stressed',
+        'Add a 15-minute walk',
+        'Talk to Daisy if it gets hard',
+      ],
+    }
+    const fallbackRu = {
       summary: history.length
         ? 'За этот период есть данные чек-инов. Продолжай отслеживать своё состояние 🤍'
         : 'Пройди чек-ин, чтобы получить персональный анализ.',
@@ -151,8 +162,8 @@ export async function GET(request: NextRequest) {
 
     if (!reportEn || !reportRu) {
       fromAI = false
-      reportEn = { ...fallback }
-      reportRu = { ...fallback }
+      if (!reportEn) reportEn = { ...fallbackEn }
+      if (!reportRu) reportRu = { ...fallbackRu }
     }
 
     const summaryI18n = { en: reportEn.summary, ru: reportRu.summary }

@@ -22,16 +22,20 @@ export async function saveCheckIn(answers: CheckInAnswers): Promise<{ ok: boolea
     return { ok: false, error: 'All values must be 1-5' }
   }
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
+  /** Calendar day in UTC — same anchor as getRollingWindowStartUtc / dynamics charts */
+  const now = new Date()
+  const todayUtc = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  )
+  const tomorrowUtc = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)
+  )
 
   const existing = await prisma.stressRating.findFirst({
     where: {
       userId,
       source: 'daily_checkin',
-      date: { gte: today, lt: tomorrow },
+      date: { gte: todayUtc, lt: tomorrowUtc },
     },
   })
   if (existing) return { ok: false, error: 'Check-in already exists for today' }
@@ -40,7 +44,7 @@ export async function saveCheckIn(answers: CheckInAnswers): Promise<{ ok: boolea
     data: {
       userId,
       source: 'daily_checkin',
-      date: today,
+      date: todayUtc,
       emotion: emotion * 20,
       stress: stress * 20,
       energy: energy * 20,
@@ -50,6 +54,7 @@ export async function saveCheckIn(answers: CheckInAnswers): Promise<{ ok: boolea
 
   for (const loc of routing.locales) {
     revalidatePath(`/${loc}/profile`, 'page')
+    revalidatePath(`/${loc}/profile/dynamics`, 'page')
     revalidatePath(`/${loc}/dashboard`, 'page')
   }
 
