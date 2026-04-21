@@ -118,16 +118,21 @@ module.exports = {
   				'50%': { transform: 'rotate(8deg)' }
   			},
   			'daisy-fly-screen': {
-  				'0%': { transform: 'translate(1rem, calc(100vh - 10rem)) rotate(-8deg)' },
-  				'11%': { transform: 'translate(calc(100vw - 7rem), calc(100vh - 11rem)) rotate(5deg)' },
-  				'22%': { transform: 'translate(calc(100vw - 8rem), 18vh) rotate(10deg)' },
-  				'33%': { transform: 'translate(55vw, 8vh) rotate(-4deg)' },
-  				'44%': { transform: 'translate(12vw, 22vh) rotate(-10deg)' },
-  				'55%': { transform: 'translate(8vw, 55vh) rotate(6deg)' },
-  				'66%': { transform: 'translate(42vw, calc(100vh - 9rem)) rotate(-6deg)' },
-  				'77%': { transform: 'translate(78vw, 62vh) rotate(8deg)' },
-  				'88%': { transform: 'translate(calc(100vw - 9rem), 38vh) rotate(-5deg)' },
-  				'100%': { transform: 'translate(1rem, calc(100vh - 10rem)) rotate(-8deg)' }
+  				'0%':   { transform: 'translate(1rem, calc(100vh - 10rem)) rotate(-12deg)' },
+  				'6%':   { transform: 'translate(18vw, 38vh) rotate(28deg)' },
+  				'11%':  { transform: 'translate(62vw, 14vh) rotate(-22deg)' },
+  				'18%':  { transform: 'translate(28vw, 72vh) rotate(34deg)' },
+  				'24%':  { transform: 'translate(calc(100vw - 8rem), 26vh) rotate(-30deg)' },
+  				'31%':  { transform: 'translate(8vw, 16vh) rotate(24deg)' },
+  				'39%':  { transform: 'translate(70vw, 64vh) rotate(-18deg)' },
+  				'47%':  { transform: 'translate(20vw, 8vh) rotate(32deg)' },
+  				'54%':  { transform: 'translate(86vw, 44vh) rotate(-26deg)' },
+  				'62%':  { transform: 'translate(38vw, 82vh) rotate(20deg)' },
+  				'70%':  { transform: 'translate(10vw, 52vh) rotate(-32deg)' },
+  				'78%':  { transform: 'translate(74vw, 22vh) rotate(16deg)' },
+  				'86%':  { transform: 'translate(44vw, 66vh) rotate(-20deg)' },
+  				'93%':  { transform: 'translate(82vw, 78vh) rotate(28deg)' },
+  				'100%': { transform: 'translate(1rem, calc(100vh - 10rem)) rotate(-12deg)' }
   			}
   		},
   		animation: {
@@ -136,7 +141,7 @@ module.exports = {
   			'daisy-float': 'daisy-float 6s ease-in-out infinite',
   			'daisy-enter': 'daisy-enter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
   			'petal-sway': 'petal-sway 3s ease-in-out infinite',
-  			'daisy-fly-screen': 'daisy-fly-screen 88s ease-in-out infinite'
+  			'daisy-fly-screen': 'daisy-fly-screen 28s linear infinite'
   		}
   	}
   },

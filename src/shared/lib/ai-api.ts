@@ -163,6 +163,21 @@ function _buildConversationPrompt(
   return prompt;
 }
 
+function getMaxTokensForState(state?: string): number {
+  switch (state) {
+    case 'disclosure':
+      return 120;
+    case 'psychoeducation':
+      return 280;
+    case 'action_planning':
+      return 250;
+    case 'crisis':
+      return 100;
+    default:
+      return 180;
+  }
+}
+
 /**
  * Send chat message to Daisy API with normalized response
  *
@@ -195,6 +210,7 @@ export async function sendChatMessage(
       flags?: Record<string, boolean>;
     };
     protocol_directive?: string;
+    state?: string;
   }
 ): Promise<AIApiResponse> {
   const endpoint = getApiBaseUrl();
@@ -202,10 +218,13 @@ export async function sendChatMessage(
   const requestBody: Record<string, unknown> = {
     message: text,
     user_id: userId || 'web_user',
-    max_tokens: 300,
     temperature: 0.7,
     history: conversationHistory || []
   };
+  if (options?.state != null && options.state !== '') {
+    requestBody.state = options.state;
+  }
+  requestBody.max_tokens = getMaxTokensForState(requestBody.state as string | undefined);
   if (options?.request_ai_profile === true) {
     requestBody.request_ai_profile = true;
   }
