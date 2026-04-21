@@ -171,6 +171,7 @@ model CbtMessage {
   protocol       String?
   diagnosis      String[]
   persona        String?
+  daisyState     String?         @map("daisy_state")
   isAnonymized   Boolean         @default(false) @map("is_anonymized")
   piiDetected    Boolean         @default(false) @map("pii_detected")
   createdAt      DateTime        @default(now())

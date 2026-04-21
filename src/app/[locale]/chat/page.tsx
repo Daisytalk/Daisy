@@ -16,6 +16,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar'
 import { TypewriterText } from '@/shared/ui/typewriter-text'
 import { PremiumBanner } from '@/shared/components/PremiumBanner'
 import { FloatingDaisy } from '@/shared/components/chat/FloatingDaisy'
+import type { DaisyState } from '@/shared/types/daisy'
 
 interface Message {
   id: string
@@ -36,6 +37,7 @@ function ChatPageContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [streamingRevealedId, setStreamingRevealedId] = useState<string | null>(null)
+  const [daisyState, setDaisyState] = useState<DaisyState>('intake')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const paymentRecordedRef = useRef<string | null>(null)
@@ -245,7 +247,7 @@ function ChatPageContent() {
           return
         }
 
-        let data: { status?: string; response?: string; protocol?: string; errorMessage?: string }
+        let data: { status?: string; response?: string; protocol?: string; errorMessage?: string; daisy_state?: DaisyState | null }
         try {
           data = await response.json()
         } catch {
@@ -264,6 +266,7 @@ function ChatPageContent() {
           if (isBackendError) {
             content = "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service."
           }
+          if (data.daisy_state) setDaisyState(data.daisy_state)
           const assistantMessage: Message = {
             id: `assistant_${Date.now()}`,
             role: 'assistant',
@@ -320,7 +323,7 @@ function ChatPageContent() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col h-full min-h-0 relative bg-[hsl(var(--app-bg))]">
+      <div className="flex flex-col h-full min-h-0 relative bg-[hsl(var(--app-bg))]" data-daisy-state={daisyState}>
         {/* Фон с ромашкой (cabinet.png): чуть уменьшен и прижат к правому низу, чтобы ромашка влезала */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
           <Image

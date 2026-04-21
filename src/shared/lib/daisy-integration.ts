@@ -7,6 +7,7 @@
 import type { Prisma } from '@prisma/client'
 import prisma from '@/shared/lib/database'
 import type { AIApiResponse } from '@/shared/lib/ai-api'
+import type { DaisyState } from '@/shared/types/daisy'
 import { defaultLocale } from '@/i18n'
 import { getMemoryBundle, getPrefetchPack, updateConversationState, processMemoryUpdateToEpisodic } from '@/shared/lib/memory'
 import { prepareContentForStorage, getDecryptedContent } from '@/shared/lib/cbt-message-content'
@@ -217,6 +218,7 @@ export async function handleDaisyResponse(
       protocol: aiResponse.protocol_used ?? undefined,
       diagnosis: aiResponse.diagnosis ?? [],
       persona: aiResponse.persona_used ?? undefined,
+      daisyState: (aiResponse.debug_context?.daisy_state as DaisyState | null) ?? null,
     },
   })
 

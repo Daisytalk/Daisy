@@ -3,6 +3,16 @@ import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
 import { getDecryptedContent } from '@/shared/lib/cbt-message-content'
+import type { DaisyState } from '@/shared/types/daisy'
+
+interface CompletedStatusPayload {
+    status: 'completed'
+    response: string
+    protocol: string | null
+    persona: string | null
+    diagnosis: string[]
+    daisy_state: DaisyState | null
+}
 
 /**
  * Poll endpoint to check status of async chat request
@@ -63,14 +73,15 @@ export async function GET(request: NextRequest, props: { params: Promise<{ reque
         })
 
         if (assistantMessage) {
-            // Response is ready
-            return NextResponse.json({
+            const payload: CompletedStatusPayload = {
                 status: 'completed',
                 response: getDecryptedContent(assistantMessage.content),
                 protocol: assistantMessage.protocol,
                 persona: assistantMessage.persona,
-                diagnosis: assistantMessage.diagnosis
-            })
+                diagnosis: assistantMessage.diagnosis,
+                daisy_state: (assistantMessage.daisyState as DaisyState | null) ?? null,
+            }
+            return NextResponse.json(payload)
         }
 
         // Still processing

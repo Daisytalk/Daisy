@@ -7,6 +7,8 @@
  * Updated: 2026-02-10 - Fixed environment variables for server-side
  */
 
+import type { DaisyDebugContext } from '@/shared/types/daisy'
+
 /** Read AI API config at request time (not at module load) so runtime env vars are always picked up */
 function getApiBaseUrl(): string {
   const url = process.env.AI_API_URL || process.env.NEXT_PUBLIC_AI_API_URL;
@@ -78,15 +80,11 @@ export interface AIProfile {
   updatedAt?: string;
 }
 
-/** Диагностика: что модель получила (has_onboarding, has_memory, history_used и т.д.) */
-export interface DebugContext {
-  has_onboarding?: boolean;
-  has_memory?: boolean;
-  has_persona?: boolean;
-  history_used?: number;
-  prompt_tokens?: number;
-  [key: string]: unknown;
-}
+/**
+ * Диагностика: что модель получила (has_onboarding, has_memory, daisy_state и т.д.).
+ * Canonical shape lives in @/shared/types/daisy — this alias keeps existing imports working.
+ */
+export type DebugContext = DaisyDebugContext
 
 export interface AIApiResponse {
   response: string;
@@ -105,7 +103,7 @@ export interface AIApiResponse {
   /** 1–3 short facts from this exchange; save to DB and pass back in user_context */
   memory_update?: string[];
   /** Что модель получила — для диагностики */
-  debug_context?: DebugContext;
+  debug_context?: DaisyDebugContext;
 }
 
 /**

@@ -1,4 +1,5 @@
 import { API_CONFIG, getAuthHeaders } from '@/shared/api/config'
+import type { DaisyState } from '@/shared/types/daisy'
 
 export interface ChatMessage {
   role: 'user' | 'assistant'
@@ -18,6 +19,7 @@ export interface SendMessageResponse {
 export interface MessageStatusResponse {
   status: 'processing' | 'completed' | 'failed'
   response?: string
+  daisy_state?: DaisyState | null
   error?: string
 }
 
