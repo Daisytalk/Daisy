@@ -3,6 +3,11 @@ import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { defaultLocale } from '@/shared/lib/i18n/config'
 import { resolveAcquisitionFromRequest } from '@/shared/lib/attribution'
+import {
+  LOCALE_COOKIE,
+  OAUTH_LOCALE_COOKIE,
+  resolveOAuthRedirectLocale,
+} from '@/shared/lib/locale-detection'
 
 export const dynamic = 'force-dynamic'
 
@@ -129,7 +134,15 @@ export async function GET(request: NextRequest) {
     // Check if user exists or create new user
     let user = await prisma.user.findUnique({
       where: { email: googleUser.email.toLowerCase() },
-      select: { id: true, email: true, name: true, googleId: true, createdAt: true, updatedAt: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        googleId: true,
+        locale: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     })
 
     let isNewUser = false
@@ -138,6 +151,8 @@ export async function GET(request: NextRequest) {
       undefined,
       request.cookies.get('daisy_attr')?.value
     )
+
+    const redirectLocale = resolveOAuthRedirectLocale(request, user?.locale)
 
     if (!user) {
       isNewUser = true
@@ -148,6 +163,7 @@ export async function GET(request: NextRequest) {
             name: googleUser.name,
             password: '',
             googleId: googleUser.id,
+            locale: redirectLocale,
             ...(acquisition && {
               acquisitionSource: acquisition.source,
               acquisitionDetail: acquisition.detail,
@@ -177,7 +193,29 @@ export async function GET(request: NextRequest) {
       user = await prisma.user.update({
         where: { id: user.id },
         data: { googleId: googleUser.id },
-        select: { id: true, email: true, name: true, googleId: true, createdAt: true, updatedAt: true },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          googleId: true,
+          locale: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      })
+    } else if (!user.locale || (user.locale !== 'ru' && user.locale !== 'en')) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { locale: redirectLocale },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          googleId: true,
+          locale: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       })
     }
 
@@ -201,8 +239,7 @@ export async function GET(request: NextRequest) {
       trialEndsAt,
     })
 
-    // Redirect: onboarding если не пройден, иначе чат
-    const redirectPath = !isOnboarded ? `/${defaultLocale}/onboarding` : `/${defaultLocale}/chat`
+    const redirectPath = `/${redirectLocale}/auth/oauth-complete`
     const redirectUrl = new URL(redirectPath, baseUrl)
     const response = NextResponse.redirect(redirectUrl)
 
@@ -214,7 +251,16 @@ export async function GET(request: NextRequest) {
       path: '/',
     })
 
+    response.cookies.set(LOCALE_COOKIE, redirectLocale, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365,
+      path: '/',
+    })
+
     response.cookies.delete('oauth_state')
+    response.cookies.delete(OAUTH_LOCALE_COOKIE)
     response.cookies.delete('daisy_attr')
 
     return response

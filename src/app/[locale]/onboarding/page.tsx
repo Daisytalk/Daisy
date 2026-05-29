@@ -22,6 +22,7 @@ import {
   COMMUNICATION_STYLE_IDS,
   type OnboardingStep,
 } from './steps'
+import { isOnboardingSingleChoiceStep, isOptionalQuestionStep } from './navigation'
 
 // ─── Step renderer ───────────────────────────────────────────────────────────
 
@@ -305,12 +306,9 @@ function OnboardingPageContent() {
   const steps = ONBOARDING_STEPS
   const currentStep = steps[stepIndex]
   const q = currentStep?.type === 'question' ? (answers[currentStep.questionId!] as { value?: string } | null) : null
-  const isSingleChoiceStep =
-    currentStep?.type === 'question' &&
-    (currentStep?.questionType === 'scale' ||
-      (currentStep?.questionType === 'relationship' && q?.value !== 'unsure') ||
-      (currentStep?.questionType === 'yes-no-text' && q?.value !== 'yes'))
-  const autoAdvance = !!isSingleChoiceStep
+  const isSingleChoiceStep = isOnboardingSingleChoiceStep(currentStep, q)
+  const isOptionalStep = isOptionalQuestionStep(currentStep)
+  const autoAdvance = isSingleChoiceStep
 
   const progressLabels = useMemo(() => (t.raw('flow.progress') as string[]) ?? [], [t])
 
@@ -578,6 +576,16 @@ function OnboardingPageContent() {
                 {isSubmitting ? t('submitting') : currentStep?.buttonKey ? t(currentStep.buttonKey) : t('complete')}
                 <CheckCircle className="w-4 h-4 ml-2" />
               </Button>
+            ) : isOptionalStep ? (
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="ghost" className="rounded-2xl text-muted-foreground" onClick={() => nextStep()}>
+                  {t('flow.skip')}
+                </Button>
+                <Button type="button" className="rounded-2xl" onClick={() => nextStep()}>
+                  {t('next')}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             ) : isSingleChoiceStep ? (
               <div className="w-24" aria-hidden />
             ) : (

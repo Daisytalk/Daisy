@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { name, email, password, onboardingAnswers } = body
+    const { name, email, password, onboardingAnswers, locale: bodyLocale } = body
     const acquisitionRaw = body.acquisition as AcquisitionPayload | undefined
 
     if (!name || !email || !password) {
@@ -81,12 +81,15 @@ export async function POST(request: NextRequest) {
       request.cookies.get('daisy_attr')?.value
     )
 
+    const userLocale = bodyLocale === 'ru' || bodyLocale === 'en' ? bodyLocale : undefined
+
     const newUser = await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
           name: name.trim(),
           email: email.toLowerCase(),
           password: hashedPassword,
+          ...(userLocale && { locale: userLocale }),
           ...(acquisition && {
             acquisitionSource: acquisition.source,
             acquisitionDetail: acquisition.detail,

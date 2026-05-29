@@ -349,6 +349,7 @@
         "suffix": ". Please read them before you continue."
       },
       "questionCounter": "Question {current} of {total}",
+      "skip": "Skip",
       "errors": {
         "submitFailed": "Could not submit. Please try again.{details}"
       },

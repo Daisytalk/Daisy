@@ -98,6 +98,41 @@ export function hasLocalePrefix(pathname: string): boolean {
   return getLocaleFromPathname(pathname) !== null
 }
 
+/** Cookie set when OAuth flow starts; consumed in callback redirect. */
+export const OAUTH_LOCALE_COOKIE = 'oauth_locale'
+
+/**
+ * Locale captured at OAuth start (referer path, ?locale=, or NEXT_LOCALE cookie).
+ */
+export function captureOAuthLocaleFromRequest(request: NextRequest): Locale {
+  const q = request.nextUrl.searchParams.get('locale')
+  if (q === 'en' || q === 'ru') return q
+
+  const referer = request.headers.get('referer')
+  if (referer) {
+    try {
+      const pathLocale = getLocaleFromPathname(new URL(referer).pathname)
+      if (pathLocale) return pathLocale
+    } catch {
+      // ignore malformed referer
+    }
+  }
+
+  return pickLocaleFromCookieOrUser(request, null)
+}
+
+/**
+ * Locale for post-OAuth redirect: oauth cookie → NEXT_LOCALE → user profile → default.
+ */
+export function resolveOAuthRedirectLocale(
+  request: NextRequest,
+  userLocale?: string | null
+): Locale {
+  const oauthLocale = request.cookies.get(OAUTH_LOCALE_COOKIE)?.value
+  if (oauthLocale === 'ru' || oauthLocale === 'en') return oauthLocale
+  return pickLocaleFromCookieOrUser(request, userLocale)
+}
+
 /**
  * Локаль для персональных текстов в API: cookie интерфейса (NEXT_LOCALE), иначе users.locale.
  */

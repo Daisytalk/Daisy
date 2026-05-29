@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
 import { AuthApiService } from '@/shared/services/auth'
+import { mergePendingOnboarding } from '@/shared/lib/pending-onboarding'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -51,6 +52,18 @@ function LoginPageContent() {
         window.location.href = `/${locale || defaultLocale}/restore-account`
         return
       }
+
+      const merged = await mergePendingOnboarding(data.token)
+      if (merged) {
+        const authService = new AuthApiService()
+        const refreshed = await authService.getCurrentUser()
+        if (refreshed) {
+          localStorage.setItem('user', JSON.stringify(refreshed))
+        }
+        window.location.href = `/${locale || defaultLocale}/chat`
+        return
+      }
+
       window.location.href = safeRedirectAfterLogin(nextAfterLogin, locale || defaultLocale)
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loginFailed'))

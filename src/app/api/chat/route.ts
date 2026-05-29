@@ -11,6 +11,7 @@ import { scanForInjection } from '@/shared/lib/input-guard'
 import { logger } from '@/shared/lib/safe-logger'
 import { detectCrisis, CRISIS_RESPONSE } from '@/shared/lib/crisis-detection'
 import { defaultLocale } from '@/i18n'
+import { pickLocaleFromCookieOrUser } from '@/shared/lib/locale-detection'
 
 /**
  * Обработка чата в фоне: сбор запроса через buildDaisyRequest, вызов Daisy API, сохранение через handleDaisyResponse.
@@ -207,7 +208,9 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionId = body.sessionId || body.id
-    const locale = (body.locale === 'ru' || body.locale === 'kk' || body.locale === 'en' ? body.locale : defaultLocale) as DaisyLocale
+    const bodyLocale =
+      body.locale === 'ru' || body.locale === 'kk' || body.locale === 'en' ? body.locale : null
+    const locale = (bodyLocale ?? pickLocaleFromCookieOrUser(request, null)) as DaisyLocale
 
     // Get or create CBT conversation based on sessionId
     let conversation

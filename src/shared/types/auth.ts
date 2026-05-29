@@ -68,6 +68,7 @@ export interface RegisterCredentials {
   email: string
   password: string
   name: string
+  locale?: string
   /** Ответы онбординга с лендинга (если были до регистрации) — чтобы не показывать онбординг повторно */
   onboardingAnswers?: Record<string, unknown>
   /** UTM/referrer; если не передано — подставляется из localStorage в AuthApiService */

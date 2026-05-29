@@ -65,6 +65,7 @@ export default function RegisterPage() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        locale,
         ...(onboardingAnswers && Object.keys(onboardingAnswers).length > 0 && { onboardingAnswers }),
       })
       localStorage.setItem('auth_token', data.token)

@@ -5,6 +5,11 @@ import { AuthService } from '@/shared/lib/auth'
 import type { User } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
 import { resolveAcquisitionFromRequest } from '@/shared/lib/attribution'
+import {
+  LOCALE_COOKIE,
+  OAUTH_LOCALE_COOKIE,
+  resolveOAuthRedirectLocale,
+} from '@/shared/lib/locale-detection'
 import { defaultLocale } from '@/i18n'
 
 /**
@@ -67,8 +72,10 @@ export async function GET(req: NextRequest) {
     const email = profile.email
     const name = profile.name || profile.email.split('@')[0]
 
-    let user = await prisma.user.findUnique({ where: { email } })
+    let user = await prisma.user.findUnique({ where: { email }, select: { id: true, email: true, name: true, locale: true, createdAt: true, updatedAt: true } })
     const acquisition = resolveAcquisitionFromRequest(undefined, req.cookies.get('daisy_attr')?.value)
+    const redirectLocale = resolveOAuthRedirectLocale(req, user?.locale)
+
     if (!user) {
       // OAuth users get a random unguessable password — they authenticate via Google only
       user = await prisma.user.create({
@@ -76,6 +83,7 @@ export async function GET(req: NextRequest) {
           name,
           email,
           password: crypto.randomBytes(32).toString('hex'),
+          locale: redirectLocale,
           ...(acquisition && {
             acquisitionSource: acquisition.source,
             acquisitionDetail: acquisition.detail,
@@ -101,15 +109,7 @@ export async function GET(req: NextRequest) {
     }
     const authToken = AuthService.generateToken(tokenPayload)
 
-    const userWithLocale = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { locale: true },
-    })
-    const locale =
-      userWithLocale?.locale === 'ru' || userWithLocale?.locale === 'en'
-        ? userWithLocale.locale
-        : defaultLocale
-    const redirectPath = !isOnboarded ? `/${locale}/onboarding` : `/${locale}/chat`
+    const redirectPath = `/${redirectLocale}/auth/oauth-complete`
 
     // Set httpOnly cookie — no localStorage, no XSS exposure
     const redirectResponse = NextResponse.redirect(new URL(redirectPath, baseUrl))
@@ -120,7 +120,15 @@ export async function GET(req: NextRequest) {
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     })
+    redirectResponse.cookies.set(LOCALE_COOKIE, redirectLocale, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365,
+      path: '/',
+    })
     redirectResponse.cookies.delete('oauth_state')
+    redirectResponse.cookies.delete(OAUTH_LOCALE_COOKIE)
     redirectResponse.cookies.delete('daisy_attr')
     return redirectResponse
   } catch (err) {
