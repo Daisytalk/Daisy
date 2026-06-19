@@ -66,14 +66,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(`${localePrefix}/login?error=missing_code`, baseUrl))
   }
 
-  // Verify state parameter
+  // Verify state parameter — fail closed (CSRF)
   const storedState = request.cookies.get('oauth_state')?.value
-  if (state !== storedState) {
-    console.error('State mismatch in OAuth callback. Got:', state, 'Expected:', storedState)
-    // На Azure cookies могут не передаваться через проксирование — пропускаем проверку если оба пустые
-    if (state && storedState && state !== storedState) {
-      return NextResponse.redirect(new URL(`${localePrefix}/login?error=invalid_state`, baseUrl))
-    }
+  if (!state || !storedState || state !== storedState) {
+    console.error('OAuth state mismatch or missing')
+    return NextResponse.redirect(new URL(`${localePrefix}/login?error=invalid_state`, baseUrl))
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID
@@ -130,6 +127,12 @@ export async function GET(request: NextRequest) {
     }
 
     const googleUser: GoogleUserInfo = await userInfoResponse.json()
+
+    if (!googleUser.verified_email) {
+      return NextResponse.redirect(
+        new URL(`${localePrefix}/login?error=email_not_verified`, baseUrl)
+      )
+    }
 
     // Check if user exists or create new user
     let user = await prisma.user.findUnique({
@@ -246,7 +249,7 @@ export async function GET(request: NextRequest) {
     response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     })

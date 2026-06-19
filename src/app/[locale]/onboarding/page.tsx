@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
 import { ClientOnly } from '@/shared/components/ClientOnly'
+import { ConsentGate } from '@/shared/components/ConsentGate'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { OnboardingApiService } from '@/shared/services/onboarding'
 import { OnboardingAnswer, OnboardingAnswerValue } from '@/shared/types/auth'
@@ -374,10 +375,10 @@ function OnboardingPageContent() {
         await onboardingService.submitAnswers(finalAnswers)
         const styleAnswer = answers.communication_style
         if (styleAnswer && Array.isArray(styleAnswer) && styleAnswer.length > 0) {
-          const token = localStorage.getItem('auth_token')
           await fetch('/api/account/style', {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ styles: styleAnswer }),
           })
         }
@@ -604,7 +605,9 @@ function OnboardingPageContent() {
 export default function OnboardingPage() {
   return (
     <ClientOnly>
-      <OnboardingPageContent />
+      <ConsentGate>
+        <OnboardingPageContent />
+      </ConsentGate>
     </ClientOnly>
   )
 }

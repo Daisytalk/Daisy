@@ -8,12 +8,10 @@ export const API_CONFIG = {
   },
 } as const
 
-export function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('auth_token')
-}
-
+/**
+ * JSON headers for API requests. Auth is via the httpOnly `auth_token` cookie —
+ * always pass `credentials: 'include'` on client-side fetch calls.
+ */
 export function getAuthHeaders(): Record<string, string> {
-  const token = getAuthToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  return { ...API_CONFIG.HEADERS }
 }

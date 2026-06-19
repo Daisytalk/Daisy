@@ -11,7 +11,7 @@ import type { AcquisitionPayload } from '@/shared/lib/attribution'
 
 export async function POST(request: NextRequest) {
   const ip = getClientIP(request)
-  const { allowed, retryAfterMs } = rateLimit(`register:${ip}`, 3, 60_000)
+  const { allowed, retryAfterMs } = await rateLimit(`register:${ip}`, 3, 60_000)
   if (!allowed) {
     return NextResponse.json(
       { message: 'Слишком много попыток. Попробуйте позже.' },
@@ -178,7 +178,6 @@ export async function POST(request: NextRequest) {
         subscriptionStatus: 'trial',
         trialEndsAt,
       },
-      token, // Still return token for backwards compatibility
     }, { status: 201 })
 
     // Set HttpOnly cookie (secure: true для HTTPS; учитываем прокси Azure)

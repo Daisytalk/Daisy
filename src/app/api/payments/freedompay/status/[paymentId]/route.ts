@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { FreedomPayStubService } from '@/shared/services/freedompay'
 import { apiMessages } from '@/shared/api-messages'
+import { paymentsDisabledResponse, paymentsEnabled } from '@/shared/lib/payments-enabled'
 
-/**
- * Заглушка: статус платежа Freedom Pay.
- * Документация: https://docs.freedompay.kz (Merchant API / Purchase / Status)
- */
+/** TODO(security): enable when Freedom Pay server callback + signature verification ships. */
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ paymentId: string }> }
 ) {
+  if (!paymentsEnabled()) {
+    return paymentsDisabledResponse()
+  }
   try {
     const { paymentId } = await params
     if (!paymentId) {

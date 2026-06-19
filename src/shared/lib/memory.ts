@@ -51,6 +51,8 @@ export async function writeMemoryIfEligible(input: MemoryWriteInput): Promise<bo
 
   if (!shouldWrite) return false
 
+  const expiresAt = new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000)
+
   await prisma.memoryItem.create({
     data: {
       userId,
@@ -62,6 +64,7 @@ export async function writeMemoryIfEligible(input: MemoryWriteInput): Promise<bo
       evidence: input.evidence ?? null,
       confidence,
       ttlDays,
+      expiresAt,
       isPinned: input.isPinned ?? false,
       consentScope: input.consentScope ?? 'core',
     },
@@ -86,31 +89,24 @@ export async function getMemoryBundle(
   const items = await prisma.memoryItem.findMany({
     where: {
       userId,
-      // Only 'core' and 'personal' scope — 'sensitive' requires explicit consent flow
       consentScope: { in: ['core', 'personal'] },
-      // TTL enforcement: exclude items whose ttlDays has elapsed since creation
-      AND: [
-        {
-          OR: [
-            { ttlDays: null },
-            {
-              createdAt: {
-                gte: new Date(
-                  now.getTime() - 365 * 24 * 60 * 60 * 1000
-                ),
-              },
-            },
-          ],
-        },
-        { createdAt: { gte: cutoff } },
-      ],
+      createdAt: { gte: cutoff },
       ...(intentTopic && { topic: intentTopic }),
     },
     orderBy: { createdAt: 'desc' },
     take: MEMORY_TOP_K,
   })
 
-  const filtered = items.filter((m) => (m.confidence ?? 0.5) >= MEMORY_MIN_CONFIDENCE)
+  const notExpired = items.filter((m) => {
+    if (m.isPinned) return true
+    if (m.expiresAt) return m.expiresAt > now
+    if (m.ttlDays != null) {
+      return m.createdAt.getTime() + m.ttlDays * 86400000 > now.getTime()
+    }
+    return true
+  })
+
+  const filtered = notExpired.filter((m) => (m.confidence ?? 0.5) >= MEMORY_MIN_CONFIDENCE)
   const reranked = filtered
     .sort((a, b) => {
       const scoreA = (a.isPinned ? 2 : 0) + (a.intensity ?? 0) * 0.5 + (a.confidence ?? 0.5)

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { rateLimitAuth } from '@/shared/lib/rate-limit'
+import { getClientIP } from '@/shared/lib/get-client-ip'
+import { logger } from '@/shared/lib/safe-logger'
 
 /**
  * POST /api/auth/reset-password
@@ -9,6 +12,15 @@ import prisma from '@/shared/lib/database'
  * хеширует новый пароль и обновляет запись пользователя.
  */
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request)
+  const { allowed, retryAfterMs } = await rateLimitAuth('reset-password', ip)
+  if (!allowed) {
+    return NextResponse.json(
+      { message: 'Слишком много попыток. Попробуйте позже.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) } }
+    )
+  }
+
   try {
     const { token, password } = await request.json()
 
@@ -57,13 +69,15 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    console.log(JSON.stringify({ level: 'info', ctx: 'password_reset_success', userId: user.id }))
+    logger.info('password_reset_success', { userId: user.id })
 
     return NextResponse.json({
       message: 'Пароль успешно изменён. Теперь вы можете войти с новым паролем.',
     })
   } catch (error) {
-    console.error('Reset password error:', error)
+    logger.error('reset_password_error', {
+      message: error instanceof Error ? error.message : String(error),
+    })
     return NextResponse.json(
       { message: 'Внутренняя ошибка сервера' },
       { status: 500 }

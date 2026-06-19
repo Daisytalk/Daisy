@@ -42,24 +42,15 @@ function LoginPageContent() {
 
     try {
       const authService = new AuthApiService()
-      const data = await authService.login({ email, password }) as { user: unknown; token: string; requiresRestore?: boolean }
-
-      localStorage.setItem('auth_token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
+      const data = await authService.login({ email, password }) as { user: unknown; requiresRestore?: boolean }
 
       if (data.requiresRestore) {
         window.location.href = `/${locale || defaultLocale}/restore-account`
         return
       }
 
-      const merged = await mergePendingOnboarding(data.token)
+      const merged = await mergePendingOnboarding()
       if (merged) {
-        const authService = new AuthApiService()
-        const refreshed = await authService.getCurrentUser()
-        if (refreshed) {
-          localStorage.setItem('user', JSON.stringify(refreshed))
-        }
         window.location.href = `/${locale || defaultLocale}/chat`
         return
       }

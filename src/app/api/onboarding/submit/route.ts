@@ -6,6 +6,7 @@ import type { OnboardingAnswer } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
 import { computePsychProfile } from '@/shared/lib/scoring'
 import { syncUserPreferences } from '@/shared/lib/memory'
+import { prepareSensitiveJsonForStorage } from '@/shared/lib/sensitive-field-crypto'
 
 const OnboardingSchema = z.object({
   answers: z.record(
@@ -22,7 +23,7 @@ const OnboardingSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const decoded = getVerifiedAuthFromRequest(request)
+    const decoded = await getVerifiedAuthFromRequest(request)
     if (!decoded) {
       const hasAttempt =
         !!request.cookies.get('auth_token')?.value ||
@@ -50,17 +51,18 @@ export async function POST(request: NextRequest) {
     }
 
     const answers = rawBody?.answers as OnboardingAnswer[]
+    const storedResponses = prepareSensitiveJsonForStorage(answers)
 
     await prisma.$transaction(async (tx) => {
       await tx.onboardingData.upsert({
         where: { userId: decoded.userId },
         create: {
           userId: decoded.userId,
-          responses: answers as object,
+          responses: storedResponses,
           completed: true,
         },
         update: {
-          responses: answers as object,
+          responses: storedResponses,
           completed: true,
         },
       })

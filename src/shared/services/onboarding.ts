@@ -23,14 +23,11 @@ export class OnboardingApiService implements IOnboardingService {
   }
 
   async submitAnswers(answers: OnboardingAnswer[]): Promise<void> {
-    const token = localStorage.getItem('auth_token')
-
     const response = await fetch(`${this.baseUrl}/submit`, {
       method: 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ answers }),
     })
@@ -43,12 +40,8 @@ export class OnboardingApiService implements IOnboardingService {
   }
 
   async getOnboardingData(userId: string): Promise<OnboardingData | null> {
-    const token = localStorage.getItem('auth_token')
-
     const response = await fetch(`${this.baseUrl}/data/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -60,13 +53,11 @@ export class OnboardingApiService implements IOnboardingService {
   }
 
   async addQuestion(question: Omit<OnboardingQuestion, 'id'>): Promise<OnboardingQuestion> {
-    const token = localStorage.getItem('auth_token')
-
     const response = await fetch(`${this.baseUrl}/questions`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(question),
     })
@@ -80,13 +71,11 @@ export class OnboardingApiService implements IOnboardingService {
   }
 
   async updateQuestion(id: string, question: Partial<OnboardingQuestion>): Promise<OnboardingQuestion> {
-    const token = localStorage.getItem('auth_token')
-
     const response = await fetch(`${this.baseUrl}/questions/${id}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(question),
     })
@@ -100,13 +89,9 @@ export class OnboardingApiService implements IOnboardingService {
   }
 
   async deleteQuestion(id: string): Promise<void> {
-    const token = localStorage.getItem('auth_token')
-
     const response = await fetch(`${this.baseUrl}/questions/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      credentials: 'include',
     })
 
     if (!response.ok) {

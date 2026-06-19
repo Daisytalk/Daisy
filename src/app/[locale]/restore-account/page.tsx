@@ -16,8 +16,15 @@ export default function RestoreAccountPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && !localStorage.getItem('auth_token')) {
-      router.replace(`/${locale}/login`)
+    let cancelled = false
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((res) => {
+        if (!cancelled && !res.ok) {
+          router.replace(`/${locale}/login`)
+        }
+      })
+    return () => {
+      cancelled = true
     }
   }, [locale, router])
 
@@ -33,6 +40,11 @@ export default function RestoreAccountPage() {
     } finally {
       setIsRestoring(false)
     }
+  }
+
+  const handleLogout = async () => {
+    const authService = new AuthApiService()
+    await authService.logout()
   }
 
   return (
@@ -65,10 +77,7 @@ export default function RestoreAccountPage() {
           </Button>
           <Link
             href={`/${locale}/login`}
-            onClick={() => {
-              localStorage.removeItem('auth_token')
-              localStorage.removeItem('user')
-            }}
+            onClick={() => void handleLogout()}
             className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
           >
             Выйти и войти с другим аккаунтом

@@ -16,14 +16,10 @@ function OAuthCompleteContent() {
 
     async function finish() {
       try {
-        const token = localStorage.getItem('auth_token')
-        const merged = await mergePendingOnboarding(token)
+        const merged = await mergePendingOnboarding()
 
         const authService = new AuthApiService()
         const user = await authService.getCurrentUser()
-        if (user) {
-          localStorage.setItem('user', JSON.stringify(user))
-        }
 
         if (cancelled) return
 

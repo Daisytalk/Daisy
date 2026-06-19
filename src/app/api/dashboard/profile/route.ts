@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    let token = authHeader?.replace('Bearer ', '')
-    if (!token) {
-      token = request.cookies.get('auth_token')?.value
-    }
-    
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    
-    const decoded = AuthService.verifyToken(token)
+    const decoded = await getVerifiedAuthFromRequest(request)
     if (!decoded) return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
 
     // Fetch the onboarding data to compute the profile summary

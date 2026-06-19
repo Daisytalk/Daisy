@@ -2,11 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ADMIN_SESSION_COOKIE, getAdminJwtSecret, signAdminSessionToken } from '@/shared/lib/admin-auth'
 import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import { adminStringsEqual } from '@/shared/lib/admin-credentials'
+import { rateLimitAuth } from '@/shared/lib/rate-limit'
+import { getClientIP } from '@/shared/lib/get-client-ip'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
-  if (!getVerifiedAuthFromRequest(request)) {
+  const ip = getClientIP(request)
+  const { allowed, retryAfterMs } = await rateLimitAuth('admin-login', ip)
+  if (!allowed) {
+    return NextResponse.json(
+      { message: 'Слишком много попыток. Попробуйте позже.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) } }
+    )
+  }
+
+  if (!(await getVerifiedAuthFromRequest(request))) {
     return NextResponse.json(
       { message: 'Сначала войдите в аккаунт Daisy.', code: 'user_auth' },
       { status: 401 }

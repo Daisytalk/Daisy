@@ -64,16 +64,9 @@ export class AuthApiService implements IAuthService {
 
   async getCurrentUser(): Promise<User | null> {
     try {
-      // Отправляем токен и в cookie (credentials: 'include'), и в заголовке — в Azure cookie иногда не доходит
-      const headers: HeadersInit = {}
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('auth_token')
-        if (token) headers['Authorization'] = `Bearer ${token}`
-      }
       const response = await fetch('/api/auth/me', {
         cache: 'no-store',
         credentials: 'include',
-        headers,
       });
 
       if (!response.ok) {
@@ -133,12 +126,7 @@ export class AuthApiService implements IAuthService {
   }
 
   async exportAccountData(): Promise<unknown> {
-    const headers: HeadersInit = {}
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token')
-      if (token) headers['Authorization'] = `Bearer ${token}`
-    }
-    const response = await fetch('/api/account/export', { credentials: 'include', headers })
+    const response = await fetch('/api/account/export', { credentials: 'include' })
     if (!response.ok) {
       const err = await response.json()
       throw new Error(err.error || 'Export failed')
@@ -147,15 +135,9 @@ export class AuthApiService implements IAuthService {
   }
 
   async clearMemory(): Promise<void> {
-    const headers: HeadersInit = {}
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token')
-      if (token) headers['Authorization'] = `Bearer ${token}`
-    }
     const response = await fetch('/api/account/memory', {
       method: 'DELETE',
       credentials: 'include',
-      headers,
     })
     if (!response.ok) {
       const err = await response.json()
@@ -164,15 +146,9 @@ export class AuthApiService implements IAuthService {
   }
 
   async deleteAccount(): Promise<void> {
-    const headers: HeadersInit = {}
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token')
-      if (token) headers['Authorization'] = `Bearer ${token}`
-    }
     const response = await fetch('/api/account/delete', {
       method: 'DELETE',
       credentials: 'include',
-      headers,
     })
     if (!response.ok) {
       const err = await response.json()
@@ -181,15 +157,9 @@ export class AuthApiService implements IAuthService {
   }
 
   async restoreAccount(): Promise<void> {
-    const headers: HeadersInit = {}
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token')
-      if (token) headers['Authorization'] = `Bearer ${token}`
-    }
     const response = await fetch('/api/account/restore', {
       method: 'POST',
       credentials: 'include',
-      headers,
     })
     if (!response.ok) {
       const err = await response.json()

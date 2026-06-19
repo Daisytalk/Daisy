@@ -3,17 +3,23 @@ import { Prisma } from '@prisma/client'
 import prisma from '@/shared/lib/database'
 import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import { FreedomPayStubService, FREEDOM_PAY_STUB_PREFIX } from '@/shared/services/freedompay'
+import { paymentsDisabledResponse, paymentsEnabled } from '@/shared/lib/payments-enabled'
 
 export const dynamic = 'force-dynamic'
 
-/** Верхняя граница суммы в минорных единицах (например центах USD) — защита от подделки. */
-const MAX_AMOUNT_MINOR = 10_000_000 // 100 000 USD при центах
-
+/** TODO(security): enable when Freedom Pay server callback + signature verification ships. */
 export async function POST(request: NextRequest) {
-  const decoded = getVerifiedAuthFromRequest(request)
+  if (!paymentsEnabled()) {
+    return paymentsDisabledResponse()
+  }
+
+  const decoded = await getVerifiedAuthFromRequest(request)
   if (!decoded) {
     return NextResponse.json({ message: 'Требуется авторизация' }, { status: 401 })
   }
+
+  /** Верхняя граница суммы в минорных единицах (например центах USD) — защита от подделки. */
+  const MAX_AMOUNT_MINOR = 10_000_000 // 100 000 USD при центах
 
   let body: { paymentId?: unknown; amountMinor?: unknown; currency?: unknown }
   try {

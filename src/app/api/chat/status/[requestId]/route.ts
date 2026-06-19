@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import { getDecryptedContent } from '@/shared/lib/cbt-message-content'
 import type { DaisyState } from '@/shared/types/daisy'
 
@@ -23,20 +23,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ reque
     try {
         const requestId = params.requestId
 
-        // Authentication
-        let token = request.cookies.get('auth_token')?.value
-        if (!token) {
-            const authHeader = request.headers.get('authorization')
-            if (authHeader?.startsWith('Bearer ')) {
-                token = authHeader.substring(7)
-            }
-        }
-
-        if (!token) {
-            return NextResponse.json({ error: apiMessages.unauthorized }, { status: 401 })
-        }
-
-        const decoded = AuthService.verifyToken(token)
+        const decoded = await getVerifiedAuthFromRequest(request)
         if (!decoded) {
             return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
         }

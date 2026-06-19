@@ -12,7 +12,7 @@ import { defaultLocale } from '@/i18n'
  */
 export async function POST(request: NextRequest) {
   const ip = getClientIP(request)
-  const { allowed, retryAfterMs } = rateLimit(`forgot:${ip}`, 3, 300_000)
+  const { allowed, retryAfterMs } = await rateLimit(`forgot:${ip}`, 3, 300_000)
   if (!allowed) {
     return NextResponse.json(
       { message: 'Слишком много попыток. Попробуйте позже.' },

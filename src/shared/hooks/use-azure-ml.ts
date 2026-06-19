@@ -73,16 +73,6 @@ export function useAzureML(options: UseAzureMLOptions = {}): UseAzureMLResult {
                 try {
                     console.log(`🚀 Sending prompt to Azure ML (attempt ${attempts}/${autoRetry ? maxRetries : 1})`);
 
-                    // Get auth token from cookie
-                    const token = document.cookie
-                        .split('; ')
-                        .find((row) => row.startsWith('auth_token='))
-                        ?.split('=')[1];
-
-                    if (!token) {
-                        throw new Error('Not authenticated. Please log in.');
-                    }
-
                     // Prepare request body
                     // Note: user_id is derived from the auth token on the backend
                     const requestBody = {
@@ -90,12 +80,12 @@ export function useAzureML(options: UseAzureMLOptions = {}): UseAzureMLResult {
                         ...requestOptions,
                     };
 
-                    // Make API request
+                    // Make API request (auth via httpOnly cookie)
                     const res = await fetch('/api/azure-ml/inference', {
                         method: 'POST',
+                        credentials: 'include',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`,
                         },
                         body: JSON.stringify(requestBody),
                     });
@@ -183,29 +173,16 @@ export async function sendAzureMLMessage(
     text: string,
     options: Partial<Omit<AzureMLInferenceRequest, 'text' | 'user_id'>> = {}
 ): Promise<AzureMLInferenceResponse> {
-    // Get auth token from cookie
-    const token = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('auth_token='))
-        ?.split('=')[1];
-
-    if (!token) {
-        throw new Error('Not authenticated. Please log in.');
-    }
-
-    // Prepare request body
-    // Note: user_id is derived from the auth token on the backend
     const requestBody = {
         text,
         ...options,
     };
 
-    // Make API request
     const res = await fetch('/api/azure-ml/inference', {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(requestBody),
     });

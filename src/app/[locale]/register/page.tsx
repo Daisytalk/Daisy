@@ -68,9 +68,6 @@ export default function RegisterPage() {
         locale,
         ...(onboardingAnswers && Object.keys(onboardingAnswers).length > 0 && { onboardingAnswers }),
       })
-      localStorage.setItem('auth_token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
       localStorage.removeItem('pending_onboarding')
       await new Promise(resolve => setTimeout(resolve, 300))
       // Если отправили ответы онбординга — уже онбордированы, идём в чат; иначе — в онбординг

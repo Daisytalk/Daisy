@@ -1,27 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AuthService } from '@/shared/lib/auth';
 import { cbtApi } from '@/shared/lib/cbt-api';
 import { apiMessages } from '@/shared/api-messages';
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth';
 
 // Prevent static generation during build
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    let token = req.cookies.get('auth_token')?.value;
-
-    if (!token) {
-      const authHeader = req.headers.get('authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7);
-      }
-    }
-
-    if (!token) {
-      return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 });
-    }
-
-    const decoded = AuthService.verifyToken(token);
+    const decoded = await getVerifiedAuthFromRequest(req);
     if (!decoded) {
       return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 });
     }

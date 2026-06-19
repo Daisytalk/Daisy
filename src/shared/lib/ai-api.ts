@@ -11,26 +11,20 @@ import type { DaisyDebugContext } from '@/shared/types/daisy'
 
 /** Read AI API config at request time (not at module load) so runtime env vars are always picked up */
 function getApiBaseUrl(): string {
-  const url = process.env.AI_API_URL || process.env.NEXT_PUBLIC_AI_API_URL;
-  const key = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY;
-  console.log('🔑 AI API config check:', {
-    AI_API_URL: url ? url.substring(0, 40) + '...' : '(not set)',
-    AI_API_KEY: key ? `set (${key.length} chars)` : '(not set)',
-    source_url: process.env.AI_API_URL ? 'AI_API_URL' : process.env.NEXT_PUBLIC_AI_API_URL ? 'NEXT_PUBLIC_AI_API_URL' : 'none',
-  });
-  if (!url || !key) {
-    throw new Error('AI API configuration missing: set NEXT_PUBLIC_AI_API_URL and NEXT_PUBLIC_AI_API_KEY');
+  const url = process.env.AI_API_URL;
+  if (!url) {
+    throw new Error('AI API configuration missing: set AI_API_URL (server-only)');
   }
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    throw new Error('NEXT_PUBLIC_AI_API_URL must include protocol (http:// or https://)');
+    throw new Error('AI_API_URL must include protocol (http:// or https://)');
   }
   return url.endsWith('/') ? url.slice(0, -1) : url;
 }
 
 function getApiKey(): string {
-  const key = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY;
+  const key = process.env.AI_API_KEY;
   if (!key) {
-    throw new Error('AI API key missing: set NEXT_PUBLIC_AI_API_KEY');
+    throw new Error('AI API key missing: set AI_API_KEY (server-only, never NEXT_PUBLIC_)');
   }
   return key;
 }
@@ -166,15 +160,15 @@ function _buildConversationPrompt(
 function getMaxTokensForState(state?: string): number {
   switch (state) {
     case 'disclosure':
-      return 120;
+      return 256;
     case 'psychoeducation':
       return 280;
     case 'action_planning':
-      return 250;
+      return 256;
     case 'crisis':
       return 100;
     default:
-      return 180;
+      return 256;
   }
 }
 
@@ -437,11 +431,10 @@ export async function checkAIApiHealth(): Promise<boolean> {
  * Get AI API configuration (for debugging)
  */
 export function getAIApiConfig() {
-  const url = process.env.AI_API_URL || process.env.NEXT_PUBLIC_AI_API_URL;
-  const key = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY;
+  const url = process.env.AI_API_URL;
+  const key = process.env.AI_API_KEY;
   return {
     url: url ?? '(not set)',
     hasApiKey: !!key,
-    apiKeyLength: key?.length || 0
   };
 }

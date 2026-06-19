@@ -59,9 +59,8 @@ function HistoryPageContent() {
 
   const loadSessions = async () => {
     try {
-      const token = localStorage.getItem('auth_token')
       const response = await fetch('/api/sessions', {
-        headers: { 'Authorization': token ? `Bearer ${token}` : '' },
+        credentials: 'include',
       })
       if (response.ok) {
         const data = await response.json()
@@ -78,10 +77,9 @@ function HistoryPageContent() {
     if (!confirm('Are you sure you want to delete this conversation?')) return
     setDeletingId(sessionId)
     try {
-      const token = localStorage.getItem('auth_token')
       const response = await fetch(`/api/sessions/${sessionId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': token ? `Bearer ${token}` : '' },
+        credentials: 'include',
       })
       if (response.ok) {
         setSessions(sessions.filter(s => s.id !== sessionId))

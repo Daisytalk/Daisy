@@ -21,10 +21,7 @@ export function LoginForm() {
 
     try {
       const authService = new AuthApiService()
-      const data = await authService.login({ email, password })
-      localStorage.setItem('auth_token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`
+      await authService.login({ email, password })
       // Full page redirect so AuthProvider re-runs and sees the auth cookie
       window.location.href = `/${locale || defaultLocale}/profile`
     } catch (err: any) {

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import { COMMUNICATION_STYLE_IDS } from '@/shared/constants/communication-styles'
 
 const StylesSchema = z.object({
@@ -12,24 +12,13 @@ const StylesSchema = z.object({
     .max(2, 'Максимум 2 стиля'),
 })
 
-function getToken(request: NextRequest): string | null {
-  const cookie = request.cookies.get('auth_token')?.value
-  if (cookie) return cookie
-  const authHeader = request.headers.get('authorization')
-  if (authHeader?.startsWith('Bearer ')) return authHeader.substring(7)
-  return null
-}
-
 /**
  * GET /api/account/style
  * Returns the user's current communication style preference
  */
 export async function GET(request: NextRequest) {
   try {
-    const token = getToken(request)
-    if (!token) return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 })
-
-    const decoded = AuthService.verifyToken(token)
+    const decoded = await getVerifiedAuthFromRequest(request)
     if (!decoded) return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
 
     const user = await prisma.user.findUnique({
@@ -56,10 +45,7 @@ export async function GET(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const token = getToken(request)
-    if (!token) return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 })
-
-    const decoded = AuthService.verifyToken(token)
+    const decoded = await getVerifiedAuthFromRequest(request)
     if (!decoded) return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
 
     const parsed = StylesSchema.safeParse(await request.json())

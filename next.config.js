@@ -59,11 +59,11 @@ const nextConfig = {
         value: 'max-age=63072000; includeSubDomains; preload',
       },
       {
-        // TODO: заменить на nonce-based CSP после аудита клиентских скриптов
+        // unsafe-inline still required for Next.js hydration; unsafe-eval removed (no eval() in app bundle)
         key: 'Content-Security-Policy',
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          "script-src 'self' 'unsafe-inline'",
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https://images.unsplash.com https://lh3.googleusercontent.com",
           "font-src 'self' data:",

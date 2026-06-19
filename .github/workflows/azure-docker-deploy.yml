@@ -78,8 +78,8 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           app-settings-json: |
             [
-              { "name": "AI_API_KEY",          "value": "${{ secrets.NEXT_PUBLIC_AI_API_KEY }}", "slotSetting": false },
-              { "name": "AI_API_URL",          "value": "${{ secrets.NEXT_PUBLIC_AI_API_URL }}", "slotSetting": false },
+              { "name": "AI_API_KEY",          "value": "${{ secrets.AI_API_KEY }}", "slotSetting": false },
+              { "name": "AI_API_URL",          "value": "${{ secrets.AI_API_URL }}", "slotSetting": false },
               { "name": "CBT_API_URL",         "value": "${{ secrets.CBT_API_URL }}",            "slotSetting": false },
               { "name": "CBT_API_KEY",         "value": "${{ secrets.CBT_API_KEY }}",            "slotSetting": false },
               { "name": "JWT_SECRET",          "value": "${{ secrets.JWT_SECRET }}",             "slotSetting": false },

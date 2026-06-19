@@ -41,9 +41,24 @@ model User {
   weeklyReportSnapshots    WeeklyReportSnapshot[]
   interventionFeedbacks InterventionFeedback[]
   payments              Payment[]
+  consentLogs           ConsentLog[]
 
   @@index([acquisitionSource])
   @@map("users")
+}
+
+model ConsentLog {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  consentVersion String   @map("consent_version")
+  consentType    String   @map("consent_type")
+  locale         String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, consentType, consentVersion])
+  @@map("consent_logs")
 }
 
 /// Последний сохранённый недельный отчёт (summary + рекомендации) по периоду 7d / 14d / 30d
@@ -218,6 +233,7 @@ model MemoryItem {
   evidence      String?  @db.Text
   confidence    Float?   // 0..1
   ttlDays       Int?     @map("ttl_days")
+  expiresAt     DateTime? @map("expires_at")
   isPinned      Boolean  @default(false) @map("is_pinned")
   consentScope  String?  @map("consent_scope") // core | personal | sensitive
   createdAt     DateTime @default(now())
@@ -226,6 +242,7 @@ model MemoryItem {
   @@index([userId])
   @@index([userId, topic])
   @@index([userId, createdAt])
+  @@index([expiresAt])
   @@map("memory_items")
 }
 

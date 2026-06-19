@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AuthService } from '@/shared/lib/auth';
 import prisma from '@/shared/lib/database';
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth';
 import { getAzureMLService } from '@/shared/lib/azure-ml';
 import { apiMessages } from '@/shared/api-messages';
 import { redactPII } from '@/shared/lib/pii/redactor';
@@ -53,26 +53,7 @@ export async function POST(request: NextRequest) {
         // ============================================
         // 2. AUTHENTICATE USER
         // ============================================
-        // Try to get token from cookie first, then Bearer header
-        let token = request.cookies.get('auth_token')?.value;
-
-        if (!token) {
-            const authHeader = request.headers.get('authorization');
-            if (authHeader && authHeader.startsWith('Bearer ')) {
-                token = authHeader.substring(7);
-            }
-        }
-
-        if (!token) {
-            console.warn('⚠️ No authentication token provided');
-            return NextResponse.json(
-                { error: apiMessages.authorizationRequired },
-                { status: 401 }
-            );
-        }
-
-        // Verify token
-        const decoded = AuthService.verifyToken(token);
+        const decoded = await getVerifiedAuthFromRequest(request);
         if (!decoded) {
             console.warn('⚠️ Invalid authentication token');
             return NextResponse.json(
@@ -113,7 +94,7 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. Token-weighted rate limit — защита от DoS
-        const rl = rateLimitAI(user.id, text);
+        const rl = await rateLimitAI(user.id, text);
         if (!rl.allowed) {
             return NextResponse.json(
                 { error: 'Пожалуйста, подождите немного.' },
@@ -231,7 +212,14 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
     try {
-        // Check if Azure ML CBT API is configured
+        const decoded = await getVerifiedAuthFromRequest(request);
+        if (!decoded) {
+            return NextResponse.json(
+                { error: apiMessages.invalidOrExpiredToken },
+                { status: 401 }
+            );
+        }
+
         const isConfigured = !!(
             process.env.CBT_API_URL &&
             process.env.CBT_API_KEY

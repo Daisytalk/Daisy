@@ -28,14 +28,7 @@ export async function DELETE(request: NextRequest) {
 
     const userId = decoded.userId
 
-    // Blacklist token
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 7)
-    await prisma.tokenBlacklist.upsert({
-      where: { token },
-      create: { token, userId, expiresAt },
-      update: { expiresAt },
-    }).catch(() => {})
+    await AuthService.blacklistToken(token, userId)
 
     // Деактивация вместо удаления
     await prisma.user.update({

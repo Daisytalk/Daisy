@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import type { OnboardingData, OnboardingAnswer, OnboardingAnswerValue } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
+import { getDecryptedSensitiveJson } from '@/shared/lib/sensitive-field-crypto'
 
 export async function GET(request: NextRequest, props: { params: Promise<{ userId: string }> }) {
   const params = await props.params;
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { message: apiMessages.authorizationRequired },
-        { status: 401 }
-      )
-    }
-
-    const token = authHeader.substring(7)
-    const decoded = AuthService.verifyToken(token)
+    const decoded = await getVerifiedAuthFromRequest(request)
     
     if (!decoded) {
       return NextResponse.json(
@@ -52,10 +44,11 @@ export async function GET(request: NextRequest, props: { params: Promise<{ userI
 
     // Format: support both array [{questionId, answer}] and object {questionId: answer}
     let answers: OnboardingAnswer[]
-    if (Array.isArray(dbData.responses)) {
-      answers = dbData.responses as unknown as OnboardingAnswer[]
-    } else if (dbData.responses && typeof dbData.responses === 'object' && !Array.isArray(dbData.responses)) {
-      answers = Object.entries(dbData.responses as Record<string, unknown>).map(([questionId, answer]) => ({ questionId, answer: answer as OnboardingAnswerValue }))
+    const responses = getDecryptedSensitiveJson(dbData.responses)
+    if (Array.isArray(responses)) {
+      answers = responses as unknown as OnboardingAnswer[]
+    } else if (responses && typeof responses === 'object' && !Array.isArray(responses)) {
+      answers = Object.entries(responses as Record<string, unknown>).map(([questionId, answer]) => ({ questionId, answer: answer as OnboardingAnswerValue }))
     } else {
       answers = []
     }

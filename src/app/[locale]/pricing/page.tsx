@@ -13,8 +13,8 @@ export default function PricingPage() {
   const [paymentLoading, setPaymentLoading] = useState(false)
 
   const handleSelectPlan = async (plan: PlanInfo) => {
-    const token = localStorage.getItem('auth_token')
-    if (!token) {
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' })
+    if (!meRes.ok) {
       localStorage.setItem('pending_plan', JSON.stringify({
         id: plan.id,
         price: plan.price,
@@ -29,9 +29,9 @@ export default function PricingPage() {
     try {
       const response = await fetch('/api/payments/freedompay/create', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           planId: plan.id,

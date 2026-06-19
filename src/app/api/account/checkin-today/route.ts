@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import { startOfDay } from 'date-fns'
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth_token')?.value ?? request.headers.get('authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ hasCheckIn: false })
-    const decoded = AuthService.verifyToken(token)
+    const decoded = await getVerifiedAuthFromRequest(request)
     if (!decoded) return NextResponse.json({ hasCheckIn: false })
 
     const today = startOfDay(new Date())

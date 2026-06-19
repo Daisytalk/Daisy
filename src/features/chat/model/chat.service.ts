@@ -39,10 +39,8 @@ export class ChatService {
   async sendMessage(request: SendMessageRequest): Promise<SendMessageResponse> {
     const response = await fetch(`${API_CONFIG.BASE_URL}/api/chat`, {
       method: 'POST',
-      headers: {
-        ...API_CONFIG.HEADERS,
-        ...getAuthHeaders(),
-      },
+      headers: getAuthHeaders(),
+      credentials: 'include',
       body: JSON.stringify(request),
     })
 
@@ -62,6 +60,7 @@ export class ChatService {
   async getMessageStatus(requestId: string): Promise<MessageStatusResponse> {
     const response = await fetch(`${API_CONFIG.BASE_URL}/api/chat/status/${requestId}`, {
       headers: getAuthHeaders(),
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -74,6 +73,7 @@ export class ChatService {
   async getConversation(conversationId: string): Promise<ConversationResponse> {
     const response = await fetch(`${API_CONFIG.BASE_URL}/api/cbt/conversations/${conversationId}`, {
       headers: getAuthHeaders(),
+      credentials: 'include',
     })
 
     if (!response.ok) {

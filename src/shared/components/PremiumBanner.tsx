@@ -20,10 +20,9 @@ export function PremiumBanner() {
   const [dismissed, setDismissed] = useState(false)
 
   const checkOffer = useCallback(async () => {
-    const token = localStorage.getItem('auth_token')
-    if (!token) return
     try {
-      const r = await fetch('/api/premium/offer', { headers: { Authorization: `Bearer ${token}` } })
+      const r = await fetch('/api/premium/offer', { credentials: 'include' })
+      if (!r.ok) return
       const data = await r.json()
       if (data.offer) setOffer(data.offer)
     } catch {
@@ -39,13 +38,10 @@ export function PremiumBanner() {
 
   const handleDismiss = async () => {
     setDismissed(true)
-    const token = localStorage.getItem('auth_token')
-    if (token) {
-      await fetch('/api/premium/dismiss', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-    }
+    await fetch('/api/premium/dismiss', {
+      method: 'POST',
+      credentials: 'include',
+    })
   }
 
   if (!offer || dismissed) return null

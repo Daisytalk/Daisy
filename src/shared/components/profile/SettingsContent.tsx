@@ -83,7 +83,7 @@ export function SettingsContent() {
         onboardingService.getOnboardingData(user.id),
         onboardingService.getQuestions(),
         fetch('/api/account/style', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` },
+          credentials: 'include',
         }).then((r) => (r.ok ? r.json() : { styles: [] })),
       ])
       setOnboardingData(data)
@@ -132,10 +132,10 @@ export function SettingsContent() {
   const saveStyle = async () => {
     setStyleSaving(true)
     try {
-      const token = localStorage.getItem('auth_token')
       const res = await fetch('/api/account/style', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ styles: draftStyles }),
       })
       if (res.ok) {
@@ -437,8 +437,6 @@ export function SettingsContent() {
                       try {
                         const authService = new AuthApiService()
                         await authService.deleteAccount()
-                        localStorage.removeItem('auth_token')
-                        localStorage.removeItem('user')
                         await logout()
                         window.location.href = `/${locale}`
                       } catch (e) {

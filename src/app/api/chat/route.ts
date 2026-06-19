@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import { sendChatMessage } from '@/shared/lib/ai-api'
 import { buildDaisyRequest, handleDaisyResponse, type DaisyLocale } from '@/shared/lib/daisy-integration'
 import { redactPII } from '@/shared/lib/pii/redactor'
@@ -23,10 +23,10 @@ async function processAsyncChat(
   locale?: DaisyLocale
 ) {
   try {
-    console.log('🚀 Starting async chat processing:', {
+    logger.info('async_chat_start', {
       conversationId,
       userId,
-      messagePreview: userMessage.substring(0, 50)
+      messageLength: userMessage.length,
     })
 
     const payload = await buildDaisyRequest({
@@ -36,7 +36,7 @@ async function processAsyncChat(
       locale: locale ?? defaultLocale,
     })
 
-    console.log('📞 Calling Daisy API...', {
+    logger.info('daisy_api_call', {
       has_onboarding: payload.onboarding_summary != null,
       has_memory: payload.user_context != null && payload.user_context.length > 0,
       history_used: payload.history.length,
@@ -60,7 +60,7 @@ async function processAsyncChat(
       }
     )
 
-    console.log('✅ Daisy API response received:', {
+    logger.info('daisy_api_response', {
       protocol: aiResponse.protocol_used,
       persona: aiResponse.persona_used,
       responseLength: aiResponse.response?.length || 0,
@@ -68,16 +68,14 @@ async function processAsyncChat(
     })
 
     await handleDaisyResponse(userId, conversationId, aiResponse, userMessage)
-    console.log('✅ Successfully saved assistant response for conversation:', conversationId)
+    logger.info('async_chat_saved', { conversationId })
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error))
-    console.error('❌ Async chat processing failed:', {
+    logger.error('async_chat_failed', {
       conversationId,
       userId,
       errorMessage: err.message,
       errorName: err.name,
-      stack: err.stack,
-      fullError: String(error),
     })
     try {
       await prisma.cbtMessage.create({
@@ -89,27 +87,29 @@ async function processAsyncChat(
           protocol: 'error',
         },
       })
-      console.log('💾 Saved error message to database')
+      logger.info('async_chat_error_message_saved', { conversationId })
     } catch (dbError) {
-      console.error('❌ Failed to save error message:', dbError)
+      logger.error('async_chat_error_save_failed', {
+        conversationId,
+        message: dbError instanceof Error ? dbError.message : String(dbError),
+      })
     }
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
     const body = await request.json()
 
-    console.log('Raw request body keys:', Object.keys(body))
-    console.log('Messages array length:', body.messages?.length)
+    logger.info('chat_request_received', {
+      bodyKeys: Object.keys(body),
+      messagesCount: body.messages?.length,
+    })
 
-    // Extract the latest user message
     let userMessage = ''
     if (Array.isArray(body.messages) && body.messages.length > 0) {
       const lastMessage = body.messages[body.messages.length - 1]
 
-      // Handle different message formats
       if (typeof lastMessage === 'string') {
         userMessage = lastMessage
       } else if (lastMessage.content) {
@@ -128,34 +128,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: apiMessages.noMessageProvided }, { status: 400 })
     }
 
-    // Layer 1: PII redaction — strip до INSERT
     const { redacted, hadPII, detectedTypes } = redactPII(userMessage.trim())
     const messageToStore = redacted
 
     if (hadPII) {
-      console.warn(JSON.stringify({ level: 'warn', ctx: 'pii_detected_l1', types: detectedTypes }))
+      logger.warn('pii_detected_l1', { types: detectedTypes })
     }
 
-    // Authentication - try cookie first, then Bearer token
-    let token = request.cookies.get('auth_token')?.value
-
-    if (!token) {
-      const authHeader = request.headers.get('authorization')
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7)
-      }
-    }
-
-    if (!token) {
-      return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 })
-    }
-
-    const decoded = AuthService.verifyToken(token)
+    const decoded = await getVerifiedAuthFromRequest(request)
     if (!decoded) {
       return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
     }
 
-    // 1. Абсолютный потолок — UX граница, не защита
     const HARD_MAX = 10_000
     if (userMessage.trim().length > HARD_MAX) {
       return NextResponse.json(
@@ -164,7 +148,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. Контент-сканер — защита от prompt injection
     if (scanForInjection(userMessage)) {
       logger.warn('injection_attempt', { userId: decoded.userId, length: userMessage.length })
       return NextResponse.json(
@@ -173,8 +156,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 3. Token-weighted rate limit — защита от DoS
-    const { allowed, retryAfterMs } = rateLimitAI(decoded.userId, userMessage)
+    const { allowed, retryAfterMs } = await rateLimitAI(decoded.userId, userMessage)
     if (!allowed) {
       return NextResponse.json(
         { error: 'Пожалуйста, подождите немного.' },
@@ -185,12 +167,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Проверка подписки: блокировать чат при истёкшем trial (данные из JWT)
-    const now = Date.now()
+    if (decoded.subscriptionStatus === 'expired' || decoded.subscriptionStatus === 'cancelled') {
+      return NextResponse.json(
+        { error: apiMessages.trialExpired, code: 'SUBSCRIPTION_INACTIVE' },
+        { status: 402 }
+      )
+    }
     const trialEnded =
       decoded.subscriptionStatus === 'trial' &&
       decoded.trialEndsAt != null &&
-      new Date(decoded.trialEndsAt).getTime() < now
+      new Date(decoded.trialEndsAt).getTime() < Date.now()
     if (trialEnded) {
       return NextResponse.json(
         { error: apiMessages.trialExpired, code: 'TRIAL_EXPIRED' },
@@ -212,10 +198,8 @@ export async function POST(request: NextRequest) {
       body.locale === 'ru' || body.locale === 'kk' || body.locale === 'en' ? body.locale : null
     const locale = (bodyLocale ?? pickLocaleFromCookieOrUser(request, null)) as DaisyLocale
 
-    // Get or create CBT conversation based on sessionId
     let conversation
     if (sessionId && !sessionId.startsWith('temp_')) {
-      // Try to find existing conversation
       conversation = await prisma.cbtConversation.findFirst({
         where: {
           id: sessionId,
@@ -229,7 +213,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Create new conversation if not found
     if (!conversation) {
       const userWithProfile = await prisma.user.findUnique({
         where: { id: user.id },
@@ -251,14 +234,13 @@ export async function POST(request: NextRequest) {
           messages: true
         }
       })
-      console.log('Created new CBT conversation:', conversation.id, 'persona:', initialPersona)
+      logger.info('cbt_conversation_created', { conversationId: conversation.id, persona: initialPersona })
     } else {
-      console.log('Using existing CBT conversation:', conversation.id)
+      logger.info('cbt_conversation_reused', { conversationId: conversation.id })
     }
 
-    // Crisis detection — deterministic response, do NOT call Azure ML
     if (detectCrisis(messageToStore)) {
-      console.warn(JSON.stringify({ level: 'warn', ctx: 'crisis_detected', userId: user.id }))
+      logger.warn('crisis_detected', { userId: user.id })
       const crisisMsg = await prisma.cbtMessage.create({
         data: {
           conversationId: conversation.id,
@@ -277,7 +259,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Save user message to database (только анонимный текст)
     const userMessageRecord = await prisma.cbtMessage.create({
       data: {
         conversationId: conversation.id,
@@ -301,17 +282,18 @@ export async function POST(request: NextRequest) {
     }
 
     processAsyncChat(conversation.id, messageToStore, user.id, locale).catch((error) => {
-      console.error(JSON.stringify({ level: 'error', ctx: 'async_chat_failed', message: error instanceof Error ? error.message : String(error) }))
+      logger.error('async_chat_dispatch_failed', {
+        message: error instanceof Error ? error.message : String(error),
+      })
     })
 
-    // Return immediately with request ID for polling
     return NextResponse.json({
       status: 'processing',
       requestId: userMessageRecord.id,
       conversationId: conversation.id,
       message: apiMessages.messageBeingProcessed
     }, {
-      status: 202, // Accepted
+      status: 202,
       headers: {
         'X-Session-Id': conversation.id,
         'X-Request-Id': userMessageRecord.id,
@@ -320,7 +302,9 @@ export async function POST(request: NextRequest) {
 
 
   } catch (error: unknown) {
-    console.error('Chat API error:', error)
+    logger.error('chat_api_error', {
+      message: error instanceof Error ? error.message : String(error),
+    })
     return NextResponse.json(
       { error: error instanceof Error ? error.message : apiMessages.internalServerError },
       { status: 500 }

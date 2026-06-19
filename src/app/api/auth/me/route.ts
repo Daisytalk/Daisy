@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import type { User } from '@/shared/types/auth'
 import { apiMessages } from '@/shared/api-messages'
 
@@ -16,42 +16,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Try to get token from cookie first, then fall back to Authorization header
-    let token = request.cookies.get('auth_token')?.value
-
-    if (!token) {
-      const authHeader = request.headers.get('authorization')
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7)
-      }
-    }
-
-    if (!token) {
-      return NextResponse.json(
-        { message: apiMessages.authorizationRequired },
-        { status: 401 }
-      )
-    }
-
-    let decoded: { userId?: string; subscriptionStatus?: string; trialEndsAt?: Date | null } | null = null
-    try {
-      decoded = AuthService.verifyToken(token)
-    } catch (verifyErr) {
-      const msg = verifyErr instanceof Error ? verifyErr.message : String(verifyErr)
-      console.error('Me endpoint: verifyToken threw', msg)
-      if (msg.includes('JWT_SECRET')) {
-        return NextResponse.json(
-          { message: apiMessages.serverConfigurationError },
-          { status: 500 }
-        )
-      }
+    const decoded = await getVerifiedAuthFromRequest(request, { allowDeactivated: true })
+    if (!decoded) {
       return NextResponse.json(
         { message: apiMessages.invalidOrExpiredToken },
         { status: 401 }
       )
     }
 
-    const userId = decoded?.userId ?? (decoded as { id?: string })?.id
+    const userId = decoded.userId
     if (!userId) {
       return NextResponse.json(
         { message: apiMessages.invalidOrExpiredToken },

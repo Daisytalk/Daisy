@@ -32,7 +32,7 @@ function dateRangeWhere(period: ResolvedMetricsPeriod): { gte: Date; lte: Date }
 }
 
 export async function GET(request: NextRequest) {
-  if (!getVerifiedAuthFromRequest(request)) {
+  if (!(await getVerifiedAuthFromRequest(request))) {
     return NextResponse.json(
       { message: 'Требуется вход в аккаунт', code: 'user_auth' },
       { status: 401 }

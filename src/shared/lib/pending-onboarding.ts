@@ -1,7 +1,7 @@
 import type { OnboardingAnswer } from '@/shared/types/auth'
 
 /** Merge guest onboarding answers after login/OAuth (localStorage → API). */
-export async function mergePendingOnboarding(authToken?: string | null): Promise<boolean> {
+export async function mergePendingOnboarding(): Promise<boolean> {
   if (typeof window === 'undefined') return false
   const pending = localStorage.getItem('pending_onboarding')
   if (!pending) return false
@@ -10,15 +10,10 @@ export async function mergePendingOnboarding(authToken?: string | null): Promise
     const answers = JSON.parse(pending) as OnboardingAnswer[]
     if (!Array.isArray(answers) || answers.length === 0) return false
 
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (authToken) {
-      headers.Authorization = `Bearer ${authToken}`
-    }
-
     const res = await fetch('/api/onboarding/submit', {
       method: 'POST',
       credentials: 'include',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ answers }),
     })
 

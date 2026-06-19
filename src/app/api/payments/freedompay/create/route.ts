@@ -1,21 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { FreedomPayStubService } from '@/shared/services/freedompay'
 import { apiMessages } from '@/shared/api-messages'
+import { paymentsDisabledResponse, paymentsEnabled } from '@/shared/lib/payments-enabled'
 
 /**
  * Заглушка: создание платежа Freedom Pay.
- * Документация: https://docs.freedompay.kz (Merchant API / Purchase / Create payment)
- *
- * Принимает:
- *   planId: string          — идентификатор плана (month_1, month_3, month_6)
- *   amount: number          — сумма в центах
- *   currency: string        — валюта (USD по умолчанию)
- *   description: string     — описание платежа
- *   durationMonths: number  — длительность подписки в месяцах
- *   returnUrl: string       — URL для возврата после оплаты
- *   recurrent: boolean      — рекуррентный платёж
+ * TODO(security): enable when Freedom Pay server callback + signature verification ships.
  */
 export async function POST(request: NextRequest) {
+  if (!paymentsEnabled()) {
+    return paymentsDisabledResponse()
+  }
   try {
     const body = await request.json().catch(() => ({}))
     const planId = (body.planId as string) || 'unknown'

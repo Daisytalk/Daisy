@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthService } from '@/shared/lib/auth'
 import { checkPremiumTrigger } from '@/shared/lib/premium-triggers'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth_token')?.value ?? request.headers.get('authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    const decoded = AuthService.verifyToken(token)
+    const decoded = await getVerifiedAuthFromRequest(request)
     if (!decoded) return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
 
     const offer = await checkPremiumTrigger(decoded.userId)

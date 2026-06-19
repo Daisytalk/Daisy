@@ -3,6 +3,22 @@
     "language": "Language",
     "switchLanguage": "Switch Language"
   },
+  "consent": {
+    "title": "Consent required for health features",
+    "description": "Before using health onboarding or chat, please confirm how we may process your data. Data is protected with TLS in transit and encryption at rest in Azure West US 2. Account data is retained while your account is active plus 30 days after deletion.",
+    "healthDataLabel": "I consent to processing of my health-related and emotional data for personalized support (health_data).",
+    "mlProcessingLabel": "I consent to automated ML/AI analysis of my messages to generate responses (ml_processing).",
+    "privacyNote": "See our",
+    "privacyLink": "Privacy Policy",
+    "accept": "I agree and continue",
+    "required": "Both consents are required to continue.",
+    "loading": "Checking consent…",
+    "submitting": "Saving…",
+    "errors": {
+      "checkFailed": "Could not verify consent. Please refresh the page.",
+      "saveFailed": "Could not save consent. Please try again."
+    }
+  },
   "hero": {
     "title": "Daisy - Your 24/7 Mental Health Assistant",
     "faq": "FAQ",
@@ -226,6 +242,7 @@
     "send": "Send",
     "newChat": "New chat",
     "thinking": "Daisy is thinking...",
+    "writing": "Daisy is writing...",
     "error": "Something went wrong. Please try again.",
     "disclaimer": "Note: Daisy is an AI companion for emotional support, not a substitute for professional medical care; in crisis or clinical situations, please contact a qualified professional.",
     "trialExpired": "Your trial has ended. Choose a plan to continue.",
@@ -987,7 +1004,7 @@
   "resourcesPage": {
     "meta": {
       "title": "Security & compliance",
-      "description": "How Daisy protects your data: encryption, GDPR, private conversations, and AI ethics in mental health support.",
+      "description": "How Daisy protects your data: TLS encryption, encryption at rest in Azure West US 2, GDPR alignment, and AI ethics in mental health support.",
       "ogTitle": "Security & compliance | Daisy"
     },
     "backToHome": "Back to home",
@@ -999,8 +1016,8 @@
     "complianceItems": [
       {
         "icon": "🔐",
-        "title": "End-to-end encryption",
-        "desc": "Encryption in transit and at rest"
+        "title": "TLS & encryption at rest",
+        "desc": "TLS in transit; encryption at rest in Azure West US 2. Not end-to-end encrypted."
       },
       {
         "icon": "📁",
@@ -1034,8 +1051,8 @@
       },
       {
         "icon": "⏳",
-        "title": "Memory controls & auto-deletion",
-        "desc": "You control retention"
+        "title": "Retention & memory controls",
+        "desc": "Account data kept while active + 30 days; memory items auto-expire by TTL"
       },
       {
         "icon": "🧩",

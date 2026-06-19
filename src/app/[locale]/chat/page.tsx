@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUp } from 'lucide-react'
 import Image from 'next/image'
@@ -15,7 +15,9 @@ import { Textarea } from '@/shared/ui/textarea'
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar'
 import { TypewriterText } from '@/shared/ui/typewriter-text'
 import { PremiumBanner } from '@/shared/components/PremiumBanner'
+import { ConsentGate } from '@/shared/components/ConsentGate'
 import { FloatingDaisy } from '@/shared/components/chat/FloatingDaisy'
+import { useSessionIdleTimeout } from '@/shared/hooks/useSessionIdleTimeout'
 import type { DaisyState } from '@/shared/types/daisy'
 
 interface Message {
@@ -30,6 +32,7 @@ interface Message {
 function ChatPageContent() {
   const { user } = useAuth()
   const locale = useLocale()
+  const router = useRouter()
   const searchParams = useSearchParams()
   const t = useTranslations('chat')
   const [messages, setMessages] = useState<Message[]>([])
@@ -40,7 +43,13 @@ function ChatPageContent() {
   const [daisyState, setDaisyState] = useState<DaisyState>('intake')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const paymentRecordedRef = useRef<string | null>(null)
+
+  const handleSessionIdle = useCallback(async () => {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
+    router.push(`/${locale}/login?reason=idle`)
+  }, [router, locale])
+
+  useSessionIdleTimeout(handleSessionIdle, Boolean(user))
 
   useEffect(() => {
     const storedSessionId = localStorage.getItem('active_chat_session')
@@ -65,58 +74,10 @@ function ChatPageContent() {
     }
   }, [searchParams, locale])
 
-  // Возврат с Freedom Pay: ?payment_id=…&amount_minor=…&currency=…
-  useEffect(() => {
-    const pid = searchParams.get('payment_id')
-    const am = searchParams.get('amount_minor')
-    if (!pid || !am) return
-    if (paymentRecordedRef.current === pid) return
-
-    const token = localStorage.getItem('auth_token')
-    if (!token) return
-
-    const amountMinor = parseInt(am, 10)
-    if (!Number.isFinite(amountMinor) || amountMinor <= 0) return
-
-    const cur = searchParams.get('currency') || 'USD'
-    paymentRecordedRef.current = pid
-
-    let cancelled = false
-    void (async () => {
-      try {
-        const res = await fetch('/api/payments/record-success', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            paymentId: pid,
-            amountMinor,
-            currency: cur,
-          }),
-        })
-        if (cancelled) return
-        if (!res.ok) {
-          paymentRecordedRef.current = null
-          return
-        }
-        window.history.replaceState(null, '', `/${locale}/chat`)
-      } catch {
-        paymentRecordedRef.current = null
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [searchParams, locale])
-
   const fetchSessionMessages = async (sessionId: string) => {
     try {
-      const token = localStorage.getItem('auth_token')
       const response = await fetch(`/api/cbt/conversations/${sessionId}`, {
-        headers: { 'Authorization': token ? `Bearer ${token}` : '' },
+        credentials: 'include',
       })
 
       if (response.ok) {
@@ -157,13 +118,12 @@ function ChatPageContent() {
 
     try {
       setIsLoading(true)
-      const token = localStorage.getItem('auth_token')
-      
+
       const response = await fetch('/api/chat', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
         },
         body: JSON.stringify({
           messages: [{ role: 'user', content: messageText }],
@@ -195,7 +155,7 @@ function ChatPageContent() {
       }
 
       if (data.requestId) {
-        await pollForResponse(data.requestId, token)
+        await pollForResponse(data.requestId)
       } else {
         // No requestId (unexpected); show error in thread
         setMessages(prev => [...prev, {
@@ -222,8 +182,8 @@ function ChatPageContent() {
 
   const POLL_INTERVAL_MS = 3000
 
-  const pollForResponse = async (requestId: string, token: string | null) => {
-    const maxAttempts = 45 // ~2.25 min at 3s
+  const pollForResponse = async (requestId: string) => {
+    const maxAttempts = 65 // ~3.25 min at 3s (> 180s backend timeout)
     let attempts = 0
 
     while (attempts < maxAttempts) {
@@ -231,7 +191,6 @@ function ChatPageContent() {
 
       try {
         const response = await fetch(`/api/chat/status/${requestId}`, {
-          headers: { 'Authorization': token ? `Bearer ${token}` : '' },
           credentials: 'include',
         })
 
@@ -429,7 +388,7 @@ function ChatPageContent() {
                                   exit={{ opacity: 0 }}
                                   transition={{ duration: 0.25 }}
                                   aria-live="polite"
-                                  aria-label={t('thinking')}
+                                  aria-label={t('writing')}
                                 >
                                   <Image
                                     src="/images/daisy_morph_spin.svg"
@@ -439,7 +398,7 @@ function ChatPageContent() {
                                     className="shrink-0 w-8 h-8"
                                     aria-hidden
                                   />
-                                  <span className="text-sm text-muted-foreground">{t('thinking')}</span>
+                                  <span className="text-sm text-muted-foreground">{t('writing')}</span>
                                 </motion.div>
                               )}
                             </AnimatePresence>
@@ -472,7 +431,7 @@ function ChatPageContent() {
                       animate={{ opacity: 1, y: 0 }}
                       className="flex gap-3"
                       aria-live="polite"
-                      aria-label={t('thinking')}
+                      aria-label={t('writing')}
                     >
                       <Avatar className="flex-shrink-0 h-9 w-9 rounded-full overflow-hidden bg-white border border-[hsl(var(--app-border))]">
                         <AvatarImage src="/images/daisy-icon.svg" alt="Daisy" className="object-contain p-1" />
@@ -487,7 +446,7 @@ function ChatPageContent() {
                           className="shrink-0 w-8 h-8"
                           aria-hidden
                         />
-                        <span className="text-sm text-muted-foreground">{t('thinking')}</span>
+                        <span className="text-sm text-muted-foreground">{t('writing')}</span>
                       </div>
                     </motion.div>
                   )
@@ -553,7 +512,9 @@ export default function ChatPage() {
   return (
     <ClientOnly>
       <ProtectedRoute>
-        <ChatPageContent />
+        <ConsentGate>
+          <ChatPageContent />
+        </ConsentGate>
       </ProtectedRoute>
     </ClientOnly>
   )

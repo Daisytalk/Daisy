@@ -9,7 +9,7 @@ const DUMMY_HASH = '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYbwBRhC5ZO
 
 export async function POST(request: NextRequest) {
   const ip = getClientIP(request)
-  const { allowed, retryAfterMs } = rateLimit(`login:${ip}`, 5, 60_000)
+  const { allowed, retryAfterMs } = await rateLimit(`login:${ip}`, 5, 60_000)
   if (!allowed) {
     return NextResponse.json(
       { message: 'Слишком много попыток. Попробуйте позже.' },
@@ -110,7 +110,6 @@ export async function POST(request: NextRequest) {
         subscriptionStatus,
         trialEndsAt: null,
       },
-      token,
       requiresRestore: !!user.deactivatedAt,
     })
 

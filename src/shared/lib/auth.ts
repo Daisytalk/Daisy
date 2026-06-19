@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import type { User } from '@/shared/types/auth'
+import prisma from '@/shared/lib/database'
 
 const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES_IN = '7d'
 
-type TokenPayload = {
+export type TokenPayload = {
   userId: string;
   email: string;
   name?: string;
@@ -40,6 +41,51 @@ export class AuthService {
     } catch {
       return null
     }
+  }
+
+  /** JWT + blacklist + deactivated check; refreshes subscription claims from DB. */
+  static async validateSession(
+    token: string,
+    opts?: { allowDeactivated?: boolean }
+  ): Promise<TokenPayload | null> {
+    const decoded = this.verifyToken(token)
+    if (!decoded) return null
+
+    const [blacklisted, user] = await Promise.all([
+      prisma.tokenBlacklist.findUnique({ where: { token }, select: { id: true } }),
+      prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          deactivatedAt: true,
+          subscriptionStatus: true,
+          isOnboarded: true,
+          email: true,
+          name: true,
+        },
+      }),
+    ])
+
+    if (blacklisted || !user) return null
+    if (!opts?.allowDeactivated && user.deactivatedAt) return null
+
+    return {
+      ...decoded,
+      email: user.email,
+      name: user.name ?? decoded.name,
+      isOnboarded: user.isOnboarded,
+      subscriptionStatus: user.subscriptionStatus as TokenPayload['subscriptionStatus'],
+      trialEndsAt: decoded.trialEndsAt,
+    }
+  }
+
+  static async blacklistToken(token: string, userId: string): Promise<void> {
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 7)
+    await prisma.tokenBlacklist.upsert({
+      where: { token },
+      create: { token, userId, expiresAt },
+      update: { expiresAt },
+    }).catch(() => {})
   }
 
   static async hashPassword(password: string): Promise<string> {
@@ -82,18 +128,3 @@ export const getCurrentUser = async () => {
 
   return response.json()
 }
-
-// export const getAuthToken = (): string | null => {
-//   if (typeof window === 'undefined') return null
-//   return localStorage.getItem('auth_token')
-// }
-
-// export const setAuthToken = (token: string): void => {
-//   if (typeof window === 'undefined') return
-//   localStorage.setItem('auth_token', token)
-// }
-
-// export const removeAuthToken = (): void => {
-//   if (typeof window === 'undefined') return
-//   localStorage.removeItem('auth_token')
-// }

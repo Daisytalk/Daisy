@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { Prisma, PrismaClient } from '@prisma/client'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { cbtApi } from '@/shared/lib/cbt-api'
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 import { subDays, format, startOfDay } from 'date-fns'
 import { ru as ruLocale } from 'date-fns/locale'
 import { pickLocalizedStringArray, pickWeeklySummary } from '@/shared/lib/i18n-content'
@@ -24,9 +24,7 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth_token')?.value ?? request.headers.get('authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    const decoded = AuthService.verifyToken(token)
+    const decoded = await getVerifiedAuthFromRequest(request)
     if (!decoded) return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
 
     const period = (request.nextUrl.searchParams.get('period') || '7d') as Period

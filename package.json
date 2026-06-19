@@ -65,6 +65,7 @@
     "form-data": "^4.0.4",
     "framer-motion": "^11.0.0",
     "input-otp": "^1.4.2",
+    "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
     "lru-cache": "^11.2.6",
     "lucide-react": "^0.544.0",

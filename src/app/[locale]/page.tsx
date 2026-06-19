@@ -61,8 +61,8 @@ function HomeContent() {
     } catch { /* analytics optional */ }
 
     // Проверяем авторизацию
-    const token = localStorage.getItem('auth_token')
-    if (!token) {
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' })
+    if (!meRes.ok) {
       // Сохраняем выбранный план и перенаправляем на регистрацию
       localStorage.setItem('pending_plan', JSON.stringify({
         id: plan.id,
@@ -79,9 +79,9 @@ function HomeContent() {
     try {
       const response = await fetch('/api/payments/freedompay/create', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           planId: plan.id,

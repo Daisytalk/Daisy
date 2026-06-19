@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthService } from '@/shared/lib/auth'
 import prisma from '@/shared/lib/database'
 import { apiMessages } from '@/shared/api-messages'
 import { getDecryptedContent } from '@/shared/lib/cbt-message-content'
-
-function getToken(request: NextRequest): string | null {
-  const cookie = request.cookies.get('auth_token')?.value
-  if (cookie) return cookie
-  const authHeader = request.headers.get('authorization')
-  if (authHeader?.startsWith('Bearer ')) return authHeader.substring(7)
-  return null
-}
+import { getVerifiedAuthFromRequest } from '@/shared/lib/server-auth'
 
 /**
  * GET /api/account/export
@@ -18,10 +10,7 @@ function getToken(request: NextRequest): string | null {
  */
 export async function GET(request: NextRequest) {
   try {
-    const token = getToken(request)
-    if (!token) return NextResponse.json({ error: apiMessages.authorizationRequired }, { status: 401 })
-
-    const decoded = AuthService.verifyToken(token)
+    const decoded = await getVerifiedAuthFromRequest(request)
     if (!decoded) return NextResponse.json({ error: apiMessages.invalidToken }, { status: 401 })
 
     const userId = decoded.userId

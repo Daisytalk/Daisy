@@ -11,8 +11,14 @@ import type { DaisyState } from '@/shared/types/daisy'
 import { defaultLocale } from '@/i18n'
 import { getMemoryBundle, getPrefetchPack, updateConversationState, processMemoryUpdateToEpisodic } from '@/shared/lib/memory'
 import { prepareContentForStorage, getDecryptedContent } from '@/shared/lib/cbt-message-content'
+import { cleanModelText } from '@/shared/lib/clean-model-text'
+import {
+  getDecryptedSensitiveJson,
+  prepareSensitiveJsonForStorage,
+} from '@/shared/lib/sensitive-field-crypto'
+import { logger } from '@/shared/lib/safe-logger'
 
-const HISTORY_LIMIT = 30
+const HISTORY_LIMIT = 20
 export type DaisyLocale = 'ru' | 'kk' | 'en'
 
 export interface PsychProfilePayload {
@@ -82,7 +88,14 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
     }),
   ])
 
-  const messages = [...(conversation?.messages ?? [])].reverse()
+  if (!conversation) {
+    throw new Error('Conversation not found')
+  }
+  if (conversation.userId !== userId) {
+    throw new Error('Conversation does not belong to user')
+  }
+
+  const messages = [...conversation.messages].reverse()
   const decrypted = messages.map((m) => ({ ...m, content: getDecryptedContent(m.content) }))
   const last = decrypted[decrypted.length - 1]
   const isLastCurrentUser = last?.role === 'user' && last?.content === userMessage
@@ -92,8 +105,9 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
 
   // onboarding_summary: ответы онбординга + при необходимости aiProfile для контекста
   let onboardingSummary: unknown = undefined
-  if (onboardingData?.responses != null && typeof onboardingData.responses === 'object') {
-    onboardingSummary = onboardingData.responses
+  const decryptedResponses = getDecryptedSensitiveJson(onboardingData?.responses)
+  if (decryptedResponses != null && typeof decryptedResponses === 'object') {
+    onboardingSummary = decryptedResponses
   }
   // communication_style: массив ['warm_friend', 'practical_helper'] или строка
   let userCommunicationStyles: string[] = []
@@ -120,9 +134,8 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
 
   // user_context: conversationMemory (legacy) + memory_items (episodic) + prefetch pack
   const parts: string[] = []
-  const memoryArr = Array.isArray(user?.conversationMemory)
-    ? (user.conversationMemory as string[])
-    : []
+  const decryptedMemory = getDecryptedSensitiveJson<string[]>(user?.conversationMemory)
+  const memoryArr = Array.isArray(decryptedMemory) ? decryptedMemory : []
   if (memoryArr.length > 0) {
     parts.push(memoryArr.join('. '))
   }
@@ -136,7 +149,10 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
       parts.push(`Прошлая сессия: ${prefetch.lastSessionSummary.slice(0, 200)}`)
     }
   } catch (e) {
-    console.warn('Memory retrieval failed:', e)
+    logger.warn('memory_retrieval_failed', {
+      userId,
+      message: e instanceof Error ? e.message : String(e),
+    })
   }
   const userContext = parts.length > 0 ? parts.join(' ') : undefined
 
@@ -144,7 +160,7 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
   const persona =
     userCommunicationStyles.length > 0
       ? userCommunicationStyles[0]
-      : (conversation?.persona ?? 'active_listener')
+      : (conversation.persona ?? 'active_listener')
 
   const payload: DaisyRequestPayload = {
     message: userMessage,
@@ -203,18 +219,27 @@ export async function handleDaisyResponse(
   userMessage?: string
 ): Promise<void> {
   if (aiResponse.debug_context) {
-    console.log('📋 Daisy debug_context:', JSON.stringify(aiResponse.debug_context, null, 2))
+    const dbg = aiResponse.debug_context as unknown as Record<string, unknown>
+    logger.info('daisy_debug_context', {
+      daisy_state: dbg.daisy_state,
+      brief_retry_count: dbg.brief_retry_count,
+      degenerate_retry_count: dbg.degenerate_retry_count,
+      protocol: aiResponse.protocol_used,
+      persona: aiResponse.persona_used,
+    })
   }
 
   if (!aiResponse.response) {
     throw new Error('No response content from Daisy API')
   }
 
+  const sanitizedResponse = cleanModelText(aiResponse.response)
+
   await prisma.cbtMessage.create({
     data: {
       conversationId,
       role: 'assistant',
-      content: prepareContentForStorage(aiResponse.response),
+      content: prepareContentForStorage(sanitizedResponse),
       protocol: aiResponse.protocol_used ?? undefined,
       diagnosis: aiResponse.diagnosis ?? [],
       persona: aiResponse.persona_used ?? undefined,
@@ -234,7 +259,7 @@ export async function handleDaisyResponse(
       where: { id: userId },
       data: { aiProfile: aiResponse.ai_profile as Prisma.InputJsonValue },
     })
-    console.log('💾 Saved AI profile for user:', userId)
+    logger.info('ai_profile_saved', { userId })
   }
 
   if (aiResponse.memory_update && aiResponse.memory_update.length > 0) {
@@ -242,13 +267,16 @@ export async function handleDaisyResponse(
       where: { id: userId },
       select: { conversationMemory: true },
     })
-    const existing = Array.isArray(u?.conversationMemory) ? (u!.conversationMemory as string[]) : []
+    const existing =
+      getDecryptedSensitiveJson<string[]>(u?.conversationMemory) ?? []
     const merged = [...existing, ...aiResponse.memory_update]
     await prisma.user.update({
       where: { id: userId },
-      data: { conversationMemory: merged as Prisma.InputJsonValue },
+      data: {
+        conversationMemory: prepareSensitiveJsonForStorage(merged) as Prisma.InputJsonValue,
+      },
     })
-    console.log('💾 Appended memory_update for user:', userId, 'count:', aiResponse.memory_update.length)
+    logger.info('memory_update_appended', { userId, count: aiResponse.memory_update.length })
 
     // Пишем в memory_items по write policy (эпизодическая память)
     await processMemoryUpdateToEpisodic(userId, aiResponse.memory_update)
@@ -259,7 +287,7 @@ export async function handleDaisyResponse(
     aiResponse.memory_update?.length
       ? aiResponse.memory_update.join('. ')
       : userMessage && aiResponse.response
-        ? `${userMessage.slice(0, 150)}${userMessage.length > 150 ? '…' : ''} · ${aiResponse.response.slice(0, 150)}${aiResponse.response.length > 150 ? '…' : ''}`
+        ? `${userMessage.slice(0, 150)}${userMessage.length > 150 ? '…' : ''} · ${sanitizedResponse.slice(0, 150)}${sanitizedResponse.length > 150 ? '…' : ''}`
         : 'Сессия завершена'
   await updateConversationState(userId, lastSessionSummary.slice(0, 500))
 }
