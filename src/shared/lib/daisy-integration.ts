@@ -11,7 +11,7 @@ import type { DaisyState } from '@/shared/types/daisy'
 import { defaultLocale } from '@/i18n'
 import { getMemoryBundle, getPrefetchPack, updateConversationState, processMemoryUpdateToEpisodic } from '@/shared/lib/memory'
 import { prepareContentForStorage, getDecryptedContent } from '@/shared/lib/cbt-message-content'
-import { cleanModelText } from '@/shared/lib/clean-model-text'
+import { cleanModelText, sanitizeHistoryForModel } from '@/shared/lib/clean-model-text'
 import {
   getDecryptedSensitiveJson,
   prepareSensitiveJsonForStorage,
@@ -57,7 +57,7 @@ interface BuildDaisyRequestInput {
  * Поле запроса и источник:
  * - onboarding_summary: OnboardingData.responses + User.aiProfile (кто пользователь, цели, проблемы)
  * - user_context: User.conversationMemory (накопленные факты)
- * - history: CbtMessage последние 30
+ * - history: CbtMessage последние 20 (assistant turns cleaned before AML)
  * - persona: User.aiProfile.communication_style[0] (приоритет) или CbtConversation.persona
  * - locale: настройки пользователя или дефолт из i18n
  */
@@ -100,7 +100,15 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
   const last = decrypted[decrypted.length - 1]
   const isLastCurrentUser = last?.role === 'user' && last?.content === userMessage
   const forHistory = isLastCurrentUser ? decrypted.slice(0, -1) : decrypted
-  const history = forHistory.map((msg) => ({ role: msg.role, content: msg.content }))
+  const history = sanitizeHistoryForModel(
+    forHistory.map((msg) => ({ role: msg.role, content: msg.content }))
+  )
+  backfillCleanAssistantMessages(decrypted).catch((e) =>
+    logger.warn('history_backfill_failed', {
+      conversationId,
+      message: e instanceof Error ? e.message : String(e),
+    })
+  )
   const isFirstInConversation = history.length === 0
 
   // onboarding_summary: ответы онбординга + при необходимости aiProfile для контекста
@@ -290,4 +298,26 @@ export async function handleDaisyResponse(
         ? `${userMessage.slice(0, 150)}${userMessage.length > 150 ? '…' : ''} · ${sanitizedResponse.slice(0, 150)}${sanitizedResponse.length > 150 ? '…' : ''}`
         : 'Сессия завершена'
   await updateConversationState(userId, lastSessionSummary.slice(0, 500))
+}
+
+/** Rewrite stored assistant rows when they still contain OCR/accent junk from older inference. */
+async function backfillCleanAssistantMessages(
+  messages: Array<{ id: string; role: string; content: string }>
+): Promise<void> {
+  const updates = messages
+    .filter((m) => m.role === 'assistant')
+    .map((m) => ({ id: m.id, cleaned: cleanModelText(m.content), raw: m.content }))
+    .filter(({ cleaned, raw }) => cleaned !== raw)
+
+  if (!updates.length) return
+
+  await Promise.all(
+    updates.map(({ id, cleaned }) =>
+      prisma.cbtMessage.update({
+        where: { id },
+        data: { content: prepareContentForStorage(cleaned) },
+      })
+    )
+  )
+  logger.info('history_backfill_cleaned', { count: updates.length })
 }

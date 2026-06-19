@@ -14,3 +14,12 @@ export function cleanModelText(text: string): string {
   t = t.replace(/([.?!…]){2,}/g, '$1')
   return t
 }
+
+export type HistoryTurn = { role: string; content: string }
+
+/** Clean assistant turns before sending to AML so polluted DB rows do not re-enter the prompt. */
+export function sanitizeHistoryForModel(history: HistoryTurn[]): HistoryTurn[] {
+  return history.map((msg) =>
+    msg.role === 'assistant' ? { ...msg, content: cleanModelText(msg.content) } : msg
+  )
+}
