@@ -306,7 +306,7 @@ export async function POST(request: NextRequest) {
       message: error instanceof Error ? error.message : String(error),
     })
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : apiMessages.internalServerError },
+      { error: apiMessages.internalServerError },
       { status: 500 }
     )
   }

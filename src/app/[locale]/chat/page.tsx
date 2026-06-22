@@ -155,7 +155,7 @@ function ChatPageContent() {
       }
 
       if (data.requestId) {
-        await pollForResponse(data.requestId)
+        await waitForResponse(data.requestId)
       } else {
         // No requestId (unexpected); show error in thread
         setMessages(prev => [...prev, {
@@ -180,79 +180,21 @@ function ChatPageContent() {
     }
   }
 
-  const POLL_INTERVAL_MS = 3000
+  const waitForResponse = async (requestId: string) => {
+    const timeoutMs = 195_000 // slightly above backend 180s
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
-  const pollForResponse = async (requestId: string) => {
-    const maxAttempts = 65 // ~3.25 min at 3s (> 180s backend timeout)
-    let attempts = 0
+    try {
+      const response = await fetch(`/api/chat/status/${requestId}?stream=1`, {
+        credentials: 'include',
+        headers: { Accept: 'text/event-stream' },
+        signal: controller.signal,
+      })
 
-    while (attempts < maxAttempts) {
-      attempts++
-
-      try {
-        const response = await fetch(`/api/chat/status/${requestId}`, {
-          credentials: 'include',
-        })
-
-        if (!response.ok) {
-          const errText = await response.text()
-          console.error('Status check failed:', response.status, errText)
-          setMessages(prev => [...prev, {
-            id: `error_${Date.now()}`,
-            role: 'assistant',
-            content: "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service.",
-            timestamp: new Date(),
-          }])
-          return
-        }
-
-        let data: { status?: string; response?: string; protocol?: string; errorMessage?: string; daisy_state?: DaisyState | null }
-        try {
-          data = await response.json()
-        } catch {
-          setMessages(prev => [...prev, {
-            id: `error_${Date.now()}`,
-            role: 'assistant',
-            content: "Something went wrong on our side. Please try again.",
-            timestamp: new Date(),
-          }])
-          return
-        }
-
-        if (data.status === 'completed') {
-          let content = data.response ?? ''
-          const isBackendError = data.protocol === 'error'
-          if (isBackendError) {
-            content = "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service."
-          }
-          if (data.daisy_state) setDaisyState(data.daisy_state)
-          const assistantMessage: Message = {
-            id: `assistant_${Date.now()}`,
-            role: 'assistant',
-            content,
-            timestamp: new Date(),
-            stream: true,
-          }
-          setMessages(prev => [...prev, assistantMessage])
-          // Не ставим streamingRevealedId здесь — покажем «думает» до первого символа typewriter
-          return
-        }
-
-        if (data.status === 'failed') {
-          const errorMessage: Message = {
-            id: `error_${Date.now()}`,
-            role: 'assistant',
-            content: data.errorMessage || 'Something went wrong. Please try again.',
-            timestamp: new Date(),
-          }
-          setMessages(prev => [...prev, errorMessage])
-          return
-        }
-
-        // Still processing; wait before polling again
-        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS))
-      } catch (error) {
-        console.error('Polling error:', error)
+      if (!response.ok) {
+        const errText = await response.text()
+        console.error('Status stream failed:', response.status, errText)
         setMessages(prev => [...prev, {
           id: `error_${Date.now()}`,
           role: 'assistant',
@@ -261,16 +203,88 @@ function ChatPageContent() {
         }])
         return
       }
-    }
 
-    // Max attempts reached
-    const errorMessage: Message = {
-      id: `error_${Date.now()}`,
-      role: 'assistant',
-      content: 'The response is taking longer than expected. Please try again in a moment.',
-      timestamp: new Date(),
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('No response body')
+      }
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const parts = buffer.split('\n\n')
+        buffer = parts.pop() || ''
+
+        for (const part of parts) {
+          const line = part.trim()
+          if (!line.startsWith('data: ')) continue
+          let data: { status?: string; response?: string; is_error?: boolean; errorMessage?: string; daisy_state?: DaisyState | null }
+          try {
+            data = JSON.parse(line.slice(6))
+          } catch {
+            continue
+          }
+
+          if (data.status === 'completed') {
+            let content = data.response ?? ''
+            if (data.is_error) {
+              content = "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service."
+            }
+            if (data.daisy_state) setDaisyState(data.daisy_state)
+            const assistantMessage: Message = {
+              id: `assistant_${Date.now()}`,
+              role: 'assistant',
+              content,
+              timestamp: new Date(),
+              stream: true,
+            }
+            setMessages(prev => [...prev, assistantMessage])
+            return
+          }
+
+          if (data.status === 'failed') {
+            const errorMessage: Message = {
+              id: `error_${Date.now()}`,
+              role: 'assistant',
+              content: data.errorMessage || 'Something went wrong. Please try again.',
+              timestamp: new Date(),
+            }
+            setMessages(prev => [...prev, errorMessage])
+            return
+          }
+        }
+      }
+
+      setMessages(prev => [...prev, {
+        id: `error_${Date.now()}`,
+        role: 'assistant',
+        content: 'The response is taking longer than expected. Please try again in a moment.',
+        timestamp: new Date(),
+      }])
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') {
+        setMessages(prev => [...prev, {
+          id: `error_${Date.now()}`,
+          role: 'assistant',
+          content: 'The response is taking longer than expected. Please try again in a moment.',
+          timestamp: new Date(),
+        }])
+        return
+      }
+      console.error('SSE error:', error)
+      setMessages(prev => [...prev, {
+        id: `error_${Date.now()}`,
+        role: 'assistant',
+        content: "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service.",
+        timestamp: new Date(),
+      }])
+    } finally {
+      clearTimeout(timeoutId)
     }
-    setMessages(prev => [...prev, errorMessage])
   }
 
   const suggestedPrompts = [
