@@ -25,7 +25,7 @@ ALTER TABLE "memory_items" ADD COLUMN "expires_at" TIMESTAMP(3);
 -- CreateIndex
 CREATE INDEX "memory_items_expires_at_idx" ON "memory_items"("expires_at");
 
--- Backfill expires_at from ttl_days + created_at
+-- Backfill expires_at from ttl_days + createdAt
 UPDATE "memory_items"
-SET "expires_at" = "created_at" + ("ttl_days" * INTERVAL '1 day')
+SET "expires_at" = "createdAt" + ("ttl_days" * INTERVAL '1 day')
 WHERE "ttl_days" IS NOT NULL AND "expires_at" IS NULL;
