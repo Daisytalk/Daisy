@@ -212,6 +212,7 @@ export async function sendChatMessage(
   const requestBody: Record<string, unknown> = {
     message: text,
     user_id: userId || 'web_user',
+    conversation_id: sessionId,
     temperature: 0.7,
     history: conversationHistory || []
   };

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUp } from 'lucide-react'
@@ -17,7 +17,6 @@ import { TypewriterText } from '@/shared/ui/typewriter-text'
 import { PremiumBanner } from '@/shared/components/PremiumBanner'
 import { ConsentGate } from '@/shared/components/ConsentGate'
 import { FloatingDaisy } from '@/shared/components/chat/FloatingDaisy'
-import { useSessionIdleTimeout } from '@/shared/hooks/useSessionIdleTimeout'
 import type { DaisyState } from '@/shared/types/daisy'
 
 interface Message {
@@ -43,13 +42,6 @@ function ChatPageContent() {
   const [daisyState, setDaisyState] = useState<DaisyState>('intake')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  const handleSessionIdle = useCallback(async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
-    router.push(`/${locale}/login?reason=idle`)
-  }, [router, locale])
-
-  useSessionIdleTimeout(handleSessionIdle, Boolean(user))
 
   useEffect(() => {
     const storedSessionId = localStorage.getItem('active_chat_session')

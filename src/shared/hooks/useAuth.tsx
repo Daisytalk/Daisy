@@ -27,14 +27,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
-    authService.getCurrentUser()
-      .then((user) => {
-        if (!cancelled) setState(prev => ({ ...prev, user, isLoading: false }))
-      })
-      .catch(() => {
-        if (!cancelled) setState(prev => ({ ...prev, user: null, isLoading: false }))
-      })
-    return () => { cancelled = true }
+    const loadUser = () => {
+      authService.getCurrentUser()
+        .then((user) => {
+          if (!cancelled) setState(prev => ({ ...prev, user, isLoading: false }))
+        })
+        .catch(() => {
+          if (!cancelled) setState(prev => ({ ...prev, user: null, isLoading: false }))
+        })
+    }
+    loadUser()
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') loadUser()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', onVisible)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, [])
 

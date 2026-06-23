@@ -2,6 +2,7 @@
 
 import { useEffect, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLocale } from 'next-intl'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { Loader2 } from 'lucide-react'
 
@@ -13,21 +14,22 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requireOnboarding = false }: ProtectedRouteProps) {
     const { user, isLoading } = useAuth()
     const router = useRouter()
+    const locale = useLocale()
 
     useEffect(() => {
         // Only run on client side
         if (typeof window !== 'undefined' && !isLoading) {
             if (!user) {
-                router.push('/login')
+                router.push(`/${locale}/login`)
                 return
             }
 
             if (requireOnboarding && !user.isOnboarded) {
-                router.push('/onboarding')
+                router.push(`/${locale}/onboarding`)
                 return
             }
         }
-    }, [user, isLoading, router, requireOnboarding])
+    }, [user, isLoading, router, requireOnboarding, locale])
 
     // Always show loading during SSR or while loading
     if (typeof window === 'undefined' || isLoading) {
