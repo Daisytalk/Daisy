@@ -31,8 +31,9 @@ export function ProtectedRoute({ children, requireOnboarding = false }: Protecte
         }
     }, [user, isLoading, router, requireOnboarding, locale])
 
-    // Always show loading during SSR or while loading
-    if (typeof window === 'undefined' || isLoading) {
+    // Block UI only on the initial auth load (no user yet). Background refresh on
+    // tab focus must not unmount children or in-flight chat streams.
+    if (typeof window === 'undefined' || (isLoading && !user)) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />

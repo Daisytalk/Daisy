@@ -12,7 +12,7 @@ export function Providers({ children }: { children: ReactNode }) {
           queries: {
             staleTime: 0,
             gcTime: 0,
-            refetchOnWindowFocus: true,
+            refetchOnWindowFocus: false,
             refetchOnMount: true,
             retry: 1,
           },

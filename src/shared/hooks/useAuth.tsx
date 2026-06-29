@@ -27,19 +27,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
-    const loadUser = () => {
+    const loadUser = (background = false) => {
       authService.getCurrentUser()
         .then((user) => {
-          if (!cancelled) setState(prev => ({ ...prev, user, isLoading: false }))
+          if (!cancelled) {
+            setState((prev) => ({
+              ...prev,
+              // Keep the signed-in user on background tab-focus refresh failures.
+              user: user ?? (background ? prev.user : null),
+              isLoading: false,
+            }))
+          }
         })
         .catch(() => {
-          if (!cancelled) setState(prev => ({ ...prev, user: null, isLoading: false }))
+          if (!cancelled) {
+            setState((prev) => ({
+              ...prev,
+              user: background ? prev.user : null,
+              isLoading: false,
+            }))
+          }
         })
     }
     loadUser()
 
     const onVisible = () => {
-      if (document.visibilityState === 'visible') loadUser()
+      if (document.visibilityState === 'visible') loadUser(true)
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => {

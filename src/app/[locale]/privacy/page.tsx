@@ -1,9 +1,12 @@
 import Link from 'next/link'
 import { ArrowLeft, Shield } from 'lucide-react'
 import type { Metadata } from 'next'
-import { getMessages, getTranslations } from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
 import { PrivacyToc } from './PrivacyToc'
 import { canonicalUrl } from '@/shared/lib/seo'
+import { getPrivacyArticleHtml } from '@/shared/lib/privacy-article'
+
+export const dynamic = 'force-static'
 
 const articleProseClass =
   'prose prose-slate max-w-none prose-headings:font-semibold prose-p:leading-relaxed prose-li:my-1.5 prose-p:text-foreground/90 prose-li:text-foreground/90'
@@ -28,11 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function PrivacyPage({ params }: PageProps) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'privacy' })
-  const messages = await getMessages({ locale })
-  const articleHtml =
-    typeof messages === 'object' && messages !== null && 'privacy' in messages
-      ? String((messages as { privacy: { articleHtml?: string } }).privacy.articleHtml ?? '')
-      : ''
+  const articleHtml = await getPrivacyArticleHtml(locale)
 
   return (
     <div className="min-h-screen bg-[hsl(var(--app-bg))]">

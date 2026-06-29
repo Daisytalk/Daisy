@@ -40,7 +40,7 @@ const nextConfig = {
   reactStrictMode: true,
 
   generateBuildId: async () => {
-    return 'build-' + Date.now();
+    return process.env.BUILD_ID || process.env.VERCEL_GIT_COMMIT_SHA || 'daisy-build'
   },
 
   trailingSlash: false,

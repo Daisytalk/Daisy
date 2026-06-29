@@ -28,6 +28,34 @@ interface Message {
   stream?: boolean
 }
 
+const PENDING_CHAT_REQUEST_KEY = 'pending_chat_request'
+
+function readPendingChatRequest(): { requestId: string; conversationId: string } | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(PENDING_CHAT_REQUEST_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { requestId?: string; conversationId?: string }
+    if (parsed.requestId && parsed.conversationId) {
+      return { requestId: parsed.requestId, conversationId: parsed.conversationId }
+    }
+  } catch {
+    sessionStorage.removeItem(PENDING_CHAT_REQUEST_KEY)
+  }
+  return null
+}
+
+function writePendingChatRequest(requestId: string, conversationId: string) {
+  sessionStorage.setItem(
+    PENDING_CHAT_REQUEST_KEY,
+    JSON.stringify({ requestId, conversationId }),
+  )
+}
+
+function clearPendingChatRequest() {
+  sessionStorage.removeItem(PENDING_CHAT_REQUEST_KEY)
+}
+
 function ChatPageContent() {
   const { user } = useAuth()
   const locale = useLocale()
@@ -42,16 +70,54 @@ function ChatPageContent() {
   const [daisyState, setDaisyState] = useState<DaisyState>('intake')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const waitForResponseRef = useRef<(requestId: string) => Promise<void>>(async () => {})
 
   useEffect(() => {
-    const storedSessionId = localStorage.getItem('active_chat_session')
-    if (storedSessionId && !storedSessionId.startsWith('temp_')) {
-      setSessionId(storedSessionId)
-      fetchSessionMessages(storedSessionId)
-    } else {
-      const tempId = `temp_${Date.now()}`
-      setSessionId(tempId)
-      localStorage.setItem('active_chat_session', tempId)
+    let cancelled = false
+
+    const initSession = async () => {
+      const storedSessionId = localStorage.getItem('active_chat_session')
+      let activeSessionId: string
+      let loadedMessages: Message[] = []
+
+      if (storedSessionId && !storedSessionId.startsWith('temp_')) {
+        activeSessionId = storedSessionId
+        setSessionId(storedSessionId)
+        loadedMessages = await fetchSessionMessages(storedSessionId)
+      } else {
+        const tempId = `temp_${Date.now()}`
+        activeSessionId = tempId
+        setSessionId(tempId)
+        localStorage.setItem('active_chat_session', tempId)
+      }
+
+      if (cancelled) return
+
+      const pending = readPendingChatRequest()
+      if (!pending) return
+
+      const sessionMatches =
+        pending.conversationId === activeSessionId ||
+        (storedSessionId && pending.conversationId === storedSessionId)
+
+      if (!sessionMatches) {
+        clearPendingChatRequest()
+        return
+      }
+
+      const lastMsg = loadedMessages.at(-1)
+      if (lastMsg?.role === 'assistant') {
+        clearPendingChatRequest()
+        return
+      }
+
+      setIsLoading(true)
+      await waitForResponseRef.current(pending.requestId)
+    }
+
+    void initSession()
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -66,7 +132,7 @@ function ChatPageContent() {
     }
   }, [searchParams, locale])
 
-  const fetchSessionMessages = async (sessionId: string) => {
+  const fetchSessionMessages = async (sessionId: string): Promise<Message[]> => {
     try {
       const response = await fetch(`/api/cbt/conversations/${sessionId}`, {
         credentials: 'include',
@@ -82,11 +148,13 @@ function ChatPageContent() {
             timestamp: new Date(msg.createdAt || Date.now()),
           }))
           setMessages(loadedMessages)
+          return loadedMessages
         }
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error)
     }
+    return []
   }
 
   useEffect(() => {
@@ -147,6 +215,10 @@ function ChatPageContent() {
       }
 
       if (data.requestId) {
+        const convId = newSessionId || sessionId
+        if (convId) {
+          writePendingChatRequest(data.requestId, convId)
+        }
         await waitForResponse(data.requestId)
       } else {
         // No requestId (unexpected); show error in thread
@@ -177,6 +249,11 @@ function ChatPageContent() {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
+    const finish = () => {
+      clearPendingChatRequest()
+      clearTimeout(timeoutId)
+    }
+
     try {
       const response = await fetch(`/api/chat/status/${requestId}?stream=1`, {
         credentials: 'include',
@@ -193,6 +270,7 @@ function ChatPageContent() {
           content: "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service.",
           timestamp: new Date(),
         }])
+        finish()
         return
       }
 
@@ -235,6 +313,7 @@ function ChatPageContent() {
               stream: true,
             }
             setMessages(prev => [...prev, assistantMessage])
+            finish()
             return
           }
 
@@ -246,6 +325,7 @@ function ChatPageContent() {
               timestamp: new Date(),
             }
             setMessages(prev => [...prev, errorMessage])
+            finish()
             return
           }
         }
@@ -257,6 +337,7 @@ function ChatPageContent() {
         content: 'The response is taking longer than expected. Please try again in a moment.',
         timestamp: new Date(),
       }])
+      finish()
     } catch (error) {
       if ((error as Error).name === 'AbortError') {
         setMessages(prev => [...prev, {
@@ -265,6 +346,7 @@ function ChatPageContent() {
           content: 'The response is taking longer than expected. Please try again in a moment.',
           timestamp: new Date(),
         }])
+        finish()
         return
       }
       console.error('SSE error:', error)
@@ -274,10 +356,13 @@ function ChatPageContent() {
         content: "Something went wrong on our side. Please try sending your message again-if it keeps happening, we're likely fixing the service.",
         timestamp: new Date(),
       }])
+      finish()
     } finally {
-      clearTimeout(timeoutId)
+      setIsLoading(false)
     }
   }
+
+  waitForResponseRef.current = waitForResponse
 
   const suggestedPrompts = [
     t('suggestedPrompt1'),

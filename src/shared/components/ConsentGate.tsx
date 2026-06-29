@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { Loader2 } from 'lucide-react'
@@ -32,9 +32,11 @@ export function ConsentGate({ children }: ConsentGateProps) {
   const [error, setError] = useState<string | null>(null)
   const [healthChecked, setHealthChecked] = useState(false)
   const [mlChecked, setMlChecked] = useState(false)
+  const hasConsentRef = useRef(hasConsent)
+  hasConsentRef.current = hasConsent
 
-  const fetchConsent = useCallback(async () => {
-    setLoading(true)
+  const fetchConsent = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/consent', { credentials: 'include' })
@@ -47,7 +49,7 @@ export function ConsentGate({ children }: ConsentGateProps) {
     } catch {
       setError(t('errors.checkFailed'))
     } finally {
-      setLoading(false)
+      if (!opts?.silent) setLoading(false)
     }
   }, [t])
 
@@ -58,8 +60,8 @@ export function ConsentGate({ children }: ConsentGateProps) {
       setLoading(false)
       return
     }
-    fetchConsent()
-  }, [fetchConsent, isAuthLoading, user])
+    fetchConsent({ silent: hasConsentRef.current })
+  }, [fetchConsent, isAuthLoading, user?.id])
 
   const handleAccept = async () => {
     if (!healthChecked || !mlChecked) {
@@ -93,7 +95,7 @@ export function ConsentGate({ children }: ConsentGateProps) {
     }
   }
 
-  if (isAuthLoading || loading) {
+  if (isAuthLoading || (loading && !hasConsent)) {
     return (
       <div className="min-h-[200px] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
