@@ -157,21 +157,6 @@ function _buildConversationPrompt(
   return prompt;
 }
 
-function getMaxTokensForState(state?: string): number {
-  switch (state) {
-    case 'disclosure':
-      return 256;
-    case 'psychoeducation':
-      return 280;
-    case 'action_planning':
-      return 256;
-    case 'crisis':
-      return 100;
-    default:
-      return 256;
-  }
-}
-
 /**
  * Send chat message to Daisy API with normalized response
  *
@@ -213,13 +198,11 @@ export async function sendChatMessage(
     message: text,
     user_id: userId || 'web_user',
     conversation_id: sessionId,
-    temperature: 0.7,
     history: conversationHistory || []
   };
   if (options?.state != null && options.state !== '') {
     requestBody.state = options.state;
   }
-  requestBody.max_tokens = getMaxTokensForState(requestBody.state as string | undefined);
   if (options?.request_ai_profile === true) {
     requestBody.request_ai_profile = true;
   }
@@ -374,8 +357,8 @@ export async function sendChatMessage(
       diagnosis: Array.isArray(dataObj.diagnosis) ? dataObj.diagnosis as string[] : [],
       prompt: text,
       parameters: {
-        max_tokens: (requestBody.max_tokens as number),
-        temperature: (requestBody.temperature as number),
+        max_tokens: typeof dataObj.max_tokens === 'number' ? dataObj.max_tokens : 0,
+        temperature: typeof dataObj.temperature === 'number' ? dataObj.temperature : 0,
         top_p: 0.9
       },
       metrics: dataObj.metrics,
