@@ -176,4 +176,9 @@
     animation: none !important;
     transform: translate(calc(100vw - 7rem), calc(100vh - 11rem)) !important;
   }
+
+  .animate-wing-left,
+  .animate-wing-right {
+    animation: none !important;
+  }
 }

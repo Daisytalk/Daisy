@@ -61,6 +61,8 @@ function ChatPageContent() {
   const locale = useLocale()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const butterflyPreview =
+    process.env.NODE_ENV === 'development' && searchParams.get('butterfly') === '1'
   const t = useTranslations('chat')
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -593,7 +595,9 @@ function ChatPageContent() {
             </p>
           </form>
         </div>
-        {user?.name && <FloatingDaisy userName={user.name} />}
+        {(user?.name || butterflyPreview) && (
+          <FloatingDaisy userName={user?.name ?? 'You'} />
+        )}
       </div>
     </AppLayout>
   )

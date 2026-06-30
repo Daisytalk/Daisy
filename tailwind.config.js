@@ -108,6 +108,14 @@ module.exports = {
   				'0%, 100%': { transform: 'translateY(0px)' },
   				'50%': { transform: 'translateY(-10px)' },
   			},
+  			'wing-left': {
+  				'0%, 100%': { transform: 'rotateY(0deg)' },
+  				'50%': { transform: 'rotateY(58deg)' },
+  			},
+  			'wing-right': {
+  				'0%, 100%': { transform: 'rotateY(0deg)' },
+  				'50%': { transform: 'rotateY(-58deg)' },
+  			},
   			'daisy-enter': {
   				'0%': { opacity: 0, transform: 'scale(0) translateY(40px) rotate(-20deg)' },
   				'60%': { transform: 'scale(1.15) translateY(-6px) rotate(5deg)' },
@@ -139,9 +147,11 @@ module.exports = {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'daisy-float': 'daisy-float 6s ease-in-out infinite',
+  			'wing-left': 'wing-left 0.65s ease-in-out infinite',
+  			'wing-right': 'wing-right 0.65s ease-in-out infinite',
   			'daisy-enter': 'daisy-enter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
   			'petal-sway': 'petal-sway 3s ease-in-out infinite',
-  			'daisy-fly-screen': 'daisy-fly-screen 28s linear infinite'
+  			'daisy-fly-screen': 'daisy-fly-screen 90s linear infinite'
   		}
   	}
   },

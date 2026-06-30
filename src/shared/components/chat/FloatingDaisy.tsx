@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { DaisySVG } from './DaisySVG'
+import { ButterflyIcon } from './ButterflyIcon'
 import { CheckInQuestions } from '@/shared/components/chat/CheckInQuestions'
 import { saveCheckIn } from '@/app/actions/saveCheckIn'
 
@@ -36,6 +36,9 @@ function msUntilEveningWindow(): number {
 export function FloatingDaisy({ userName }: { userName: string }) {
   const t = useTranslations('profile.checkin')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const previewFly =
+    process.env.NODE_ENV === 'development' && searchParams.get('butterfly') === '1'
   const [visible, setVisible] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [done, setDone] = useState(false)
@@ -52,6 +55,11 @@ export function FloatingDaisy({ userName }: { userName: string }) {
   }, [done])
 
   useEffect(() => {
+    if (previewFly) setVisible(true)
+  }, [previewFly])
+
+  useEffect(() => {
+    if (previewFly) return
     let cancelled = false
     ;(async () => {
       try {
@@ -67,9 +75,10 @@ export function FloatingDaisy({ userName }: { userName: string }) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [previewFly])
 
   const tryShow = useCallback(() => {
+    if (previewFly) return
     if (typeof window === 'undefined') return
     if (hasCheckInRef.current || doneRef.current) return
     if (!isEvening()) return
@@ -77,9 +86,10 @@ export function FloatingDaisy({ userName }: { userName: string }) {
     if (localStorage.getItem(SHOWN_TODAY_KEY) === today) return
     setVisible(true)
     localStorage.setItem(SHOWN_TODAY_KEY, today)
-  }, [])
+  }, [previewFly])
 
   useEffect(() => {
+    if (previewFly) return
     if (!checkinLoaded) return
     if (hasCheckInToday || done) return
 
@@ -99,16 +109,20 @@ export function FloatingDaisy({ userName }: { userName: string }) {
       clearInterval(interval)
       if (eveningTimeout !== undefined) clearTimeout(eveningTimeout)
     }
-  }, [checkinLoaded, hasCheckInToday, done, tryShow])
+  }, [checkinLoaded, hasCheckInToday, done, tryShow, previewFly])
 
   const handleDismiss = () => {
+    if (previewFly) {
+      setVisible(false)
+      return
+    }
     setVisible(false)
     if (typeof window !== 'undefined') {
       localStorage.setItem(SHOWN_TODAY_KEY, getTodayKey())
     }
   }
 
-  if (!visible || done || hasCheckInToday) return null
+  if ((!visible || done || hasCheckInToday) && !previewFly) return null
 
   /** Пока панель открыта — ромашка стоит внизу справа, чтобы не «убегала» с текстом */
   const flyAcross = !expanded
@@ -158,7 +172,7 @@ export function FloatingDaisy({ userName }: { userName: string }) {
             className="animate-daisy-float hover:scale-110 active:scale-95 transition-transform duration-200 cursor-pointer drop-shadow-xl"
             aria-label={t('ariaLabel')}
           >
-            <DaisySVG size={expanded ? 56 : 72} />
+            <ButterflyIcon size={expanded ? 56 : 72} />
           </button>
           {!expanded && (
             <button
