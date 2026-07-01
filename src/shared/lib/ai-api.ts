@@ -29,6 +29,28 @@ function getApiKey(): string {
   return key;
 }
 
+/** Optional Azure ML deployment slot for staged rollouts (e.g. gpu-deployment-ru-translate). */
+function getAmlDeploymentName(): string | undefined {
+  const name = (process.env.AML_DEPLOYMENT_NAME || '').trim();
+  return name || undefined;
+}
+
+/** Per-locale deployment override: AML_DEPLOYMENT_NAME_RU, _EN, _KK */
+function resolveAmlDeployment(locale?: string): string | undefined {
+  const loc = (locale || '').toLowerCase();
+  if (loc === 'ru') {
+    const ru = (process.env.AML_DEPLOYMENT_NAME_RU || '').trim();
+    if (ru) return ru;
+  } else if (loc === 'kk') {
+    const kk = (process.env.AML_DEPLOYMENT_NAME_KK || '').trim();
+    if (kk) return kk;
+  } else if (loc === 'en') {
+    const en = (process.env.AML_DEPLOYMENT_NAME_EN || '').trim();
+    if (en) return en;
+  }
+  return getAmlDeploymentName();
+}
+
 /**
  * CBT System Prompt - Forces therapeutic response format
  */
@@ -241,12 +263,17 @@ export async function sendChatMessage(
     const timeoutId = setTimeout(() => controller.abort(), 180000);
 
     console.log('📞 Calling Azure ML fetch now...', { endpoint: endpoint.substring(0, 60) + '...' });
+    const deployment = resolveAmlDeployment(options?.locale);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getApiKey()}`
+    };
+    if (deployment) {
+      headers['azureml-model-deployment'] = deployment;
+    }
     const response = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getApiKey()}`
-      },
+      headers,
       body: JSON.stringify(requestBody),
       signal: controller.signal
     });

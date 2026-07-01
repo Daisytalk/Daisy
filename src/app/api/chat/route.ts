@@ -12,6 +12,7 @@ import { logger } from '@/shared/lib/safe-logger'
 import { detectCrisis, CRISIS_RESPONSE } from '@/shared/lib/crisis-detection'
 import { defaultLocale } from '@/i18n'
 import { pickLocaleFromCookieOrUser } from '@/shared/lib/locale-detection'
+import { asyncChatErrorMessage } from '@/shared/lib/chat-error-messages'
 
 /**
  * Обработка чата в фоне: сбор запроса через buildDaisyRequest, вызов Daisy API, сохранение через handleDaisyResponse.
@@ -82,7 +83,7 @@ async function processAsyncChat(
         data: {
           conversationId,
           role: 'assistant',
-          content: prepareContentForStorage('Извини, произошла ошибка при обработке сообщения. Попробуй ещё раз.'),
+          content: prepareContentForStorage(asyncChatErrorMessage(locale)),
           diagnosis: [],
           protocol: 'error',
         },
