@@ -578,6 +578,7 @@
     "copyright": "© 2026 Daisy. All rights reserved.",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
+    "refundPolicy": "Refund Policy",
     "hipaaNotice": "HIPAA Notice",
     "hipaaCompliant": "🔒 HIPAA Compliant",
     "securePlatform": "🛡️ Secure Platform",
@@ -998,6 +999,64 @@
       "s15": "15. Liability",
       "s16": "16. Dispute resolution",
       "s17": "17. Final provisions"
+    }
+  },
+  "terms": {
+    "hero": {
+      "backToHome": "Back to Home",
+      "title": "TERMS OF SERVICE",
+      "effectiveDate": "Effective Date: February 10, 2026",
+      "lastUpdated": "Last Updated: June 29, 2026"
+    },
+    "meta": {
+      "title": "Terms of Service",
+      "description": "Terms of Service for the Daisy wellness platform. Effective date: February 10, 2026. Last updated: June 29, 2026."
+    },
+    "toc": {
+      "title": "Contents",
+      "s1": "1. Parties and scope",
+      "s2": "2. Nature of the Service",
+      "s3": "3. Access and account",
+      "s4": "4. Subscriptions and payments",
+      "s5": "5. Acceptable use",
+      "s6": "6. Intellectual property",
+      "s7": "7. Liability and warranties",
+      "s8": "8. Termination",
+      "s9": "9. Changes to the Service",
+      "s10": "10. Third-party services",
+      "s11": "11. Dispute resolution",
+      "s12": "12. Governing law",
+      "s13": "13. Force majeure",
+      "s14": "14. Miscellaneous",
+      "s15": "15. Contact information"
+    }
+  },
+  "refund": {
+    "hero": {
+      "backToHome": "Back to Home",
+      "title": "Refund Policy",
+      "subtitle": "Daisy - talktodaisy.com",
+      "effectiveDate": "Effective date: 01.07.2026",
+      "lastUpdated": "Last updated: 01.07.2026"
+    },
+    "meta": {
+      "title": "Refund Policy",
+      "description": "Refund Policy for Daisy subscriptions processed by Paddle. Effective date: July 1, 2026."
+    },
+    "toc": {
+      "title": "Contents",
+      "s1": "1. Who processes refunds",
+      "s2": "2. 14-day refund window",
+      "s3": "3. Refunds after 14 days",
+      "s4": "4. Subscription plans",
+      "s5": "5. Free trial",
+      "s6": "6. How to request a refund",
+      "s7": "7. Refund amounts",
+      "s8": "8. Chargebacks",
+      "s9": "9. Consumer rights",
+      "s10": "10. Policy changes",
+      "s11": "11. Contact",
+      "s12": "12. Relationship with Terms"
     }
   },
   "resourcesPage": {

@@ -44,6 +44,9 @@ function resolveAmlDeployment(locale?: string): string | undefined {
   } else if (loc === 'kk') {
     const kk = (process.env.AML_DEPLOYMENT_NAME_KK || '').trim();
     if (kk) return kk;
+    // KK direct quality is weak — route to RU translate slot when configured.
+    const ru = (process.env.AML_DEPLOYMENT_NAME_RU || '').trim();
+    if (ru) return ru;
   } else if (loc === 'en') {
     const en = (process.env.AML_DEPLOYMENT_NAME_EN || '').trim();
     if (en) return en;

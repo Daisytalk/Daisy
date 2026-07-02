@@ -21,6 +21,57 @@ import { logger } from '@/shared/lib/safe-logger'
 const HISTORY_LIMIT = 20
 export type DaisyLocale = 'ru' | 'kk' | 'en'
 
+export type HistoryTurn = { role: string; content: string }
+
+/**
+ * Build AML history from stored messages, excluding the current user turn if already persisted.
+ */
+export function buildHistoryFromStoredMessages(
+  messages: Array<{ role: string; content: string }>,
+  currentUserMessage?: string
+): HistoryTurn[] {
+  const decrypted = messages.map((m) => ({
+    role: m.role,
+    content: typeof m.content === 'string' ? m.content : '',
+  }))
+  const last = decrypted[decrypted.length - 1]
+  const isLastCurrentUser =
+    currentUserMessage != null &&
+    last?.role === 'user' &&
+    last?.content === currentUserMessage
+  const forHistory = isLastCurrentUser ? decrypted.slice(0, -1) : decrypted
+  return sanitizeHistoryForModel(
+    forHistory.map((msg) => ({ role: msg.role, content: msg.content }))
+  )
+}
+
+/**
+ * Load last N turns for a conversation (for CBT route and other callers).
+ */
+export async function loadConversationHistory(
+  conversationId: string,
+  userId: string,
+  currentUserMessage?: string
+): Promise<HistoryTurn[]> {
+  const conversation = await prisma.cbtConversation.findFirst({
+    where: { id: conversationId, userId },
+    include: {
+      messages: {
+        orderBy: { createdAt: 'desc' },
+        take: HISTORY_LIMIT,
+      },
+    },
+  })
+  if (!conversation) {
+    return []
+  }
+  const ordered = [...conversation.messages].reverse().map((m) => ({
+    role: m.role,
+    content: getDecryptedContent(m.content),
+  }))
+  return buildHistoryFromStoredMessages(ordered, currentUserMessage)
+}
+
 export interface PsychProfilePayload {
   ESI: number
   BSI: number
@@ -97,11 +148,9 @@ export async function buildDaisyRequest(input: BuildDaisyRequestInput): Promise<
 
   const messages = [...conversation.messages].reverse()
   const decrypted = messages.map((m) => ({ ...m, content: getDecryptedContent(m.content) }))
-  const last = decrypted[decrypted.length - 1]
-  const isLastCurrentUser = last?.role === 'user' && last?.content === userMessage
-  const forHistory = isLastCurrentUser ? decrypted.slice(0, -1) : decrypted
-  const history = sanitizeHistoryForModel(
-    forHistory.map((msg) => ({ role: msg.role, content: msg.content }))
+  const history = buildHistoryFromStoredMessages(
+    decrypted.map((msg) => ({ role: msg.role, content: msg.content })),
+    userMessage
   )
   backfillCleanAssistantMessages(decrypted).catch((e) =>
     logger.warn('history_backfill_failed', {

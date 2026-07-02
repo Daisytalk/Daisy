@@ -11,6 +11,8 @@ const PUBLIC_PATHS: { path: string; changeFrequency: MetadataRoute.Sitemap[0]['c
   { path: '/resources', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/crisis-resources', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/privacy', changeFrequency: 'yearly', priority: 0.5 },
+  { path: '/terms', changeFrequency: 'yearly', priority: 0.5 },
+  { path: '/refund', changeFrequency: 'yearly', priority: 0.5 },
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {
