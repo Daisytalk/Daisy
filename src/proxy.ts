@@ -55,6 +55,12 @@ export function proxy(request: NextRequest) {
     return response
   }
 
+  if (pathname === '/pricing') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/en/pricing'
+    return NextResponse.redirect(url, 308)
+  }
+
   return intlMiddleware(request)
 }
 

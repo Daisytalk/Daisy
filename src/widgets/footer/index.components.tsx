@@ -95,6 +95,7 @@ export function FooterSection({ onNewsletterSubmit }: FooterSectionProps) {
                 <Link href={`/${locale}/privacy`} className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('privacyPolicy')}</Link>
                 <Link href={`/${locale}/terms`} className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('termsOfService')}</Link>
                 <Link href={`/${locale}/refund`} className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('refundPolicy')}</Link>
+                <Link href={`/${locale}/pricing`} className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('pricing')}</Link>
                 <a href="#" className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm transition-colors">{t('hipaaNotice')}</a>
               </div>
             </div>
