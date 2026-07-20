@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 import { canonicalUrl, DEFAULT_SITE_DESCRIPTION } from '@/shared/lib/seo'
 
 export async function generateMetadata({
@@ -7,18 +8,21 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'pricing' })
+  const title = locale === 'en' ? 'Pricing & Subscriptions' : 'Тарифы и подписка'
+
   return {
-    title: 'Тарифы и подписка',
-    description:
-      'Тарифы Daisy: доступ к AI-поддержке ментального здоровья на основе научных подходов. Выбери план и начни заботиться о себе.',
+    title,
+    description: t('subtitle'),
     alternates: {
       canonical: canonicalUrl(locale, '/pricing'),
     },
     openGraph: {
-      title: 'Тарифы и подписка | Daisy',
-      description: DEFAULT_SITE_DESCRIPTION,
+      title: `${title} | Daisy`,
+      description: t('subtitle') || DEFAULT_SITE_DESCRIPTION,
       url: canonicalUrl(locale, '/pricing'),
     },
+    robots: { index: true, follow: true },
   }
 }
 

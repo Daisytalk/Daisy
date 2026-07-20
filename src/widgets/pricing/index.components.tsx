@@ -28,12 +28,13 @@ export interface PlanInfo {
 
 interface PricingSectionProps {
   onSelectPlan?: (plan: PlanInfo) => void
+  hideHeader?: boolean
 }
 
 const DAISY_TEAL = '#5ba3c6'
 const DAISY_TEAL_SOFT = 'rgba(91,163,198,0.08)'
 
-export function PricingSection({ onSelectPlan }: PricingSectionProps) {
+export function PricingSection({ onSelectPlan, hideHeader = false }: PricingSectionProps) {
   const t = useTranslations('pricing')
 
   const plans: PlanInfo[] = [
@@ -97,7 +98,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-center mb-4 sm:mb-5 shrink-0"
+          className={`text-center mb-4 sm:mb-5 shrink-0 ${hideHeader ? 'sr-only' : ''}`}
         >
           <h2 className="text-xl sm:text-2xl font-semibold text-[#2d3748] tracking-tight">
             {t('title')}

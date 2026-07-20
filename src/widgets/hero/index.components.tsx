@@ -23,7 +23,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
   const navigation = [
     { name: t('howItWorks'), href: '#how-it-works' },
     { name: t('whyDaisy'), href: '#about' },
-    { name: t('pricing'), href: '#pricing' },
+    { name: t('pricing'), href: '/pricing' },
     { name: t('faq'), href: '#faq' },
   ]
 
